@@ -5,7 +5,7 @@
   // ---------- BOOTUP ----------
   let overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00ff00;font-family:Consolas,monospace;pointer-events:none;';
-
+  
   let canvas = document.createElement('canvas');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -115,51 +115,103 @@
 
     // -------------------- VFX BUTTONS --------------------
     addBtn(vfx,'3D Page',()=>{if(!window.triScript){let s=document.createElement('script');s.src='https://rawgit.com/Krazete/bookmarklets/master/tri.js';document.body.appendChild(s); window.triScript=s;}},()=>{if(window.triScript){window.triScript.remove();window.triScript=null;}});
+
     addBtn(vfx,'Explode Page',()=> {
-    // Create countdown overlay
-    let overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#FF0000;font-size:50px;font-family:monospace;z-index:10000000;';
-    document.body.appendChild(overlay);
-
-    let count = 3;
-    overlay.innerText = count;
-
-    let interval = setInterval(() => {
-        count--;
-        if(count > 0){
-            overlay.innerText = count;
-        } else {
-            clearInterval(interval);
-            overlay.remove();
-
-            // Apply shockwave effect
-            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => {
-                el.style.transition = 'transform 1s ease-out';
-                const x = (Math.random()-0.5) * 1000; // random push
-                const y = (Math.random()-0.5) * 1000;
-                const z = (Math.random()-0.5) * 200;
-                el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotate(${Math.random()*720-360}deg)`;
-            });
-
-            // Reset after 1.5 seconds
-            setTimeout(() => {
+        let overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#FF0000;font-size:50px;font-family:monospace;z-index:10000000;';
+        document.body.appendChild(overlay);
+        let count = 3;
+        overlay.innerText = count;
+        let interval = setInterval(() => {
+            count--;
+            if(count > 0){
+                overlay.innerText = count;
+            } else {
+                clearInterval(interval);
+                overlay.remove();
                 document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => {
-                    el.style.transform = '';
-                    el.style.transition = '';
+                    el.style.transition = 'transform 1s ease-out';
+                    const x = (Math.random()-0.5) * 1000;
+                    const y = (Math.random()-0.5) * 1000;
+                    const z = (Math.random()-0.5) * 200;
+                    el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotate(${Math.random()*720-360}deg)`;
                 });
-            }, 1500);
-        }
-    }, 1000);
-}, ()=>{});
+                setTimeout(() => {
+                    document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => {
+                        el.style.transform = '';
+                        el.style.transition = '';
+                    
+        addBtn(vfx,'Image Glitch',()=>{window.imgGlitchInt=setInterval(()=>{
+        document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
+            e.style.position='absolute';
+            e.style.left=Math.random()*window.innerWidth+'px';
+            e.style.top=Math.random()*window.innerHeight+'px';
+        });
+    },50);},()=>{clearInterval(window.imgGlitchInt);});
 
-    addBtn(vfx,'Image Glitch',()=>{window.imgGlitchInt=setInterval(()=>{document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.position='absolute'; e.style.left=Math.random()*window.innerWidth+'px'; e.style.top=Math.random()*window.innerHeight+'px';});},50);},()=>{clearInterval(window.imgGlitchInt);});
-    addBtn(vfx,'Random Link Redirects',()=>{window.linkRedirectsInt=setInterval(()=>{document.querySelectorAll('a:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(a=>a.href=['https://longdogechallenge.com/','https://puginarug.com/','https://onesquareminesweeper.com/'][Math.floor(Math.random()*3)]);},500);},()=>{clearInterval(window.linkRedirectsInt);});
-    addBtn(vfx,'Matrix Rain',()=>{if(!window.matrixCanvas){let c=document.createElement('canvas');c.width=window.innerWidth;c.height=window.innerHeight;c.style.cssText='position:fixed;top:0;left:0;z-index:99999;pointer-events:none;';document.body.appendChild(c);window.matrixCanvas=c;let ctx=c.getContext('2d');let chars='1010';let cols=Math.floor(window.innerWidth/10);let drops=[];for(let i=0;i<cols;i++)drops[i]=Math.floor(Math.random()*c.height);window.matrixInt=setInterval(()=>{ctx.fillStyle='rgba(0,0,0,0.05)';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle='#0F0';ctx.font='10px monospace';for(let i=0;i<cols;i++){ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);if(drops[i]*10>c.height&&Math.random()>0.975)drops[i]=0; drops[i]++;}},33);}},()=>{clearInterval(window.matrixInt); if(window.matrixCanvas){window.matrixCanvas.remove();window.matrixCanvas=null;}});
-    addBtn(vfx,'Disco Mode',()=>{window.discoInt=setInterval(()=>{document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.backgroundColor=['red','orange','yellow','green','blue','purple','pink'][Math.floor(Math.random()*7)]});},100);},()=>{clearInterval(window.discoInt); window.discoInt=null; document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>e.style.backgroundColor=''); vfx.style.backgroundColor='#1b1b1b';});
-    addBtn(vfx,'Text Corruption',()=>{let s=document.createElement('style'); s.id='textCorruptStyle'; s.innerHTML='body *:not(#vfxGUI):not(#utilitiesGUI *){background:black;color:green;font-family:Courier New,monospace;font-size:1.2em;text-shadow:1px 1px #FF0000;} #vfxGUI,#utilitiesGUI{animation:none !important;}'; document.head.appendChild(s); window.textCorruptStyle=s;},()=>{if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}});
-    addBtn(vfx,'Bubble Text',()=>{window.bubbleInt=setInterval(()=>{function transform(el){if(el.id==='vfxGUI'||el.id==='utilitiesGUI'||el.closest('#vfxGUI,#utilitiesGUI'))return;if(el.childNodes.length>0)el.childNodes.forEach(transform); if(el.nodeType===Node.TEXT_NODE&&el.nodeValue){let chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split(''); let bubbles='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ①②③④⑤⑥⑦⑧⑨⓪'.split(''); el.textContent=el.textContent.replace(/[a-zA-Z0-9]/g,l=>bubbles[chars.indexOf(l)]);}} transform(document.body);},50);},()=>{clearInterval(window.bubbleInt); window.bubbleInt=null;});
-    addBtn(vfx,'Page Spin',()=>{if(!window.pageSpinStyle){let s=document.createElement('style'); s.id='pageSpinStyle'; s.innerHTML='@keyframes roll{100%{transform:rotate(129600deg);}} body *:not(#vfxGUI *):not(#utilitiesGUI *){animation:roll 140s linear 360;}'; document.head.appendChild(s); window.pageSpinStyle=s;}},()=>{if(window.pageSpinStyle){window.pageSpinStyle.remove();window.pageSpinStyle=null;}});
-    addBtn(vfx,'Full Chaos',()=>{if(!window.fullChaosInt){window.fullChaosInt=true; (function(){function c(){return '#'+Math.floor(16777215*Math.random()).toString(16);} function r(e){return Math.floor(Math.random()*e)+1;} let d=document; d.head.innerHTML+='<style>*{margin:0;overflow:hidden} #vfxGUI,#utilitiesGUI{position:fixed !important;}</style>'; window.fullChaosLoop1=setInterval(()=>{document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.backgroundColor=c(); e.style.color=c(); e.style.transform='rotate('+r(360)+'deg) scale('+Math.random()*2+')';});},100); window.fullChaosLoop2=setInterval(()=>{document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.transform='rotate('+r(360)+'deg) scale('+Math.random()*2+')';});},100);})();}},()=>{clearInterval(window.fullChaosLoop1); clearInterval(window.fullChaosLoop2); window.fullChaosInt=false;});
+    addBtn(vfx,'Random Link Redirects',()=>{window.linkRedirectsInt=setInterval(()=>{
+        document.querySelectorAll('a:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(a=>a.href=[
+            'https://longdogechallenge.com/',
+            'https://puginarug.com/',
+            'https://onesquareminesweeper.com/'
+        ][Math.floor(Math.random()*3)]);
+    },500);},()=>{clearInterval(window.linkRedirectsInt);});
+
+    addBtn(vfx,'Matrix Rain',()=>{if(!window.matrixCanvas){
+        let c=document.createElement('canvas');
+        c.width=window.innerWidth;
+        c.height=window.innerHeight;
+        c.style.cssText='position:fixed;top:0;left:0;z-index:99999;pointer-events:none;';
+        document.body.appendChild(c);window.matrixCanvas=c;
+        let ctx=c.getContext('2d');let chars='1010';
+        let cols=Math.floor(window.innerWidth/10);let drops=[];
+        for(let i=0;i<cols;i++)drops[i]=Math.floor(Math.random()*c.height);
+        window.matrixInt=setInterval(()=>{
+            ctx.fillStyle='rgba(0,0,0,0.05)';ctx.fillRect(0,0,c.width,c.height);
+            ctx.fillStyle='#0F0';ctx.font='10px monospace';
+            for(let i=0;i<cols;i++){
+                ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);
+                if(drops[i]*10>c.height&&Math.random()>0.975)drops[i]=0; drops[i]++;
+            }
+        },33);
+    }},()=>{clearInterval(window.matrixInt); if(window.matrixCanvas){window.matrixCanvas.remove();window.matrixCanvas=null;}});
+
+    addBtn(vfx,'Disco Mode',()=>{window.discoInt=setInterval(()=>{
+        document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
+            e.style.backgroundColor=['red','orange','yellow','green','blue','purple','pink'][Math.floor(Math.random()*7)];
+        });
+    },100);},()=>{clearInterval(window.discoInt); window.discoInt=null;
+        document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>e.style.backgroundColor=''); vfx.style.backgroundColor='#1b1b1b';});
+
+    addBtn(vfx,'Page Spin',()=>{if(!window.pageSpinStyle){let s=document.createElement('style'); s.id='pageSpinStyle';
+        s.innerHTML='@keyframes roll{100%{transform:rotate(129600deg);}} body *:not(#vfxGUI *):not(#utilitiesGUI *){animation:roll 140s linear 360;}';
+        document.head.appendChild(s); window.pageSpinStyle=s;}},()=>{if(window.pageSpinStyle){window.pageSpinStyle.remove();window.pageSpinStyle=null;}});
+
+    addBtn(vfx,'Text Corruption',()=>{let s=document.createElement('style'); s.id='textCorruptStyle';
+        s.innerHTML='body *:not(#vfxGUI):not(#utilitiesGUI *){background:black;color:green;font-family:Courier New,monospace;font-size:1.2em;text-shadow:1px 1px #FF0000;} #vfxGUI,#utilitiesGUI{animation:none !important;}';
+        document.head.appendChild(s); window.textCorruptStyle=s;},()=>{if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}});
+
+    addBtn(vfx,'Bubble Text',()=>{window.bubbleInt=setInterval(()=>{function transform(el){
+        if(el.id==='vfxGUI'||el.id==='utilitiesGUI'||el.closest('#vfxGUI,#utilitiesGUI'))return;
+        if(el.childNodes.length>0)el.childNodes.forEach(transform);
+        if(el.nodeType===Node.TEXT_NODE&&el.nodeValue){
+            let chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+            let bubbles='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ①②③④⑤⑥⑦⑧⑨⓪'.split('');
+            el.textContent=el.textContent.replace(/[a-zA-Z0-9]/g,l=>bubbles[chars.indexOf(l)]);
+        }
+    } transform(document.body);},50);},()=>{clearInterval(window.bubbleInt); window.bubbleInt=null;});
+
+    addBtn(vfx,'Full Chaos',()=>{if(!window.fullChaosInt){window.fullChaosInt=true; (function(){
+        function c(){return '#'+Math.floor(16777215*Math.random()).toString(16);}
+        function r(e){return Math.floor(Math.random()*e)+1;}
+        let d=document; d.head.innerHTML+='<style>*{margin:0;overflow:hidden} #vfxGUI,#utilitiesGUI{position:fixed !important;}</style>';
+        window.fullChaosLoop1=setInterval(()=>{document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
+            e.style.backgroundColor=c(); e.style.color=c(); e.style.transform='rotate('+r(360)+'deg) scale('+Math.random()*2+')';
+        });},100);
+        window.fullChaosLoop2=setInterval(()=>{document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
+            e.style.transform='rotate('+r(360)+'deg) scale('+Math.random()*2+')';
+        });},100);
+    })();}},()=>{clearInterval(window.fullChaosLoop1); clearInterval(window.fullChaosLoop2); window.fullChaosInt=false;});
 
     // -------------------- TEXT COLOR PICKER --------------------
     (function(){
@@ -202,6 +254,6 @@
       }
     });
 
-  }
+  } // End of spawnGUIs()
 
 })();
