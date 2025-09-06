@@ -63,6 +63,35 @@
   // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
   function spawnGUIs(){
     // UTILITIES GUI
+    // -------------------- FONT SIZE SLIDER --------------------
+(function(){
+    const utilPanel = document.getElementById('utilitiesGUI');
+    if(!utilPanel) return;
+
+    const section = document.createElement('div');
+    section.style.marginTop = '10px';
+    section.style.padding = '8px';
+    section.style.background = '#252525';
+    section.style.borderRadius = '10px';
+    section.style.color = '#00ff00';
+    section.innerHTML = `<b>Font Size</b><br>`;
+
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = '10';
+    slider.max = '50';
+    slider.value = '16';
+    slider.style.width = '100%';
+
+    slider.oninput = () => {
+        document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)')
+            .forEach(el => el.style.fontSize = slider.value + 'px');
+    };
+
+    section.appendChild(slider);
+    utilPanel.appendChild(section);
+})();
+
     const util = document.createElement('div');
     util.id='utilitiesGUI';
     util.style.cssText='position:fixed;top:50px;left:50px;width:280px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
@@ -70,6 +99,32 @@
     document.body.appendChild(util);
 
     // VFX GUI
+    // -------------------- TEXT COLOR PICKER --------------------
+(function(){
+    const vfxPanel = document.getElementById('vfxGUI');
+    if(!vfxPanel) return;
+
+    const section = document.createElement('div');
+    section.style.marginTop = '10px';
+    section.style.padding = '8px';
+    section.style.background = '#252525';
+    section.style.borderRadius = '10px';
+    section.style.color = '#00ff00';
+    section.innerHTML = `<b>Text Color</b><br>`;
+
+    const picker = document.createElement('input');
+    picker.type = 'color';
+    picker.value = '#00ff00';
+
+    picker.oninput = () => {
+        document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)')
+            .forEach(el => el.style.color = picker.value);
+    };
+
+    section.appendChild(picker);
+    vfxPanel.appendChild(section);
+})();
+
     const vfx = document.createElement('div');
     vfx.id='vfxGUI';
     vfx.style.cssText='position:fixed;top:50px;right:50px;width:320px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
