@@ -62,21 +62,22 @@
 
   // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
   function spawnGUIs(){
-    // UTILITIES GUI
+    // ---------- UTILITIES GUI ----------
 const util = document.createElement('div');
-util.id='utilitiesGUI';
-util.style.cssText='position:fixed;top:50px;left:50px;width:280px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
-util.innerHTML='<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+util.id = 'utilitiesGUI';
+util.style.cssText = 'position:fixed;top:50px;left:50px;width:280px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
+util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
 document.body.appendChild(util);
 
-// -------------------- FONT SIZE SLIDER --------------------
+// ---------- FONT SIZE SLIDER ----------
 (function(){
     const section = document.createElement('div');
     section.style.marginTop = '10px';
-    section.style.padding = '8px';
-    section.style.background = '#252525';
-    section.style.borderRadius = '10px';
+    section.style.padding = '10px';
+    section.style.background = '#333';
+    section.style.borderRadius = '6px';
     section.style.color = '#00ff00';
+    section.style.textAlign = 'center';
     section.innerHTML = `<b>Font Size</b><br>`;
 
     const slider = document.createElement('input');
@@ -84,89 +85,64 @@ document.body.appendChild(util);
     slider.min = '10';
     slider.max = '50';
     slider.value = '16';
-    slider.style.width = '100%';
+    slider.style.width = '90%';
+    slider.style.margin = '5px auto';
+    slider.style.display = 'block';
+
+    const valDisplay = document.createElement('span');
+    valDisplay.innerText = slider.value + 'px';
+    valDisplay.style.marginLeft = '6px';
 
     slider.oninput = () => {
         document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)')
             .forEach(el => el.style.fontSize = slider.value + 'px');
+        valDisplay.innerText = slider.value + 'px';
     };
 
     section.appendChild(slider);
-    util.appendChild(section); // 👈 attaches slider inside Utilities GUI
+    section.appendChild(valDisplay);
+    util.appendChild(section);
 })();
 
-
-    // VFX GUI
+// ---------- VFX GUI ----------
 const vfx = document.createElement('div');
-vfx.id='vfxGUI';
-vfx.style.cssText='position:fixed;top:50px;right:50px;width:320px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
-vfx.innerHTML='<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
+vfx.id = 'vfxGUI';
+vfx.style.cssText = 'position:fixed;top:50px;right:50px;width:320px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
+vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
 document.body.appendChild(vfx);
 
-// -------------------- TEXT COLOR PICKER --------------------
+// ---------- TEXT COLOR PICKER ----------
 (function(){
     const section = document.createElement('div');
     section.style.marginTop = '10px';
-    section.style.padding = '8px';
-    section.style.background = '#252525';
-    section.style.borderRadius = '10px';
+    section.style.padding = '10px';
+    section.style.background = '#333';
+    section.style.borderRadius = '6px';
     section.style.color = '#00ff00';
+    section.style.textAlign = 'center';
     section.innerHTML = `<b>Text Color</b><br>`;
 
     const picker = document.createElement('input');
     picker.type = 'color';
     picker.value = '#00ff00';
+    picker.style.width = '90%';
+    picker.style.margin = '5px auto';
+    picker.style.display = 'block';
+
+    const valDisplay = document.createElement('span');
+    valDisplay.innerText = picker.value;
+    valDisplay.style.marginLeft = '6px';
 
     picker.oninput = () => {
         document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)')
             .forEach(el => el.style.color = picker.value);
+        valDisplay.innerText = picker.value;
     };
 
     section.appendChild(picker);
-    vfx.appendChild(section); // 👈 attaches color picker inside VFX GUI
+    section.appendChild(valDisplay);
+    vfx.appendChild(section);
 })();
-
-
-    // Dragging helper
-    function makeDraggable(g){
-      g.onmousedown = function(e){
-        let ox = e.clientX - g.getBoundingClientRect().left,
-            oy = e.clientY - g.getBoundingClientRect().top;
-        function move(e){ g.style.left=(e.clientX-ox)+'px'; g.style.top=(e.clientY-oy)+'px'; g.style.right='auto'; }
-        function up(){ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
-        document.addEventListener('mousemove',move);
-        document.addEventListener('mouseup',up);
-      };
-    }
-    makeDraggable(util); makeDraggable(vfx);
-    // Add Shift+H hide/show functionality
-document.addEventListener('keydown', (e) => {
-  if (e.shiftKey && e.key.toLowerCase() === 'h') {
-    const util = document.getElementById('utilitiesGUI');
-    const vfx = document.getElementById('vfxGUI');
-    if (util && vfx) {
-      util.style.display = (util.style.display === 'none') ? 'block' : 'none';
-      vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
-    }
-  }
-});
-    // Button helper
-    function addBtn(container,name,on,off){
-      let running=false;
-      const btn=document.createElement('button');
-      btn.style.cssText='display:block;width:100%;margin:4px 0;padding:6px;background:#0f0f0f;color:#00ff00;border:1px solid #00ff00;cursor:pointer;';
-      const status=document.createElement('span');
-      status.innerText=' [Stopped]';
-      status.style.color='#ff0000';
-      btn.innerText=name;
-      btn.appendChild(status);
-      btn.onclick=function(){
-        running=!running;
-        if(running){status.innerText=' [Running…]'; status.style.color='#00ff00'; on();}
-        else{status.innerText=' [Stopped]'; status.style.color='#ff0000'; off && off();}
-      };
-      container.appendChild(btn);
-    }
 
     // -------------------- Utilities Buttons --------------------
     addBtn(util,'Developer Console',()=>{if(!window.erudaLoaded){let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/eruda@2.5.0/eruda.min.js';document.body.appendChild(s);s.onload=()=>{eruda.init();eruda.theme='Dark';window.erudaLoaded=true;};}else{eruda.show();}},()=>{if(window.erudaLoaded)eruda.hide();});
