@@ -297,23 +297,44 @@
     }, () => { clearInterval(window.matrixInt); if(window.matrixCanvas){ window.matrixCanvas.remove(); window.matrixCanvas=null; }});
 
     addBtn(vfx, 'Full Chaos', () => {
-      if(!window.fullChaosInt){
-        window.fullChaosInt = true;
-        // Safe chaos: only page content, not GUIs
-        (function(){
-          function randColor(){return '#'+Math.floor(Math.random()*16777215).toString(16);}
-          let d=document;
-          let w=window.innerHeight;
-          d.head.innerHTML+='<style>*:not(#utilitiesGUI):not(#vfxGUI){margin:0;padding:0;}</style>';
-          let divs=[]; for(let i=0;i<w;i++){ let z=d.createElement('div'); z.id='b'+i; z.style.backgroundColor=randColor(); z.style.width='100%'; z.style.height='1px'; d.body.appendChild(z); divs.push(z);}
-          window.fullChaosLoop1 = setInterval(()=>{ for(let e=0;e<10;e++){ let z=divs[Math.floor(Math.random()*w)]; z.style.backgroundColor=randColor(); z.style.height=Math.floor(Math.random()*4)+'px'; d.body.style.backgroundColor=randColor(); }},10);
-          window.fullChaosLoop2 = setInterval(()=>{ window.scrollTo(0,0); },50);
-        })();
-      }
-    }, () => {
-      clearInterval(window.fullChaosLoop1); clearInterval(window.fullChaosLoop2);
-      window.fullChaosInt=false;
-    });
+  if (!window.fullChaosInt) {
+    window.fullChaosInt = true;
 
+    // Keep track of temporary chaos elements
+    const chaosElements = [];
+
+    function randomColor() { return '#'+Math.floor(Math.random()*16777215).toString(16); }
+
+    // Create a bunch of small divs for chaotic animation
+    for (let i = 0; i < 100; i++) {
+      let div = document.createElement('div');
+      div.style.cssText = `position:fixed;width:10px;height:10px;background:${randomColor()};top:${Math.random()*window.innerHeight}px;left:${Math.random()*window.innerWidth}px;z-index:9999;pointer-events:none;`;
+      document.body.appendChild(div);
+      chaosElements.push(div);
+    }
+
+    // Animate chaos
+    window.fullChaosLoop1 = setInterval(() => {
+      chaosElements.forEach(el => {
+        el.style.top = Math.random() * window.innerHeight + 'px';
+        el.style.left = Math.random() * window.innerWidth + 'px';
+        el.style.backgroundColor = randomColor();
+      });
+      document.body.style.backgroundColor = randomColor();
+    }, 50);
+
+    // Scroll loop for extra chaotic effect
+    window.fullChaosLoop2 = setInterval(() => { window.scrollTo(Math.random()*window.innerWidth, Math.random()*window.innerHeight); }, 50);
   }
-})();
+}, () => {
+  clearInterval(window.fullChaosLoop1);
+  clearInterval(window.fullChaosLoop2);
+  if (window.fullChaosInt) {
+    // Remove temporary chaos divs
+    document.querySelectorAll('div').forEach(el => {
+      if (el.style && el.style.zIndex === '9999') el.remove();
+    });
+    window.fullChaosInt = false;
+  }
+});
+
