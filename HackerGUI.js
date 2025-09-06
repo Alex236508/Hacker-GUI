@@ -116,30 +116,50 @@
     // -------------------- VFX BUTTONS --------------------
     addBtn(vfx,'3D Page',()=>{if(!window.triScript){let s=document.createElement('script');s.src='https://rawgit.com/Krazete/bookmarklets/master/tri.js';document.body.appendChild(s); window.triScript=s;}},()=>{if(window.triScript){window.triScript.remove();window.triScript=null;}});
 
-    addBtn(vfx,'Explode Page',()=> {
-        let overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#FF0000;font-size:50px;font-family:monospace;z-index:10000000;';
-        document.body.appendChild(overlay);
-        let count = 3;
-        overlay.innerText = count;
-        let interval = setInterval(() => {
-            count--;
-            if(count > 0){
-                overlay.innerText = count;
-            } else {
-                clearInterval(interval);
-                overlay.remove();
+    addBtn(vfx,'Explode Page',()=>{
+    // Create countdown overlay
+    let overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#FF0000;font-size:50px;font-family:monospace;z-index:10000000;';
+    document.body.appendChild(overlay);
+
+    let count = 3;
+    overlay.innerText = count;
+    let interval = setInterval(() => {
+        count--;
+        if(count > 0){
+            overlay.innerText = count;
+        } else {
+            clearInterval(interval);
+            overlay.remove();
+
+            // Get center of screen
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            // Apply shockwave effect
+            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => {
+                const rect = el.getBoundingClientRect();
+                const elX = rect.left + rect.width / 2;
+                const elY = rect.top + rect.height / 2;
+
+                // Calculate distance from center
+                const dx = elX - centerX;
+                const dy = elY - centerY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+
+                // Determine max push (elements farther get pushed more)
+                const push = 500; // max pixels
+                const factor = push / (dist + 50); // avoid division by zero
+
+                el.style.transition = 'transform 1s ease-out';
+                el.style.transform = `translate3d(${dx*factor}px, ${dy*factor}px, 0) rotate(${Math.random()*720-360}deg)`;
+            });
+
+            // Optional: Reset after 1.5 seconds
+            setTimeout(() => {
                 document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => {
-                    el.style.transition = 'transform 1s ease-out';
-                    const x = (Math.random()-0.5) * 1000;
-                    const y = (Math.random()-0.5) * 1000;
-                    const z = (Math.random()-0.5) * 200;
-                    el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotate(${Math.random()*720-360}deg)`;
-                });
-                setTimeout(() => {
-                    document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => {
-                        el.style.transform = '';
-                        el.style.transition = '';
+                    el.style.transform = '';
+                    el.style.transition = '';
                     
         addBtn(vfx,'Image Glitch',()=>{window.imgGlitchInt=setInterval(()=>{
         document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
