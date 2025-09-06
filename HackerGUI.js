@@ -118,7 +118,6 @@
     vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
     document.body.appendChild(vfx);
 
-    // -------------------- VFX BUTTONS --------------------
     // -------------------- VFX Buttons --------------------
     addBtn(vfx,'3D Page',()=>{if(!window.triScript){let s=document.createElement('script');s.src='https://rawgit.com/Krazete/bookmarklets/master/tri.js';document.body.appendChild(s); window.triScript=s;}},()=>{if(window.triScript){window.triScript.remove();window.triScript=null;}});
     addBtn(vfx,'Explode Page',()=>{/* explode code here */});
