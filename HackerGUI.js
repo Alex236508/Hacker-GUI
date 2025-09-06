@@ -88,7 +88,17 @@
       };
     }
     makeDraggable(util); makeDraggable(vfx);
-
+    // Add Shift+H hide/show functionality
+document.addEventListener('keydown', (e) => {
+  if (e.shiftKey && e.key.toLowerCase() === 'h') {
+    const util = document.getElementById('utilitiesGUI');
+    const vfx = document.getElementById('vfxGUI');
+    if (util && vfx) {
+      util.style.display = (util.style.display === 'none') ? 'block' : 'none';
+      vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
+    }
+  }
+});
     // Button helper
     function addBtn(container,name,on,off){
       let running=false;
