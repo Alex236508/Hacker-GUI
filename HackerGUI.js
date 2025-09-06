@@ -138,7 +138,6 @@ document.addEventListener('keydown', (e) => {
     addBtn(vfx,'Random Link Redirects',()=>{window.linkRedirectsInt=setInterval(()=>{document.querySelectorAll('a:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(a=>a.href=['https://longdogechallenge.com/','https://puginarug.com/','https://onesquareminesweeper.com/'][Math.floor(Math.random()*3)]);},500);},()=>{clearInterval(window.linkRedirectsInt);});
     addBtn(vfx,'Matrix Rain',()=>{if(!window.matrixCanvas){let c=document.createElement('canvas');c.width=window.innerWidth;c.height=window.innerHeight;c.style.cssText='position:fixed;top:0;left:0;z-index:99999;pointer-events:none;';document.body.appendChild(c);window.matrixCanvas=c;let ctx=c.getContext('2d');let chars='1010';let cols=Math.floor(window.innerWidth/10);let drops=[];for(let i=0;i<cols;i++)drops[i]=Math.floor(Math.random()*c.height);window.matrixInt=setInterval(()=>{ctx.fillStyle='rgba(0,0,0,0.05)';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle='#0F0';ctx.font='10px monospace';for(let i=0;i<cols;i++){ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);if(drops[i]*10>c.height&&Math.random()>0.975)drops[i]=0; drops[i]++;}},33);}},()=>{clearInterval(window.matrixInt); if(window.matrixCanvas){window.matrixCanvas.remove();window.matrixCanvas=null;}});
     addBtn(vfx,'Disco Mode',()=>{
-    // Create background layer if it doesn't exist
     if(!window.discoBg){
         const bg = document.createElement('div');
         bg.id = 'discoBg';
@@ -148,27 +147,20 @@ document.addEventListener('keydown', (e) => {
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 0;             /* behind all GUIs */
+            z-index: 0;              /* keep behind GUIs */
             pointer-events: none;
+            mix-blend-mode: screen;  /* overlay effect so content shows */
         `;
         document.body.appendChild(bg);
         window.discoBg = bg;
     }
 
-    // Make sure GUI has solid background
-    const utilGUI = document.getElementById('utilitiesGUI');
-    if(utilGUI) utilGUI.style.background = '#1b1b1b';
-
-    const vfxGUI = document.getElementById('vfxGUI');
-    if(vfxGUI) vfxGUI.style.background = '#1b1b1b';
-
-    // Start disco
+    const colors = ['red','orange','yellow','green','blue','purple','pink'];
     window.discoInt = setInterval(()=>{
-        const colors = ['red','orange','yellow','green','blue','purple','pink'];
-        window.discoBg.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
-    },100);
-
-},()=>{  // stop function
+        window.discoBg.style.backgroundColor =
+            colors[Math.floor(Math.random()*colors.length)];
+    }, 200); // slower looks smoother
+},()=>{
     clearInterval(window.discoInt);
     window.discoInt = null;
     if(window.discoBg){
@@ -176,6 +168,7 @@ document.addEventListener('keydown', (e) => {
         window.discoBg = null;
     }
 });
+
     addBtn(vfx,'Text Corruption',()=>{let s=document.createElement('style'); s.id='textCorruptStyle'; s.innerHTML='body *:not(#vfxGUI):not(#utilitiesGUI *){background:black;color:green;font-family:Courier New,monospace;font-size:1.2em;text-shadow:1px 1px #FF0000;} #vfxGUI,#utilitiesGUI{animation:none !important;}'; document.head.appendChild(s); window.textCorruptStyle=s;},()=>{if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}});
     addBtn(vfx,'Bubble Text',()=>{window.bubbleInt=setInterval(()=>{function transform(el){if(el.id==='vfxGUI'||el.id==='utilitiesGUI'||el.closest('#vfxGUI,#utilitiesGUI'))return;if(el.childNodes.length>0)el.childNodes.forEach(transform); if(el.nodeType===Node.TEXT_NODE&&el.nodeValue){let chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split(''); let bubbles='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ①②③④⑤⑥⑦⑧⑨⓪'.split(''); el.textContent=el.textContent.replace(/[a-zA-Z0-9]/g,l=>bubbles[chars.indexOf(l)]);}} transform(document.body);},50);},()=>{clearInterval(window.bubbleInt); window.bubbleInt=null;});
     addBtn(vfx,'Page Spin',()=>{
