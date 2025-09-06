@@ -138,35 +138,23 @@ document.addEventListener('keydown', (e) => {
     addBtn(vfx,'Random Link Redirects',()=>{window.linkRedirectsInt=setInterval(()=>{document.querySelectorAll('a:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(a=>a.href=['https://longdogechallenge.com/','https://puginarug.com/','https://onesquareminesweeper.com/'][Math.floor(Math.random()*3)]);},500);},()=>{clearInterval(window.linkRedirectsInt);});
     addBtn(vfx,'Matrix Rain',()=>{if(!window.matrixCanvas){let c=document.createElement('canvas');c.width=window.innerWidth;c.height=window.innerHeight;c.style.cssText='position:fixed;top:0;left:0;z-index:99999;pointer-events:none;';document.body.appendChild(c);window.matrixCanvas=c;let ctx=c.getContext('2d');let chars='1010';let cols=Math.floor(window.innerWidth/10);let drops=[];for(let i=0;i<cols;i++)drops[i]=Math.floor(Math.random()*c.height);window.matrixInt=setInterval(()=>{ctx.fillStyle='rgba(0,0,0,0.05)';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle='#0F0';ctx.font='10px monospace';for(let i=0;i<cols;i++){ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);if(drops[i]*10>c.height&&Math.random()>0.975)drops[i]=0; drops[i]++;}},33);}},()=>{clearInterval(window.matrixInt); if(window.matrixCanvas){window.matrixCanvas.remove();window.matrixCanvas=null;}});
     addBtn(vfx,'Disco Mode',()=>{
-    if(!window.discoBg){
-        const bg = document.createElement('div');
-        bg.id = 'discoBg';
-        bg.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;              /* keep behind GUIs */
-            pointer-events: none;
-            mix-blend-mode: screen;  /* overlay effect so content shows */
-        `;
-        document.body.appendChild(bg);
-        window.discoBg = bg;
+    const colors = ['red','orange','yellow','green','blue','purple','pink'];
+
+    // save original background so we can restore later
+    if(!window.originalBodyBg){
+        window.originalBodyBg = document.body.style.backgroundColor || '';
     }
 
-    const colors = ['red','orange','yellow','green','blue','purple','pink'];
     window.discoInt = setInterval(()=>{
-        window.discoBg.style.backgroundColor =
-            colors[Math.floor(Math.random()*colors.length)];
-    }, 200); // slower looks smoother
+        document.body.style.backgroundColor =
+            colors[Math.floor(Math.random() * colors.length)];
+    }, 200); // change every 0.2s
 },()=>{
     clearInterval(window.discoInt);
     window.discoInt = null;
-    if(window.discoBg){
-        window.discoBg.remove();
-        window.discoBg = null;
-    }
+    // restore original background
+    document.body.style.backgroundColor = window.originalBodyBg;
+    window.originalBodyBg = null;
 });
 
     addBtn(vfx,'Text Corruption',()=>{let s=document.createElement('style'); s.id='textCorruptStyle'; s.innerHTML='body *:not(#vfxGUI):not(#utilitiesGUI *){background:black;color:green;font-family:Courier New,monospace;font-size:1.2em;text-shadow:1px 1px #FF0000;} #vfxGUI,#utilitiesGUI{animation:none !important;}'; document.head.appendChild(s); window.textCorruptStyle=s;},()=>{if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}});
