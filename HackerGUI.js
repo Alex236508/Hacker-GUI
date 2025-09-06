@@ -122,6 +122,8 @@
     document.body.appendChild(vfx);
 
     // -------------------- VFX BUTTONS --------------------
+
+// Image Glitch
 addBtn(vfx,'Image Glitch',()=>{window.imgGlitchInt=setInterval(()=>{document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.position='absolute'; e.style.left=Math.random()*window.innerWidth+'px'; e.style.top=Math.random()*window.innerHeight+'px';});},50);},()=>{clearInterval(window.imgGlitchInt);});
 
 // Page Spin
