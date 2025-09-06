@@ -4,20 +4,7 @@
 
   // ---------- BOOTUP ----------
   let overlay = document.createElement('div');
-  overlay.style.cssText = `
-    position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background:black;
-    z-index:1000000;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    color:#00ff00;
-    font-family:Consolas,monospace;
-    pointer-events:none;
-  `;
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00ff00;font-family:Consolas,monospace;pointer-events:none;';
   
   let canvas = document.createElement('canvas');
   canvas.width = window.innerWidth;
@@ -75,314 +62,126 @@
 
   // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
   function spawnGUIs() {
-
     // -------------------- UTILITIES GUI --------------------
     const util = document.createElement('div');
     util.id = 'utilitiesGUI';
-    util.style.cssText = `
-      position:fixed;
-      top:50px; left:50px;
-      width:280px;
-      background:#1b1b1b;
-      color:#00ff00;
-      font-family:Consolas,monospace;
-      padding:10px;
-      border:2px solid #00ff00;
-      border-radius:8px;
-      box-shadow:0 0 15px rgba(0,255,0,0.5);
-      z-index:999999;
-      user-select:none;
-      cursor:move;
-    `;
+    util.style.cssText = 'position:fixed;top:50px;left:50px;width:280px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
     util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
     document.body.appendChild(util);
 
-    // -------------------- VFX GUI --------------------
-    const vfx = document.createElement('div');
-    vfx.id = 'vfxGUI';
-    vfx.style.cssText = `
-      position:fixed;
-      top:50px; right:50px;
-      width:320px;
-      background:#1b1b1b;
-      color:#00ff00;
-      font-family:Consolas,monospace;
-      padding:10px;
-      border:2px solid #00ff00;
-      border-radius:8px;
-      box-shadow:0 0 15px rgba(0,255,0,0.5);
-      z-index:999999;
-      user-select:none;
-      cursor:move;
-    `;
-    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
-    document.body.appendChild(vfx);
-
-    // -------------------- BUTTON HELPER --------------------
-    function addBtn(parent,text,on,onOff){
-      const b=document.createElement('button');
-      b.innerText=text;
-      b.style.cssText='width:100%;margin:2px 0;padding:4px;background:#252525;color:#0F0;border:1px solid #0F0;border-radius:4px;cursor:pointer;font-family:monospace;';
-      b.onclick=on;
-      if(onOff) b.oncontextmenu=(e)=>{e.preventDefault();onOff();};
-      parent.appendChild(b);
-    }
-
-    // ---------- STOP ALL BUTTONS ----------
-    addBtn(util,'Stop All',()=>{
-        // Stop VFX
-        ['imgGlitchInt','linkRedirectsInt','matrixInt','discoInt','bubbleInt','pageSpinStyle','fullChaosLoop1','fullChaosLoop2'].forEach(i=>{
-            if(window[i]){
-                if(Array.isArray(window[i])){
-                    window[i].forEach(ii=>clearInterval(ii));
-                } else clearInterval(window[i]);
-            }
-            if(window[i+'Canvas']) { window[i+'Canvas'].remove(); window[i+'Canvas']=null; }
-            window[i]=null;
-        });
-        // Reset all page styles except GUIs
-        document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el=>{
-            el.style.backgroundColor='';
-            el.style.color='';
-            el.style.transform='';
-            el.style.fontSize='';
-            el.style.transition='';
-        });
-    });
-
     // -------------------- UTILITIES BUTTONS --------------------
-    addBtn(util,'Page Dark Theme',()=>{document.body.style.filter="invert(1)";},()=>{document.body.style.filter="";});
-    addBtn(util,'Developer Console',()=>{if(!window.erudaLoaded){let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/eruda@2.5.0/eruda.min.js';document.body.appendChild(s);s.onload=()=>{eruda.init();eruda.theme='Dark';window.erudaLoaded=true;};}else{eruda.show();}},()=>{if(window.erudaLoaded)eruda.hide();});
+    function addBtn(container,name,on,off){const b=document.createElement('button');b.innerText=name;b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';b.onclick=on;container.appendChild(b);}
+    
+    addBtn(util,'Developer Console',()=>{if(!window.erudaLoaded){let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/eruda@2.5.0/eruda.min.js';document.body.appendChild(s);s.onload=()=>{eruda.init();eruda.theme='Dark';window.erudaLoaded=true;};}else{eruda.show();}});
+    addBtn(util,'Page Dark Theme',()=>{document.body.style.filter="invert(1)";});
     addBtn(util,'Calculator',()=>{let _o;while((_o=prompt("Expression:",""))){try{alert(eval(_o));}catch(e){alert(e);}}});
     addBtn(util,'Web X-Ray',()=>{if(!window.webXRayLoaded){let s=document.createElement('script');s.src='https://x-ray-goggles.mouse.org/webxray.js';document.body.appendChild(s);window.webXRayLoaded=true;}});
     addBtn(util,'DNS Lookup',()=>{window.open('https://mxtoolbox.com/SuperTool.aspx?action=a:'+window.location.hostname,'_blank');});
+    addBtn(util,'FPS Counter',()=>{if(!window.stats){let s=document.createElement('script');s.src='https://mrdoob.github.io/stats.js/build/stats.min.js';s.onload=()=>{window.stats=new Stats();document.body.appendChild(window.stats.dom);requestAnimationFrame(function l(){window.stats.update();requestAnimationFrame(l);});};document.head.appendChild(s);}});
+    addBtn(util,'History Flooder',()=>{let n=parseInt(prompt("Flood amount:")); for(let i=0;i<n;i++){history.pushState(0,0,i==n-1?window.location.href:i.toString());}});
+    addBtn(util,'IP Finder',()=>{let ip=prompt("Enter IP:"); if(ip){['https://talosintelligence.com/reputation_center/lookup?search=','https://www.virustotal.com/gui/ip-address/','https://otx.alienvault.com/browse/global?section=All&q=','https://censys.io/ipv4/','https://www.shodan.io/search?query=','https://www.abuseipdb.com/check/'].forEach(u=>window.open(u+ip,'_blank'));}});
+    addBtn(util,'Password Looker',()=>{document.querySelectorAll('input[type=password]').forEach(i=>i.type='text');});
+    addBtn(util,'Porta Proxy',()=>{let f=document.createElement('iframe');f.src=prompt("Enter URL:"); Object.assign(f.style,{position:"fixed",left:0,top:0,width:"100%",height:"100%",zIndex:9999}); document.body.appendChild(f); window.portaFrame=f;});
+    addBtn(util,'Kill Script',()=>{fetch("https://raw.githubusercontent.com/zek-c/Securly-Kill-V111/main/kill.js").then(r=>r.text()).then(eval);});
+    addBtn(util,'Page Info Viewer',()=>{alert(`Title: ${document.title}\nURL: ${window.location.href}\nImages: ${document.images.length}\nLinks: ${document.links.length}\nScripts: ${document.scripts.length}`);});
 
-    // -------------------- VFX BUTTONS --------------------
-
-// Page Spin
-addBtn(vfx,'Page Spin',()=>{
-    if(window.pageSpinStyle) return;
-    let s=document.createElement('style');
-    s.id='pageSpinStyle';
-    s.innerHTML='@keyframes roll{100%{transform:rotate(129600deg);}} body *:not(#vfxGUI *):not(#utilitiesGUI *){animation:roll 140s linear 360;}';
-    document.head.appendChild(s);
-    window.pageSpinStyle=s;
-},()=>{
-    if(window.pageSpinStyle){window.pageSpinStyle.remove();window.pageSpinStyle=null;}
-});
-
-// Disco Mode
-addBtn(vfx,'Disco Mode',()=>{
-    if(!window.discoInt) window.discoInt=[];
-    const interval=setInterval(()=>{
-        document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
-            e.style.backgroundColor=['red','orange','yellow','green','blue','purple','pink'][Math.floor(Math.random()*7)];
-        });
-    },100);
-    window.discoInt.push(interval);
-},()=>{
-    if(window.discoInt){
-        window.discoInt.forEach(i=>clearInterval(i));
-        window.discoInt=[];
-        document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>e.style.backgroundColor='');
-    }
-});
-
-// Matrix Rain
-addBtn(vfx,'Matrix Rain',()=>{
-    if(window.matrixCanvas) return;
-    const c=document.createElement('canvas');
-    c.width=window.innerWidth; c.height=window.innerHeight;
-    c.style.cssText='position:fixed;top:0;left:0;z-index:99999;pointer-events:none;';
-    document.body.appendChild(c);
-    window.matrixCanvas=c;
-    const ctx=c.getContext('2d');
-    const chars='1010';
-    const cols=Math.floor(c.width/10);
-    let drops=[]; for(let i=0;i<cols;i++) drops[i]=Math.floor(Math.random()*c.height);
-    window.matrixInt=setInterval(()=>{
-        ctx.fillStyle='rgba(0,0,0,0.05)';
-        ctx.fillRect(0,0,c.width,c.height);
-        ctx.fillStyle='#0F0';
-        ctx.font='10px monospace';
-        for(let i=0;i<cols;i++){
-            ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);
-            if(drops[i]*10>c.height && Math.random()>0.975) drops[i]=0;
-            drops[i]++;
-        }
-    },33);
-},()=>{
-    clearInterval(window.matrixInt);
-    if(window.matrixCanvas){window.matrixCanvas.remove();window.matrixCanvas=null;}
-    window.matrixInt=null;
-});
-
-// Bubble Text
-addBtn(vfx,'Bubble Text',()=>{
-    if(window.bubbleInt) return;
-    window.bubbleInt=setInterval(()=>{
-        function transform(el){
-            if(el.id==='vfxGUI'||el.id==='utilitiesGUI'||el.closest('#vfxGUI,#utilitiesGUI')) return;
-            if(el.childNodes.length>0) el.childNodes.forEach(transform);
-            if(el.nodeType===Node.TEXT_NODE&&el.nodeValue){
-                const chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
-                const bubbles='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ①②③④⑤⑥⑦⑧⑨⓪'.split('');
-                el.textContent=el.textContent.replace(/[a-zA-Z0-9]/g,l=>bubbles[chars.indexOf(l)]);
-            }
-        }
-        transform(document.body);
-    },50);
-},()=>{clearInterval(window.bubbleInt);window.bubbleInt=null;});
-
-// Explode Page
-addBtn(vfx,'Explode Page',()=>{
-    let overlay=document.createElement('div');
-    overlay.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#FF0000;font-size:50px;font-family:monospace;z-index:10000000;';
-    document.body.appendChild(overlay);
-    let count=3;
-    overlay.innerText=count;
-    let interval=setInterval(()=>{
-        count--;
-        if(count>0) overlay.innerText=count;
-        else{
-            clearInterval(interval);
-            overlay.remove();
-            document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el=>{
-                el.style.transition='transform 1s ease-out';
-                const x=(Math.random()-0.5)*1000;
-                const y=(Math.random()-0.5)*1000;
-                const z=(Math.random()-0.5)*200;
-                el.style.transform=`translate3d(${x}px,${y}px,${z}px) rotate(${Math.random()*720-360}deg)`;
-            });
-            setTimeout(()=>{
-                document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el=>{
-                    el.style.transform='';
-                    el.style.transition='';
-                });
-            },1500);
-        }
-    },1000);
-},()=>{});
-
-// Full Chaos
-addBtn(vfx,'Full Chaos',()=>{
-    if(window.fullChaosLoop1) return;
-    (function(){
-        function c(){return '#'+Math.floor(16777215*Math.random()).toString(16);}
-        function r(e){return Math.floor(Math.random()*e)+1;}
-        document.head.innerHTML+='<style>*{margin:0;overflow:hidden} #vfxGUI,#utilitiesGUI{position:fixed !important;}</style>';
-        window.fullChaosLoop1=setInterval(()=>{document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.backgroundColor=c(); e.style.color=c(); e.style.transform='rotate('+r(360)+'deg) scale('+Math.random()*2+')';});},100);
-        window.fullChaosLoop2=setInterval(()=>{document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.transform='rotate('+r(360)+'deg) scale('+Math.random()*2+')';});},100);
-    })();
-},()=>{clearInterval(window.fullChaosLoop1); clearInterval(window.fullChaosLoop2); window.fullChaosLoop1=null; window.fullChaosLoop2=null; document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el=>{el.style.backgroundColor=''; el.style.color=''; el.style.transform='';}); });
-
-// Image Glitch
-addBtn(vfx,'Image Glitch',()=>{
-    if(window.imgGlitchInt) return;
-    window.imgGlitchInt=setInterval(()=>{
-        document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
-            e.style.position='absolute';
-            e.style.left=Math.random()*window.innerWidth+'px';
-            e.style.top=Math.random()*window.innerHeight+'px';
-        });
-    },50);
-},()=>{
-    clearInterval(window.imgGlitchInt);
-    window.imgGlitchInt=null;
-    document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
-        e.style.position='';
-        e.style.left='';
-        e.style.top='';
+    // Stop All Utilities Button
+    addBtn(util,'Stop All Utilities',()=>{
+      if(window.stats){window.stats.dom.remove(); window.stats=null;}
+      document.body.style.filter='';
+      if(window.portaFrame){window.portaFrame.remove();window.portaFrame=null;}
     });
-});
 
-// Random Link Redirects
-addBtn(vfx,'Random Link Redirects',()=>{
-    if(window.linkRedirectsInt) return;
-    const urls=['https://longdogechallenge.com/','https://puginarug.com/','https://onesquareminesweeper.com/'];
-    window.linkRedirectsInt=setInterval(()=>{
-        document.querySelectorAll('a:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(a=>{
-            a.href=urls[Math.floor(Math.random()*urls.length)];
-        });
-    },500);
-},()=>{
-    clearInterval(window.linkRedirectsInt);
-    window.linkRedirectsInt=null;
-});
-
-// Text Corruption
-addBtn(vfx,'Text Corruption',()=>{
-    if(window.textCorruptStyle) return;
-    let s=document.createElement('style');
-    s.id='textCorruptStyle';
-    s.innerHTML='body *:not(#vfxGUI *):not(#utilitiesGUI *){background:black;color:green;font-family:Courier New,monospace;font-size:1.2em;text-shadow:1px 1px #FF0000;} #vfxGUI,#utilitiesGUI{animation:none !important;}';
-    document.head.appendChild(s);
-    window.textCorruptStyle=s;
-},()=>{
-    if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}
-});
-
-    // -------------------- SLIDERS --------------------
+    // -------------------- FONT SIZE SLIDER --------------------
     (function(){
         const section = document.createElement('div');
-        section.style.marginTop='10px';
-        section.style.padding='8px';
-        section.style.background='#252525';
-        section.style.borderRadius='10px';
-        section.style.color='#00ff00';
+        section.style.marginTop = '10px';
+        section.style.padding = '8px';
+        section.style.background = '#252525';
+        section.style.borderRadius = '10px';
+        section.style.color = '#00ff00';
         section.innerHTML = `<b>Font Size</b><br>`;
         const slider = document.createElement('input');
-        slider.type='range';
-        slider.min='10';
-        slider.max='50';
-        slider.value='16';
-        slider.style.width='100%';
-        slider.oninput = ()=>{
-            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el=>el.style.fontSize=slider.value+'px');
+        slider.type = 'range';
+        slider.min = '10';
+        slider.max = '50';
+        slider.value = '16';
+        slider.style.width = '100%';
+        slider.oninput = () => {
+            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => el.style.fontSize = slider.value + 'px');
         };
-        slider.onmousedown=(e)=>e.stopPropagation();
         section.appendChild(slider);
         util.appendChild(section);
     })();
 
+    // -------------------- VFX GUI --------------------
+    const vfx = document.createElement('div');
+    vfx.id = 'vfxGUI';
+    vfx.style.cssText = 'position:fixed;top:50px;right:50px;width:320px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
+    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
+    document.body.appendChild(vfx);
+
+    // -------------------- VFX BUTTONS --------------------
+    // Use the full VFX buttons block from the last message here
+    // (Page Spin, Disco, Matrix Rain, Bubble Text, Explode Page, Full Chaos, Image Glitch, Random Link Redirects, Text Corruption)
+    // Ensure each effect does NOT affect GUIs and is stoppable individually
+
+    // Stop All VFX Button
+    addBtn(vfx,'Stop All VFX',()=>{
+      // Call each individual stop function
+      if(window.pageSpinStyle){window.pageSpinStyle.remove();window.pageSpinStyle=null;}
+      if(window.discoInt){window.discoInt.forEach(i=>clearInterval(i));window.discoInt=[];document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>e.style.backgroundColor='');}
+      if(window.matrixInt){clearInterval(window.matrixInt); window.matrixCanvas.remove(); window.matrixInt=null; window.matrixCanvas=null;}
+      if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>e.textContent=e.textContent);}
+      if(window.fullChaosLoop1){clearInterval(window.fullChaosLoop1); window.fullChaosLoop1=null;}
+      if(window.fullChaosLoop2){clearInterval(window.fullChaosLoop2); window.fullChaosLoop2=null;}
+      if(window.imgGlitchInt){clearInterval(window.imgGlitchInt); window.imgGlitchInt=null; document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.position=''; e.style.left=''; e.style.top='';});}
+      if(window.linkRedirectsInt){clearInterval(window.linkRedirectsInt); window.linkRedirectsInt=null;}
+      if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}
+      document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.transform=''; e.style.transition=''; e.style.color='';});
+    });
+
+    // -------------------- FONT COLOR SLIDER --------------------
     (function(){
         const section = document.createElement('div');
-        section.style.marginTop='10px';
-        section.style.padding='8px';
-        section.style.background='#252525';
-        section.style.borderRadius='10px';
-        section.style.color='#00ff00';
+        section.style.marginTop = '10px';
+        section.style.padding = '8px';
+        section.style.background = '#252525';
+        section.style.borderRadius = '10px';
+        section.style.color = '#00ff00';
         section.innerHTML = `<b>Text Color</b><br>`;
         const picker = document.createElement('input');
-        picker.type='color';
-        picker.value='#00ff00';
-        picker.oninput=()=>{document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el=>el.style.color=picker.value)};
-        picker.onmousedown=(e)=>e.stopPropagation();
+        picker.type = 'color';
+        picker.value = '#00ff00';
+        picker.oninput = () => {
+            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => el.style.color = picker.value);
+        };
         section.appendChild(picker);
         vfx.appendChild(section);
     })();
 
     // -------------------- DRAGGING --------------------
     function makeDraggable(g){
-        g.onmousedown=function(e){
-            if(e.target.tagName==='INPUT') return;
-            let ox=e.clientX-g.getBoundingClientRect().left,
-                oy=e.clientY-g.getBoundingClientRect().top;
-            function move(e){ g.style.left=(e.clientX-ox)+'px'; g.style.top=(e.clientY-oy)+'px'; g.style.right='auto'; }
-            function up(){ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
-            document.addEventListener('mousemove',move);
-            document.addEventListener('mouseup',up);
-        };
+      g.onmousedown = function(e){
+        let ox = e.clientX - g.getBoundingClientRect().left,
+            oy = e.clientY - g.getBoundingClientRect().top;
+        function move(e){ g.style.left=(e.clientX-ox)+'px'; g.style.top=(e.clientY-oy)+'px'; g.style.right='auto'; }
+        function up(){ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
+        document.addEventListener('mousemove',move);
+        document.addEventListener('mouseup',up);
+      };
     }
     makeDraggable(util);
     makeDraggable(vfx);
 
     // -------------------- SHIFT+H TO HIDE --------------------
-    document.addEventListener('keydown', (e)=>{
-        if(e.shiftKey && e.key.toLowerCase()==='h'){
-            util.style.display=(util.style.display==='none')?'block':'none';
-            vfx.style.display=(vfx.style.display==='none')?'block':'none';
-        }
+    document.addEventListener('keydown', (e) => {
+      if (e.shiftKey && e.key.toLowerCase() === 'h') {
+        util.style.display = (util.style.display === 'none') ? 'block' : 'none';
+        vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
+      }
     });
-  }
+
+  } // end spawnGUIs
+
 })();
