@@ -187,7 +187,8 @@ document.addEventListener('keydown', (e) => {
                 from { transform: rotate(0deg); }
                 to   { transform: rotate(360deg); }
             }
-            body > *:not(#vfxGUI):not(#utilitiesGUI) {
+            /* Spin everything on the page except the GUIs and anything inside them */
+            body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *) {
                 animation: roll 20s linear infinite;
                 transform-origin: 50% 50%;
             }
@@ -201,6 +202,7 @@ document.addEventListener('keydown', (e) => {
         window.pageSpinStyle=null;
     }
 });
+
 
     addBtn(vfx,'Full Chaos',()=>{if(!window.fullChaosInt){window.fullChaosInt=true; (function(){function c(){return '#'+Math.floor(16777215*Math.random()).toString(16);} function r(e){return Math.floor(Math.random()*e)+1;} let d=document; d.head.innerHTML+='<style>*{margin:0;overflow:hidden} #vfxGUI,#utilitiesGUI{position:fixed !important;}</style>'; window.fullChaosLoop1=setInterval(()=>{document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.backgroundColor=c(); e.style.color=c(); e.style.transform='rotate('+r(360)+'deg) scale('+Math.random()*2+')';});},100); window.fullChaosLoop2=setInterval(()=>{document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.transform='rotate('+r(360)+'deg) scale('+Math.random()*2+')';});},100);})();}},()=>{clearInterval(window.fullChaosLoop1); clearInterval(window.fullChaosLoop2); window.fullChaosInt=false;});
 
