@@ -121,26 +121,27 @@
     });
 
     // -------------------- FONT SIZE SLIDER --------------------
-    (function(){
-        const section = document.createElement('div');
-        section.style.marginTop = '10px';
-        section.style.padding = '8px';
-        section.style.background = '#252525';
-        section.style.borderRadius = '10px';
-        section.style.color = '#00ff00';
-        section.innerHTML = `<b>Font Size</b><br>`;
-        const slider = document.createElement('input');
-        slider.type = 'range';
-        slider.min = '10';
-        slider.max = '50';
-        slider.value = '16';
-        slider.style.width = '100%';
-        slider.oninput = () => {
-            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => el.style.fontSize = slider.value + 'px');
-        };
-        section.appendChild(slider);
-        util.appendChild(section);
-    })();
+(function(){
+    const section = document.createElement('div');
+    section.style.marginTop = '10px';
+    section.style.padding = '8px';
+    section.style.background = '#252525';
+    section.style.borderRadius = '10px';
+    section.style.color = '#00ff00';
+    section.innerHTML = `<b>Font Size</b><br>`;
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = '10';
+    slider.max = '50';
+    slider.value = '16';
+    slider.style.width = '100%';
+    slider.oninput = () => {
+        document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)')
+                .forEach(el => el.style.fontSize = slider.value + 'px');
+    };
+    section.appendChild(slider);
+    util.appendChild(section);
+})();
 
     // -------------------- TEXT COLOR PICKER --------------------
     (function(){
