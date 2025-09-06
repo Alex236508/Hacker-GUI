@@ -287,11 +287,56 @@
         });
     },()=>{});
     addBtn(vfx,'STOP VFX',()=>{
-        [window.matrixInt, window.bubbleInt, window.textCorruptStyle, window.fullChaosLoop1, window.fullChaosLoop2, window.imgGlitchInt, window.linkRedirectsInt, window.discoInt, window.pageSpinStyle].forEach(x=>{
-            if(x) clearInterval(x);
-            if(x && x.remove) x.remove();
-        });
-    },()=>{});
+    // Stop all intervals
+    [window.matrixInt, window.bubbleInt, window.textCorruptStyle, window.fullChaosLoop1, window.fullChaosLoop2, window.imgGlitchInt, window.linkRedirectsInt, window.discoInt, window.pageSpinStyle].forEach(x=>{
+        if(x) clearInterval(x);
+        if(x && x.remove) x.remove();
+    });
+
+    // Reset Matrix Rain
+    if(window.matrixCanvas){ window.matrixCanvas.remove(); window.matrixCanvas=null; }
+
+    // Reset Bubble Text (replace with original text)
+    document.querySelectorAll('body *:not(#vfxGUI):not(#utilitiesGUI)').forEach(el=>{
+        if(el.__originalText) el.textContent = el.__originalText;
+    });
+
+    // Reset Text Corruption
+    if(window.textCorruptStyle){ window.textCorruptStyle.remove(); window.textCorruptStyle=null; }
+
+    // Reset Full Chaos styles
+    document.querySelectorAll('body *:not(#vfxGUI):not(#utilitiesGUI)').forEach(el=>{
+        el.style.transform='';
+        el.style.backgroundColor='';
+        el.style.color='';
+    });
+
+    // Reset Image Glitch
+    document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el=>{
+        el.style.position='';
+        el.style.left='';
+        el.style.top='';
+    });
+
+    // Reset Disco Mode
+    document.querySelectorAll('body *:not(#vfxGUI):not(#utilitiesGUI)').forEach(el=>{
+        el.style.backgroundColor='';
+    });
+
+    // Reset Page Spin
+    if(window.pageSpinStyle){ window.pageSpinStyle.remove(); window.pageSpinStyle=null; }
+
+    // Reset other globals
+    window.matrixInt=null;
+    window.bubbleInt=null;
+    window.textCorruptStyle=null;
+    window.fullChaosLoop1=null;
+    window.fullChaosLoop2=null;
+    window.imgGlitchInt=null;
+    window.linkRedirectsInt=null;
+    window.discoInt=null;
+    window.pageSpinStyle=null;
+},()=>{});
 
     // -------------------- TEXT COLOR PICKER --------------------
     (function(){
