@@ -61,90 +61,16 @@
   },40);
 
   // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
-  function spawnGUIs(){
-    // ---------- UTILITIES GUI ----------
-const util = document.createElement('div');
-util.id = 'utilitiesGUI';
-util.style.cssText = 'position:fixed;top:50px;left:50px;width:280px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
-util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
-document.body.appendChild(util);
+  function spawnGUIs() {
 
-// ---------- FONT SIZE SLIDER ----------
-(function(){
-    const section = document.createElement('div');
-    section.style.marginTop = '10px';
-    section.style.padding = '10px';
-    section.style.background = '#333';
-    section.style.borderRadius = '6px';
-    section.style.color = '#00ff00';
-    section.style.textAlign = 'center';
-    section.innerHTML = `<b>Font Size</b><br>`;
+    // -------------------- UTILITIES GUI --------------------
+    const util = document.createElement('div');
+    util.id = 'utilitiesGUI';
+    util.style.cssText = 'position:fixed;top:50px;left:50px;width:280px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
+    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+    document.body.appendChild(util);
 
-    const slider = document.createElement('input');
-    slider.type = 'range';
-    slider.min = '10';
-    slider.max = '50';
-    slider.value = '16';
-    slider.style.width = '90%';
-    slider.style.margin = '5px auto';
-    slider.style.display = 'block';
-
-    const valDisplay = document.createElement('span');
-    valDisplay.innerText = slider.value + 'px';
-    valDisplay.style.marginLeft = '6px';
-
-    slider.oninput = () => {
-        document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)')
-            .forEach(el => el.style.fontSize = slider.value + 'px');
-        valDisplay.innerText = slider.value + 'px';
-    };
-
-    section.appendChild(slider);
-    section.appendChild(valDisplay);
-    util.appendChild(section);
-})();
-
-// ---------- VFX GUI ----------
-const vfx = document.createElement('div');
-vfx.id = 'vfxGUI';
-vfx.style.cssText = 'position:fixed;top:50px;right:50px;width:320px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
-vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
-document.body.appendChild(vfx);
-
-// ---------- TEXT COLOR PICKER ----------
-(function(){
-    const section = document.createElement('div');
-    section.style.marginTop = '10px';
-    section.style.padding = '10px';
-    section.style.background = '#333';
-    section.style.borderRadius = '6px';
-    section.style.color = '#00ff00';
-    section.style.textAlign = 'center';
-    section.innerHTML = `<b>Text Color</b><br>`;
-
-    const picker = document.createElement('input');
-    picker.type = 'color';
-    picker.value = '#00ff00';
-    picker.style.width = '90%';
-    picker.style.margin = '5px auto';
-    picker.style.display = 'block';
-
-    const valDisplay = document.createElement('span');
-    valDisplay.innerText = picker.value;
-    valDisplay.style.marginLeft = '6px';
-
-    picker.oninput = () => {
-        document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)')
-            .forEach(el => el.style.color = picker.value);
-        valDisplay.innerText = picker.value;
-    };
-
-    section.appendChild(picker);
-    section.appendChild(valDisplay);
-    vfx.appendChild(section);
-})();
-
-    // -------------------- Utilities Buttons --------------------
+    // -------------------- UTILITIES BUTTONS --------------------
     addBtn(util,'Developer Console',()=>{if(!window.erudaLoaded){let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/eruda@2.5.0/eruda.min.js';document.body.appendChild(s);s.onload=()=>{eruda.init();eruda.theme='Dark';window.erudaLoaded=true;};}else{eruda.show();}},()=>{if(window.erudaLoaded)eruda.hide();});
     addBtn(util,'Page Dark Theme',()=>{document.body.style.filter="invert(1)";},()=>{document.body.style.filter="";});
     addBtn(util,'Calculator',()=>{let _o;while((_o=prompt("Expression:",""))){try{alert(eval(_o));}catch(e){alert(e);}}});
@@ -158,6 +84,41 @@ document.body.appendChild(vfx);
     addBtn(util,'Kill Script',()=>{fetch("https://raw.githubusercontent.com/zek-c/Securly-Kill-V111/main/kill.js").then(r=>r.text()).then(eval);});
     addBtn(util,'Page Info Viewer',()=>{alert(`Title: ${document.title}\nURL: ${window.location.href}\nImages: ${document.images.length}\nLinks: ${document.links.length}\nScripts: ${document.scripts.length}`);});
 
+    // -------------------- FONT SIZE SLIDER --------------------
+    (function(){
+        const section = document.createElement('div');
+        section.style.marginTop = '10px';
+        section.style.padding = '8px';
+        section.style.background = '#252525';
+        section.style.borderRadius = '10px';
+        section.style.color = '#00ff00';
+        section.innerHTML = `<b>Font Size</b><br>`;
+
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = '10';
+        slider.max = '50';
+        slider.value = '16';
+        slider.style.width = '100%';
+
+        slider.oninput = () => {
+            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)')
+                .forEach(el => el.style.fontSize = slider.value + 'px');
+        };
+
+        section.appendChild(slider);
+        util.appendChild(section);
+    })();
+
+
+    // -------------------- VFX GUI --------------------
+    const vfx = document.createElement('div');
+    vfx.id = 'vfxGUI';
+    vfx.style.cssText = 'position:fixed;top:50px;right:50px;width:320px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
+    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
+    document.body.appendChild(vfx);
+
+    // -------------------- VFX BUTTONS --------------------
     // -------------------- VFX Buttons --------------------
     addBtn(vfx,'3D Page',()=>{if(!window.triScript){let s=document.createElement('script');s.src='https://rawgit.com/Krazete/bookmarklets/master/tri.js';document.body.appendChild(s); window.triScript=s;}},()=>{if(window.triScript){window.triScript.remove();window.triScript=null;}});
     addBtn(vfx,'Explode Page',()=>{/* explode code here */});
@@ -230,3 +191,50 @@ document.body.appendChild(vfx);
 
   }
 })();
+    // -------------------- TEXT COLOR PICKER --------------------
+    (function(){
+        const section = document.createElement('div');
+        section.style.marginTop = '10px';
+        section.style.padding = '8px';
+        section.style.background = '#252525';
+        section.style.borderRadius = '10px';
+        section.style.color = '#00ff00';
+        section.innerHTML = `<b>Text Color</b><br>`;
+
+        const picker = document.createElement('input');
+        picker.type = 'color';
+        picker.value = '#00ff00';
+
+        picker.oninput = () => {
+            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)')
+                .forEach(el => el.style.color = picker.value);
+        };
+
+        section.appendChild(picker);
+        vfx.appendChild(section);
+    })();
+
+
+    // -------------------- DRAGGING --------------------
+    function makeDraggable(g){
+      g.onmousedown = function(e){
+        let ox = e.clientX - g.getBoundingClientRect().left,
+            oy = e.clientY - g.getBoundingClientRect().top;
+        function move(e){ g.style.left=(e.clientX-ox)+'px'; g.style.top=(e.clientY-oy)+'px'; g.style.right='auto'; }
+        function up(){ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
+        document.addEventListener('mousemove',move);
+        document.addEventListener('mouseup',up);
+      };
+    }
+    makeDraggable(util);
+    makeDraggable(vfx);
+
+    // -------------------- SHIFT+H TO HIDE --------------------
+    document.addEventListener('keydown', (e) => {
+      if (e.shiftKey && e.key.toLowerCase() === 'h') {
+        util.style.display = (util.style.display === 'none') ? 'block' : 'none';
+        vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
+      }
+    });
+
+}
