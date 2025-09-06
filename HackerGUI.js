@@ -116,7 +116,7 @@
     // -------------------- VFX BUTTONS --------------------
     addBtn(vfx,'3D Page',()=>{if(!window.triScript){let s=document.createElement('script');s.src='https://rawgit.com/Krazete/bookmarklets/master/tri.js';document.body.appendChild(s); window.triScript=s;}},()=>{if(window.triScript){window.triScript.remove();window.triScript=null;}});
 
-    addBtn(vfx,'Explode Page',()=>{
+    addBtn(vfx,'Explode Page', () => {
     // Create countdown overlay
     let overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#FF0000;font-size:50px;font-family:monospace;z-index:10000000;';
@@ -167,8 +167,7 @@
         }
     }, 1000);
 
-}, ()=>{});
-
+}, () => {});
                     
         addBtn(vfx,'Image Glitch',()=>{window.imgGlitchInt=setInterval(()=>{
         document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
