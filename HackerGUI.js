@@ -132,34 +132,43 @@
             clearInterval(interval);
             overlay.remove();
 
-            // Get center of screen
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
+            const elements = Array.from(document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)'));
 
-            // Apply shockwave effect
-            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => {
+            elements.forEach(el => {
                 const rect = el.getBoundingClientRect();
                 const elX = rect.left + rect.width / 2;
                 const elY = rect.top + rect.height / 2;
 
-                // Calculate distance from center
                 const dx = elX - centerX;
                 const dy = elY - centerY;
-                const dist = Math.sqrt(dx*dx + dy*dy);
+                const distance = Math.sqrt(dx*dx + dy*dy);
 
-                // Determine max push (elements farther get pushed more)
-                const push = 500; // max pixels
-                const factor = push / (dist + 50); // avoid division by zero
+                // Delay based on distance from center
+                const delay = distance * 0.003; // tweak multiplier for effect speed
 
-                el.style.transition = 'transform 1s ease-out';
-                el.style.transform = `translate3d(${dx*factor}px, ${dy*factor}px, 0) rotate(${Math.random()*720-360}deg)`;
+                setTimeout(() => {
+                    el.style.transition = 'transform 1s ease-out';
+                    const pushFactor = 500 / (distance + 50);
+                    el.style.transform = `translate3d(${dx*pushFactor}px, ${dy*pushFactor}px, 0) rotate(${Math.random()*720-360}deg)`;
+                }, delay * 1000);
             });
 
-            // Optional: Reset after 1.5 seconds
+            // Reset everything after max delay + transition
+            const maxDistance = Math.sqrt(centerX*centerX + centerY*centerY);
+            const totalTime = maxDistance * 0.003 * 1000 + 1000;
             setTimeout(() => {
-                document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => {
+                elements.forEach(el => {
                     el.style.transform = '';
                     el.style.transition = '';
+                });
+            }, totalTime);
+        }
+    }, 1000);
+
+}, ()=>{});
+
                     
         addBtn(vfx,'Image Glitch',()=>{window.imgGlitchInt=setInterval(()=>{
         document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
