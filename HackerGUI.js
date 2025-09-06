@@ -286,13 +286,35 @@
             if(x && x.dom) x.dom.remove ? x.dom.remove() : null;
         });
     },()=>{});
-    addBtn(vfx,'STOP VFX',()=>{
-    // Stop all intervals
-    [window.matrixInt, window.bubbleInt, window.textCorruptStyle, window.fullChaosLoop1, window.fullChaosLoop2, window.imgGlitchInt, window.linkRedirectsInt, window.discoInt, window.pageSpinStyle].forEach(x=>{
-        if(x) clearInterval(x);
-        if(x && x.remove) x.remove();
+    addBtn(vfx,'Stop VFX', () => {
+    // Clear all VFX intervals
+    (window.discoIntervals || []).forEach(i => clearInterval(i));
+    (window.bubbleIntervals || []).forEach(i => clearInterval(i));
+    (window.matrixIntervals || []).forEach(i => clearInterval(i));
+    (window.fullChaosIntervals || []).forEach(i => clearInterval(i));
+    (window.pageSpinIntervals || []).forEach(i => clearInterval(i));
+
+    // Reset interval arrays
+    window.discoIntervals = [];
+    window.bubbleIntervals = [];
+    window.matrixIntervals = [];
+    window.fullChaosIntervals = [];
+    window.pageSpinIntervals = [];
+
+    // Reset all page styles except the GUIs
+    document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => {
+        el.style.backgroundColor = '';
+        el.style.color = '';
+        el.style.transform = '';
+        el.style.transition = '';
+        el.style.animation = '';
     });
 
+    // Remove any injected <style> elements for spin or text corruption
+    if(window.pageSpinStyle){ window.pageSpinStyle.remove(); window.pageSpinStyle = null; }
+    if(window.textCorruptStyle){ window.textCorruptStyle.remove(); window.textCorruptStyle = null; }
+}, ()=>{});
+  
     // Reset Matrix Rain
     if(window.matrixCanvas){ window.matrixCanvas.remove(); window.matrixCanvas=null; }
 
