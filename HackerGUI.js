@@ -148,21 +148,26 @@ document.addEventListener('keydown', (e) => {
         'linear-gradient(315deg, pink, red, orange)'
     ];
 
-    // Save original background to restore later
+    // Save original background
     if(!window.originalBodyBg){
-        window.originalBodyBg = document.body.style.background || '';
+        window.originalBodyBg = document.body.style.backgroundImage || '';
     }
+
+    // Add smooth transition for fading
+    document.body.style.transition = 'background-image 1s ease-in-out';
 
     let i = 0;
     window.discoInt = setInterval(()=>{
-        document.body.style.background = gradients[i % gradients.length];
+        document.body.style.backgroundImage = gradients[i % gradients.length];
         i++;
-    }, 500); // change every half second
+    }, 1500); // change every 1.5s (fade lasts 1s, so overlap is smooth)
 },()=>{
     clearInterval(window.discoInt);
     window.discoInt = null;
+
     // restore original background
-    document.body.style.background = window.originalBodyBg;
+    document.body.style.backgroundImage = window.originalBodyBg;
+    document.body.style.transition = ''; // cleanup
     window.originalBodyBg = null;
 });
 
