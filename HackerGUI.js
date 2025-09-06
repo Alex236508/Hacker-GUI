@@ -135,19 +135,7 @@ addBtn(vfx,'Full Chaos',()=>{if(window.fullChaosActive)return;window.fullChaosAc
 
 
     // Stop All VFX Button
-    addBtn(vfx,'Stop All VFX',()=>{
-      // Call each individual stop function
-      if(window.pageSpinStyle){window.pageSpinStyle.remove();window.pageSpinStyle=null;}
-      if(window.discoActive){clearInterval(window.discoInt);window.discoInt=null;window.discoActive=false;document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>e.style.backgroundColor='');vfx.style.backgroundColor='#1b1b1b'}
-      if(window.matrixInt){clearInterval(window.matrixInt); window.matrixCanvas.remove(); window.matrixInt=null; window.matrixCanvas=null;}
-      if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>e.textContent=e.textContent);}
-      if(window.fullChaosLoop1){clearInterval(window.fullChaosLoop1); window.fullChaosLoop1=null;}
-      if(window.fullChaosLoop2){clearInterval(window.fullChaosLoop2); window.fullChaosLoop2=null;}
-      if(window.imgGlitchInt){clearInterval(window.imgGlitchInt); window.imgGlitchInt=null; document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.position=''; e.style.left=''; e.style.top='';});}
-      if(window.linkRedirectsInt){clearInterval(window.linkRedirectsInt); window.linkRedirectsInt=null;}
-      if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}
-      document.querySelectorAll('*:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.transform=''; e.style.transition=''; e.style.color='';});
-    });
+   addBtn(vfx,'Stop All VFX',()=>{if(window.pageSpinStyle){window.pageSpinStyle.remove();window.pageSpinStyle=null;} if(window.discoActive){clearInterval(window.discoInt);window.discoInt=null;window.discoActive=false;} if(window.matrixInt){clearInterval(window.matrixInt);window.matrixCanvas.remove();window.matrixInt=null;window.matrixCanvas=null;} if(window.bubbleInt){clearInterval(window.bubbleInt);window.bubbleInt=null;document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>e.textContent=e.textContent);} if(window.fullChaosLoop1){clearInterval(window.fullChaosLoop1);window.fullChaosLoop1=null;} if(window.fullChaosLoop2){clearInterval(window.fullChaosLoop2);window.fullChaosLoop2=null;} if(window.imgGlitchInt){clearInterval(window.imgGlitchInt);window.imgGlitchInt=null;document.querySelectorAll('img:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{e.style.position='';e.style.left='';e.style.top='';});} if(window.linkRedirectsInt){clearInterval(window.linkRedirectsInt);window.linkRedirectsInt=null;} if(window.textCorruptStyle){window.textCorruptStyle.remove();window.textCorruptStyle=null;} document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{e.style.backgroundColor='';e.style.color='';e.style.transform='';e.style.transition='';}); vfx.style.backgroundColor='#1b1b1b';util.style.backgroundColor='#1b1b1b';vfx.style.color='#00ff00';util.style.color='#00ff00';});
 
     // -------------------- FONT COLOR SLIDER --------------------
     (function(){
