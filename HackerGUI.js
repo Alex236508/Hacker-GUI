@@ -299,16 +299,17 @@ addBtn(vfx,'Text Corruption',()=>{
 });
 
 // Bubble Text
+// Bubble Text
 addBtn(vfx,'Bubble Text',()=>{
   if(window.bubbleActive) return;
   window.bubbleActive = true;
-  window.originalTextMap = new WeakMap();
+  window.originalText = [];
   let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
   let bubbles = 'ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ①②③④⑤⑥⑦⑧⑨⓪'.split('');
   function transform(el){
     if(el.id==='vfxGUI'||el.id==='utilitiesGUI'||el.closest('#vfxGUI,#utilitiesGUI')) return;
     if(el.nodeType===Node.TEXT_NODE && el.nodeValue.trim()){
-      if(!window.originalTextMap.has(el)) window.originalTextMap.set(el, el.nodeValue);
+      window.originalText.push({el, text: el.nodeValue});
       el.textContent = el.nodeValue.replace(/[a-zA-Z0-9]/g,l=>{
         let idx = chars.indexOf(l);
         return idx>=0 ? bubbles[idx] : l;
@@ -322,9 +323,9 @@ addBtn(vfx,'Bubble Text',()=>{
   clearInterval(window.bubbleInt);
   window.bubbleInt=null;
   window.bubbleActive=false;
-  if(window.originalTextMap){
-    window.originalTextMap.forEach((text, el)=>{ el.nodeValue=text; });
-    window.originalTextMap=null;
+  if(window.originalText){
+    window.originalText.forEach(o=>o.el.nodeValue=o.text);
+    window.originalText=[];
   }
 });
 
