@@ -204,7 +204,12 @@ makeDraggable(vfx, vfxLock);
         let s = document.createElement('script');
         s.src = 'https://x-ray-goggles.mouse.org/webxray.js';
         s.onload = () => {
+            console.log("Web X-Ray loaded");
             window.webXRayLoaded = true;
+        };
+        s.onerror = () => {
+            console.log("Failed to load Web X-Ray");
+            window.webXRayLoaded = false;
         };
         document.body.appendChild(s);
         window.webXRayScript = s;
@@ -215,6 +220,9 @@ makeDraggable(vfx, vfxLock);
         window.webXRayScript = null;
         window.webXRayLoaded = false;
     }
+    // Remove the UI injected by X-Ray (if it exists)
+    const xrayUI = document.getElementById('webxray-ui');
+    if (xrayUI) xrayUI.remove();
 });
 
     // DNS Lookup
