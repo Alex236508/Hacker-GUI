@@ -5,23 +5,19 @@
   // ---------- BOOTUP ----------
   let overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00ff00;font-family:Consolas,monospace;pointer-events:none;';
-  
   let canvas = document.createElement('canvas');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
   overlay.appendChild(canvas);
-
   let msg = document.createElement('div');
   msg.innerText = '[ BOOTING SYSTEM... ]';
   msg.style.cssText = 'font-size:20px;margin-bottom:10px;z-index:1000001;text-shadow:0 0 5px #00ff00;';
   overlay.appendChild(msg);
-
   let loading = document.createElement('div');
   loading.style.cssText = 'font-size:24px;font-weight:bold;z-index:1000001;text-shadow:0 0 10px #00ff00;';
   loading.innerText = 'Loading 0%';
   overlay.appendChild(loading);
-
   document.body.appendChild(overlay);
 
   // Matrix rain for bootup
@@ -60,6 +56,59 @@
     }
   },40);
 
+  // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
+  function spawnGUIs() {
+    // -------------------- UTILITIES GUI --------------------
+    const util = document.createElement('div');
+    util.id = 'utilitiesGUI';
+    util.style.cssText = 'position:fixed;top:50px;left:50px;width:280px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;';
+    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+    document.body.appendChild(util);
+
+    // -------------------- VFX GUI --------------------
+    const vfx = document.createElement('div');
+    vfx.id = 'vfxGUI';
+    vfx.style.cssText = 'position:fixed;top:50px;right:50px;width:320px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;';
+    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
+    document.body.appendChild(vfx);
+
+    // -------------------- BUTTON HELPER --------------------
+    function addBtn(container,name,on,off){
+      const b=document.createElement('button');
+      b.innerText=name;
+      b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+      b.onclick=on;
+      container.appendChild(b);
+    }
+
+    // -------------------- ADD LOCK ICON --------------------
+    function addLockIcon(gui){
+      const lock = document.createElement('div');
+      lock.innerText = '🔓';
+      lock.style.cssText='position:absolute;top:5px;right:5px;font-size:16px;cursor:pointer;user-select:none;';
+      lock.locked = false;
+      lock.onclick = () => { lock.locked = !lock.locked; lock.innerText = lock.locked ? '🔒' : '🔓'; };
+      gui.appendChild(lock);
+      return lock;
+    }
+    let utilLock = addLockIcon(util);
+    let vfxLock = addLockIcon(vfx);
+
+    // -------------------- DRAGGING --------------------
+    function makeDraggable(gui, lock){
+      gui.onmousedown = function(e){
+        if(lock && lock.locked) return;
+        let ox = e.clientX - gui.getBoundingClientRect().left,
+            oy = e.clientY - gui.getBoundingClientRect().top;
+        function move(e){ gui.style.left=(e.clientX-ox)+'px'; gui.style.top=(e.clientY-oy)+'px'; gui.style.right='auto'; }
+        function up(){ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
+        document.addEventListener('mousemove',move);
+        document.addEventListener('mouseup',up);
+      };
+    }
+    makeDraggable(util, utilLock);
+    makeDraggable(vfx, vfxLock);
+    
   // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
   function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
