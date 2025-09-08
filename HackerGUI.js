@@ -200,77 +200,91 @@ makeDraggable(vfx, vfxLock);
 
     // ================= Web X-Ray Integration for Utilities GUI =================
 (function() {
-  if (window.webXRayInitialized) return;
-  window.webXRayInitialized = true;
+  if (window.webXRayIntegrated) return;
+  window.webXRayIntegrated = true;
 
-  function loadScript(url, callback) {
-    const s = document.createElement('script');
-    s.src = url;
-    s.onload = callback;
-    document.body.appendChild(s);
-    return s;
-  }
-
-  function waitForLocalized(callback) {
-    if (typeof Localized !== 'undefined') {
-      callback();
-    } else {
-      setTimeout(() => waitForLocalized(callback), 50);
-    }
-  }
-
-  function startXRay() {
-    waitForLocalized(() => {
-      Localized.ready({ url: '' }, function() { // empty URL since we are not loading extra localization
-        if (window.webxrayUI) return; // already started
-
-        const ui = jQuery.xRayUI({ eventSource: document });
-        window.webxrayUI = ui;
-        ui.start();
-        console.log('Web X-Ray started!');
-      });
-    });
-  }
-
-  function stopXRay() {
-    if (window.webxrayUI) {
-      window.webxrayUI.unload();
-      delete window.webxrayUI;
-      console.log('Web X-Ray stopped.');
-    }
-  }
-
-  // -------------------- Utilities Buttons --------------------
+  // ------------------- Utilities reference -------------------
   const util = document.getElementById('utilitiesGUI');
   if (!util) {
-    console.warn('Utilities GUI not found. Make sure it exists before adding Web X-Ray buttons.');
+    console.warn('Utilities GUI not found; aborting X-Ray integration.');
     return;
   }
 
-  function addBtn(container, name, onClick) {
+  // ------------------- Helper: Add button -------------------
+  function addBtn(container, name, on, off) {
     const b = document.createElement('button');
     b.innerText = name;
     b.style.cssText = 'width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
-    b.onclick = onClick;
+    b.onclick = on;
     container.appendChild(b);
+    return b;
   }
 
-  // Load Web X-Ray script
-  let webXrayScript = null;
-  addBtn(util, 'Start Web X-Ray', () => {
-    if (!webXrayScript) {
-      webXrayScript = loadScript('https://x-ray-goggles.mouse.org/webxray.js', startXRay);
-    } else {
-      startXRay();
-    }
-  });
+  // ------------------- Load dependencies safely -------------------
+  function loadScript(url) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = url;
+      s.onload = () => resolve();
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
 
-  addBtn(util, 'Stop Web X-Ray', () => {
-    stopXRay();
+  function loadCSS(url) {
+    return new Promise(resolve => {
+      const l = document.createElement('link');
+      l.rel = 'stylesheet';
+      l.href = url;
+      l.onload = resolve;
+      document.head.appendChild(l);
+    });
+  }
+
+  async function startXRay() {
+    try {
+      // Load jQuery if not present
+      if (!window.jQuery) await loadScript('https://code.jquery.com/jquery-3.6.4.min.js');
+
+      // Load Web X-Ray scripts
+      if (!window.Localized) {
+        await loadScript('https://goggles.mozilla.org/webxray.js'); // actual X-Ray script
+      }
+
+      // Load Web X-Ray CSS
+      await loadCSS('https://goggles.mozilla.org/webxray.css');
+
+      // Ensure Localized is defined
+      if (!window.Localized) {
+        console.warn('Localized object missing; creating fallback.');
+        window.Localized = { ready: (data, cb) => cb() };
+      }
+
+      // Initialize X-Ray safely
+      const ui = jQuery.xRayUI ? jQuery.xRayUI({ eventSource: document }) : null;
+      if (!ui) {
+        console.error('xRayUI not available; cannot start X-Ray.');
+        return;
+      }
+      window.webXrayUI = ui;
+      ui.start();
+
+      // Defensive: Stop on unload
+      window.addEventListener('beforeunload', () => {
+        if (ui) ui.unload();
+      });
+
+    } catch (e) {
+      console.error('Failed to load Web X-Ray:', e);
+    }
+  }
+
+  // ------------------- Add button to Utilities GUI -------------------
+  addBtn(util, 'Web X-Ray', () => {
+    if (!window.webXrayUI) startXRay();
   });
 
 })();
-
 
     // DNS Lookup
     addBtn(util,'DNS Lookup',()=>{ 
