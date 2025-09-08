@@ -159,17 +159,29 @@ addBtn(vfx,'Stop All',()=>{if(window.pageSpinStyle){window.pageSpinStyle.remove(
 
     // -------------------- DRAGGING --------------------
     function makeDraggable(g){
-      g.onmousedown = function(e){
-        let ox = e.clientX - g.getBoundingClientRect().left,
-            oy = e.clientY - g.getBoundingClientRect().top;
-        function move(e){ g.style.left=(e.clientX-ox)+'px'; g.style.top=(e.clientY-oy)+'px'; g.style.right='auto'; }
-        function up(){ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
-        document.addEventListener('mousemove',move);
-        document.addEventListener('mouseup',up);
-      };
+  g.style.position = 'fixed'; // ensures anchored to viewport
+  g.onmousedown = function(e){
+    let ox = e.clientX - g.getBoundingClientRect().left,
+        oy = e.clientY - g.getBoundingClientRect().top;
+    function move(e){
+      let x = e.clientX - ox;
+      let y = e.clientY - oy;
+      // Constrain inside viewport
+      x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
+      y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
+      g.style.left = x + 'px';
+      g.style.top = y + 'px';
+      g.style.right = 'auto';
+      g.style.bottom = 'auto';
     }
-    makeDraggable(util);
-    makeDraggable(vfx);
+    function up(){
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    }
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  };
+}
 
     // -------------------- SHIFT+H TO HIDE --------------------
     document.addEventListener('keydown', (e) => {
