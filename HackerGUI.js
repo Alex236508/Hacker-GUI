@@ -299,8 +299,6 @@ addBtn(vfx,'Text Corruption',()=>{
 });
 
 // Bubble Text
-// Bubble Text
-// Bubble Text
 addBtn(vfx,'Bubble Text',()=>{
   if(window.bubbleActive) return;
   window.bubbleActive=true;
