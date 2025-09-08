@@ -200,65 +200,77 @@ makeDraggable(vfx, vfxLock);
 
     // ================= Web X-Ray Integration for Utilities GUI =================
 (function() {
-  const util = document.getElementById('utilitiesGUI');
-  if (!util) return;
+  if (window.webXRayInitialized) return;
+  window.webXRayInitialized = true;
 
-  const activeUtilities = window.activeUtilities || {};
-  window.activeUtilities = activeUtilities;
-
-  function addBtn(container, name, on, off) {
-    const b = document.createElement('button');
-    b.innerText = name;
-    b.style.cssText = 'width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
-    b.onclick = on;
-    container.appendChild(b);
-    if (off) activeUtilities[name] = { on, off };
+  function loadScript(url, callback) {
+    const s = document.createElement('script');
+    s.src = url;
+    s.onload = callback;
+    document.body.appendChild(s);
+    return s;
   }
 
-  addBtn(util, 'Web X-Ray', () => {
-    if (window.webxrayUI) {
-      console.log('Web X-Ray already running!');
-      window.webxrayUI.start();
-      return;
+  function waitForLocalized(callback) {
+    if (typeof Localized !== 'undefined') {
+      callback();
+    } else {
+      setTimeout(() => waitForLocalized(callback), 50);
     }
+  }
 
-    function loadScript(url, callback) {
-      const s = document.createElement('script');
-      s.src = url;
-      s.onload = callback;
-      document.body.appendChild(s);
-    }
+  function startXRay() {
+    waitForLocalized(() => {
+      Localized.ready({ url: '' }, function() { // empty URL since we are not loading extra localization
+        if (window.webxrayUI) return; // already started
 
-    function startXRay() {
-      if (typeof Localized === 'undefined') {
-        console.warn('Waiting for Web X-Ray core to load...');
-        setTimeout(startXRay, 50);
-        return;
-      }
-      const ui = jQuery.xRayUI({ eventSource: document });
-      window.webxrayUI = ui;
-      ui.start();
-      console.log('Web X-Ray started!');
-    }
+        const ui = jQuery.xRayUI({ eventSource: document });
+        window.webxrayUI = ui;
+        ui.start();
+        console.log('Web X-Ray started!');
+      });
+    });
+  }
 
-    // Load Web X-Ray core JS (full 12k line script)
-    loadScript('https://x-ray-goggles.mouse.org/webxray.js', startXRay);
-
-    // Load CSS
-    const l = document.createElement('link');
-    l.rel = 'stylesheet';
-    l.href = 'https://x-ray-goggles.mouse.org/webxray.css';
-    document.head.appendChild(l);
-    
-  }, () => {
+  function stopXRay() {
     if (window.webxrayUI) {
       window.webxrayUI.unload();
       delete window.webxrayUI;
-      console.log('Web X-Ray stopped!');
+      console.log('Web X-Ray stopped.');
+    }
+  }
+
+  // -------------------- Utilities Buttons --------------------
+  const util = document.getElementById('utilitiesGUI');
+  if (!util) {
+    console.warn('Utilities GUI not found. Make sure it exists before adding Web X-Ray buttons.');
+    return;
+  }
+
+  function addBtn(container, name, onClick) {
+    const b = document.createElement('button');
+    b.innerText = name;
+    b.style.cssText = 'width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+    b.onclick = onClick;
+    container.appendChild(b);
+  }
+
+  // Load Web X-Ray script
+  let webXrayScript = null;
+  addBtn(util, 'Start Web X-Ray', () => {
+    if (!webXrayScript) {
+      webXrayScript = loadScript('https://x-ray-goggles.mouse.org/webxray.js', startXRay);
+    } else {
+      startXRay();
     }
   });
 
+  addBtn(util, 'Stop Web X-Ray', () => {
+    stopXRay();
+  });
+
 })();
+
 
     // DNS Lookup
     addBtn(util,'DNS Lookup',()=>{ 
