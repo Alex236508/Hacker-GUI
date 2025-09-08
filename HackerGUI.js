@@ -60,54 +60,80 @@
   function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
     const util = document.createElement('div');
-    util.id = 'utilitiesGUI';
-    util.style.cssText = 'position:fixed;top:50px;left:50px;width:280px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;';
-    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
-    document.body.appendChild(util);
-
+  util.id = 'utilitiesGUI';
+  util.style.cssText = `
+    position:fixed;top:50px;left:50px;width:280px;
+    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+    padding:10px;border:2px solid #00ff00;border-radius:8px;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+    user-select:none;cursor:move;
+  `;
+  util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+  document.body.appendChild(util);
     // -------------------- VFX GUI --------------------
     const vfx = document.createElement('div');
-    vfx.id = 'vfxGUI';
-    vfx.style.cssText = 'position:fixed;top:50px;right:50px;width:320px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;';
-    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
-    document.body.appendChild(vfx);
+  vfx.id = 'vfxGUI';
+  vfx.style.cssText = `
+    position:fixed;top:50px;right:50px;width:320px;
+    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+    padding:10px;border:2px solid #00ff00;border-radius:8px;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+    user-select:none;cursor:move;
+  `;
+  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
+  document.body.appendChild(vfx);
 
     // -------------------- BUTTON HELPER --------------------
-    function addBtn(container,name,on,off){
-      const b=document.createElement('button');
-      b.innerText=name;
-      b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
-      b.onclick=on;
-      container.appendChild(b);
-    }
+     function addBtn(container, name, on, off){
+    const b=document.createElement('button');
+    b.innerText=name;
+    b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+    b.onclick = on;
+    container.appendChild(b);
+  }
 
     // -------------------- ADD LOCK ICON --------------------
-    function addLockIcon(gui){
-      const lock = document.createElement('div');
-      lock.innerText = '🔓';
-      lock.style.cssText='position:absolute;top:5px;right:5px;font-size:16px;cursor:pointer;user-select:none;';
-      lock.locked = false;
-      lock.onclick = () => { lock.locked = !lock.locked; lock.innerText = lock.locked ? '🔒' : '🔓'; };
-      gui.appendChild(lock);
-      return lock;
-    }
-    let utilLock = addLockIcon(util);
-    let vfxLock = addLockIcon(vfx);
+     function addLockIcon(gui){
+    const lock = document.createElement('div');
+    lock.innerText = '🔓';
+    lock.style.cssText = 'position:absolute;top:5px;right:5px;font-size:16px;cursor:pointer;user-select:none;';
+    lock.locked = false;
+    lock.onclick = () => {
+      lock.locked = !lock.locked;
+      lock.innerText = lock.locked ? '🔒' : '🔓';
+    };
+    gui.appendChild(lock);
+    return lock;
+  }
+  let utilLock = addLockIcon(util);
+  let vfxLock = addLockIcon(vfx);
 
     // -------------------- DRAGGING --------------------
-    function makeDraggable(gui, lock){
-      gui.onmousedown = function(e){
-        if(lock && lock.locked) return;
-        let ox = e.clientX - gui.getBoundingClientRect().left,
-            oy = e.clientY - gui.getBoundingClientRect().top;
-        function move(e){ gui.style.left=(e.clientX-ox)+'px'; gui.style.top=(e.clientY-oy)+'px'; gui.style.right='auto'; }
-        function up(){ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
-        document.addEventListener('mousemove',move);
-        document.addEventListener('mouseup',up);
-      };
-    }
-    makeDraggable(util, utilLock);
-    makeDraggable(vfx, vfxLock);
+     function makeDraggable(gui, lock){
+    gui.onmousedown = function(e){
+      if(lock && lock.locked) return;
+      let ox = e.clientX - gui.getBoundingClientRect().left,
+          oy = e.clientY - gui.getBoundingClientRect().top;
+      function move(e){
+        let x = e.clientX - ox;
+        let y = e.clientY - oy;
+        x = Math.max(0, Math.min(window.innerWidth - gui.offsetWidth, x));
+        y = Math.max(0, Math.min(window.innerHeight - gui.offsetHeight, y));
+        gui.style.left = x + 'px';
+        gui.style.top = y + 'px';
+        gui.style.right = 'auto';
+        gui.style.bottom = 'auto';
+      }
+      function up(){
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+      }
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    };
+  }
+  makeDraggable(util, utilLock);
+  makeDraggable(vfx, vfxLock);
     
     // -------------------- UTILITIES BUTTONS --------------------
     function addBtn(container,name,on,off){const b=document.createElement('button');b.innerText=name;b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';b.onclick=on;container.appendChild(b);}
@@ -333,9 +359,9 @@ addBtn(vfx,'Text Corruption',()=>{
 
 // Bubble Text
 addBtn(vfx,'Bubble Text',()=>{
-  if(!window.bubbleActive){
-    window.bubbleActive=true;
-    window.originalText=[];
+    if(window.bubbleActive) return;
+    window.bubbleActive = true;
+    window.originalText = [];
 
     function transform(el){
       if(!el || el.id==='vfxGUI'||el.id==='utilitiesGUI'||el.closest('#vfxGUI,#utilitiesGUI')) return;
@@ -349,6 +375,12 @@ addBtn(vfx,'Bubble Text',()=>{
         el.childNodes.forEach(transform);
       }
     }
+
+    window.bubbleInt = setInterval(()=>{ transform(document.body) }, 50);
+  },()=>{
+    if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; window.bubbleActive=false;}
+    if(window.originalText){window.originalText.forEach(o=>o.el.nodeValue=o.text); window.originalText=[];}
+  });
 
     window.bubbleInt=setInterval(()=>{transform(document.body)},50);
   }
@@ -509,11 +541,12 @@ addBtn(vfx,'Stop All',()=>{
 
     // -------------------- SHIFT+H TO HIDE --------------------
     document.addEventListener('keydown', (e) => {
-      if (e.shiftKey && e.key.toLowerCase() === 'h') {
-        util.style.display = (util.style.display === 'none') ? 'block' : 'none';
-        vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
-      }
-    });
+    if (e.shiftKey && e.key.toLowerCase() === 'h') {
+      util.style.display = (util.style.display === 'none') ? 'block' : 'none';
+      vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
+    }
+  });
+}
 
   } // end spawnGUIs
 
