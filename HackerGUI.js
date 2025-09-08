@@ -181,4 +181,3 @@ addBtn(vfx,'Ultimate Chaos',()=>{if(window.UltimateChaosActive)return;window.Ult
   } // end spawnGUIs
 
 })();
-
