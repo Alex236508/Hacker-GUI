@@ -206,7 +206,6 @@ makeDraggable(vfx, vfxLock);
   const activeUtilities = window.activeUtilities || {};
   window.activeUtilities = activeUtilities;
 
-  // Helper to add a utility button
   function addBtn(container, name, on, off) {
     const b = document.createElement('button');
     b.innerText = name;
@@ -216,7 +215,6 @@ makeDraggable(vfx, vfxLock);
     if (off) activeUtilities[name] = { on, off };
   }
 
-  // Web X-Ray start/stop functionality
   addBtn(util, 'Web X-Ray', () => {
     if (window.webxrayUI) {
       console.log('Web X-Ray already running!');
@@ -228,33 +226,30 @@ makeDraggable(vfx, vfxLock);
       const s = document.createElement('script');
       s.src = url;
       s.onload = callback;
-      document.head.appendChild(s);
-    }
-
-    function loadCSS(url) {
-      const l = document.createElement('link');
-      l.rel = 'stylesheet';
-      l.href = url;
-      document.head.appendChild(l);
+      document.body.appendChild(s);
     }
 
     function startXRay() {
-      Localized.ready({url: 'https://x-ray-goggles.mouse.org/webxray.json'}, function() {
-        const ui = jQuery.xRayUI({ eventSource: document });
-        window.webxrayUI = ui;
-        ui.start();
-        console.log('Web X-Ray started!');
-      });
+      if (typeof Localized === 'undefined') {
+        console.warn('Waiting for Web X-Ray core to load...');
+        setTimeout(startXRay, 50);
+        return;
+      }
+      const ui = jQuery.xRayUI({ eventSource: document });
+      window.webxrayUI = ui;
+      ui.start();
+      console.log('Web X-Ray started!');
     }
 
-    // Load jQuery if missing
-    if (!window.jQuery) {
-      loadScript('https://code.jquery.com/jquery-3.6.0.min.js', startXRay);
-    } else {
-      startXRay();
-    }
+    // Load Web X-Ray core JS (full 12k line script)
+    loadScript('https://x-ray-goggles.mouse.org/webxray.js', startXRay);
 
-    loadCSS('https://x-ray-goggles.mouse.org/webxray.css');
+    // Load CSS
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = 'https://x-ray-goggles.mouse.org/webxray.css';
+    document.head.appendChild(l);
+    
   }, () => {
     if (window.webxrayUI) {
       window.webxrayUI.unload();
