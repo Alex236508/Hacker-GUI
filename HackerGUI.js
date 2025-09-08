@@ -109,31 +109,26 @@
   let vfxLock = addLockIcon(vfx);
 
      // -------------------- DRAGGING --------------------
-function makeDraggable(gui, lockIcon) {
-  gui.style.position = 'fixed'; // anchor to viewport
-  gui.onmousedown = function(e) {
-    if (lockIcon && lockIcon.locked) return; // do nothing if locked
-
-    let ox = e.clientX - gui.getBoundingClientRect().left;
-    let oy = e.clientY - gui.getBoundingClientRect().top;
-
-    function move(e) {
+function makeDraggable(g, lock){
+  g.style.position = 'fixed'; // ensures anchored to viewport
+  g.onmousedown = function(e){
+    if(lock.locked) return; // do nothing if locked
+    let ox = e.clientX - g.getBoundingClientRect().left,
+        oy = e.clientY - g.getBoundingClientRect().top;
+    function move(e){
       let x = e.clientX - ox;
       let y = e.clientY - oy;
-      // Constrain inside viewport
-      x = Math.max(0, Math.min(window.innerWidth - gui.offsetWidth, x));
-      y = Math.max(0, Math.min(window.innerHeight - gui.offsetHeight, y));
-      gui.style.left = x + 'px';
-      gui.style.top = y + 'px';
-      gui.style.right = 'auto';
-      gui.style.bottom = 'auto';
+      x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
+      y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
+      g.style.left = x + 'px';
+      g.style.top = y + 'px';
+      g.style.right = 'auto';
+      g.style.bottom = 'auto';
     }
-
-    function up() {
+    function up(){
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', up);
     }
-
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseup', up);
   };
