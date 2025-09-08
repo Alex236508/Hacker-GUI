@@ -546,7 +546,6 @@ addBtn(vfx,'Stop All',()=>{
       vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
     }
   });
-}
 
   } // end spawnGUIs
 
