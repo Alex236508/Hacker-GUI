@@ -109,13 +109,6 @@
     makeDraggable(util, utilLock);
     makeDraggable(vfx, vfxLock);
     
-    // -------------------- UTILITIES GUI --------------------
-    const util = document.createElement('div');
-    util.id = 'utilitiesGUI';
-    util.style.cssText = 'position:fixed;top:50px;left:50px;width:280px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
-    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
-    document.body.appendChild(util);
-
     // -------------------- UTILITIES BUTTONS --------------------
     function addBtn(container,name,on,off){const b=document.createElement('button');b.innerText=name;b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';b.onclick=on;container.appendChild(b);}
     
@@ -161,14 +154,7 @@
         util.appendChild(section);
     })();
 
-    // -------------------- VFX GUI --------------------
-    const vfx = document.createElement('div');
-    vfx.id = 'vfxGUI';
-    vfx.style.cssText = 'position:fixed;top:50px;right:50px;width:320px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
-    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
-    document.body.appendChild(vfx);
-
-    // -------------------- VFX BUTTONS --------------------
+        // -------------------- VFX BUTTONS --------------------
 addBtn(vfx,'3D Page',()=>{
   if(!window.triScript){
     let s=document.createElement('script');
