@@ -109,8 +109,6 @@
     makeDraggable(util, utilLock);
     makeDraggable(vfx, vfxLock);
     
-  // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
-  function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
     const util = document.createElement('div');
     util.id = 'utilitiesGUI';
