@@ -300,25 +300,28 @@ addBtn(vfx,'Text Corruption',()=>{
 
 // Bubble Text
 // Bubble Text
+// Bubble Text
 addBtn(vfx,'Bubble Text',()=>{
   if(window.bubbleActive) return;
-  window.bubbleActive = true;
-  window.originalText = [];
-  let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
-  let bubbles = 'ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ①②③④⑤⑥⑦⑧⑨⓪'.split('');
-  function transform(el){
+  window.bubbleActive=true;
+  window.originalText=[];
+  const chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+  const bubbles='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ①②③④⑤⑥⑦⑧⑨⓪'.split('');
+  
+  function bubbleify(el){
     if(el.id==='vfxGUI'||el.id==='utilitiesGUI'||el.closest('#vfxGUI,#utilitiesGUI')) return;
     if(el.nodeType===Node.TEXT_NODE && el.nodeValue.trim()){
-      window.originalText.push({el, text: el.nodeValue});
+      if(!window.originalText.some(o=>o.el===el)) window.originalText.push({el,text:el.nodeValue});
       el.textContent = el.nodeValue.replace(/[a-zA-Z0-9]/g,l=>{
-        let idx = chars.indexOf(l);
+        let idx=chars.indexOf(l);
         return idx>=0 ? bubbles[idx] : l;
       });
     } else if(el.childNodes.length>0){
-      el.childNodes.forEach(transform);
+      el.childNodes.forEach(bubbleify);
     }
   }
-  window.bubbleInt = setInterval(()=>{ transform(document.body); },50);
+  
+  window.bubbleInt=setInterval(()=>{ bubbleify(document.body); },50);
 },()=>{
   clearInterval(window.bubbleInt);
   window.bubbleInt=null;
