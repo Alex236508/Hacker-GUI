@@ -154,14 +154,34 @@ makeDraggable(vfx, vfxLock);
     }
 
     // Developer Console (Eruda)
-    addBtn(util,'Developer Console',()=>{
-        if(!window.erudaLoaded){
-            let s = document.createElement('script');
-            s.src = 'https://cdn.jsdelivr.net/npm/eruda@2.5.0/eruda.min.js';
-            document.body.appendChild(s);
-            s.onload = () => { eruda.init(); eruda.theme='Dark'; window.erudaLoaded=true; };
-        } else { eruda.show(); }
-    });
+    addBtn(util, 'Developer Console', () => {
+    if (!window.erudaLoaded) {
+        let s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/eruda@2.5.0/eruda.min.js';
+        document.body.appendChild(s);
+        s.onload = () => {
+            eruda.init();
+            eruda.theme = 'Dark';
+            window.erudaInstance = eruda; // keep reference
+            window.erudaLoaded = true;
+        };
+        window.erudaScript = s; // keep script reference for removal
+    } else {
+        window.erudaInstance.show();
+    }
+}, () => {
+    // off function for Stop All
+    if (window.erudaInstance) {
+        window.erudaInstance.destroy();
+        window.erudaInstance = null;
+        window.erudaLoaded = false;
+    }
+    if (window.erudaScript) {
+        window.erudaScript.remove();
+        window.erudaScript = null;
+    }
+});
+
 
     // Page Dark Theme
     addBtn(util,'Page Dark Theme',()=>{
@@ -179,14 +199,23 @@ makeDraggable(vfx, vfxLock);
     });
 
     // Web X-Ray
-    addBtn(util,'Web X-Ray',()=>{
-        if(!window.webXRayLoaded){
-            let s=document.createElement('script');
-            s.src='https://x-ray-goggles.mouse.org/webxray.js';
-            document.body.appendChild(s);
-            window.webXRayLoaded=true;
-        }
-    });
+    addBtn(util, 'Web X-Ray', () => {
+    if (!window.webXRayLoaded) {
+        let s = document.createElement('script');
+        s.src = 'https://x-ray-goggles.mouse.org/webxray.js';
+        s.onload = () => {
+            window.webXRayLoaded = true;
+        };
+        document.body.appendChild(s);
+        window.webXRayScript = s;
+    }
+}, () => {
+    if (window.webXRayScript) {
+        window.webXRayScript.remove();
+        window.webXRayScript = null;
+        window.webXRayLoaded = false;
+    }
+});
 
     // DNS Lookup
     addBtn(util,'DNS Lookup',()=>{ 
