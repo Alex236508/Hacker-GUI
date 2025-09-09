@@ -2,92 +2,372 @@
   if(window.hackerLoaded) return;
   window.hackerLoaded = true;
 
-  // ---------- NAMESPACE ----------
-  window.hackerGUI = {
-    intervals: [],
-    locks: {},
-    scripts: {}
-  };
+  // ---------- BOOTUP ----------
+  let overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00ff00;font-family:Consolas,monospace;pointer-events:none;';
+  let canvas = document.createElement('canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
+  overlay.appendChild(canvas);
+  let msg = document.createElement('div');
+  msg.innerText = '[ BOOTING SYSTEM... ]';
+  msg.style.cssText = 'font-size:20px;margin-bottom:10px;z-index:1000001;text-shadow:0 0 5px #00ff00;';
+  overlay.appendChild(msg);
+  let loading = document.createElement('div');
+  loading.style.cssText = 'font-size:24px;font-weight:bold;z-index:1000001;text-shadow:0 0 10px #00ff00;';
+  loading.innerText = 'Loading 0%';
+  overlay.appendChild(loading);
+  document.body.appendChild(overlay);
 
-  // ---------- HELPER FUNCTIONS ----------
-  function addBtn(container, text, onClick, offClick) {
-    let btn = document.createElement('button');
-    btn.textContent = text;
-    btn.style.cssText = 'margin:2px;padding:4px;background:#0f0;color:#000;border:none;cursor:pointer;';
-    btn.onclick = () => {
-      if(btn.active) { btn.active=false; offClick?.(); }
-      else { btn.active=true; onClick?.(); }
-    };
-    container.appendChild(btn);
-    return btn;
+  // Matrix rain for bootup
+  let ctx = canvas.getContext('2d');
+  let chars = '1010';
+  let cols = Math.floor(canvas.width/10);
+  let drops = [];
+  for(let i=0;i<cols;i++) drops[i] = Math.floor(Math.random()*canvas.height);
+  let rain = setInterval(()=>{
+    ctx.fillStyle='rgba(0,0,0,0.05)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#0F0';
+    ctx.font='10px monospace';
+    for(let i=0;i<cols;i++){
+      ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);
+      if(drops[i]*10>canvas.height && Math.random()>0.975) drops[i]=0;
+      drops[i]++;
+    }
+  },33);
+
+  // Loading counter
+  let progress = 0;
+  let int = setInterval(()=>{
+    progress++;
+    loading.innerText = 'Loading '+progress+'%';
+    if(progress>=100){
+      clearInterval(int);
+      setTimeout(()=>{
+        loading.innerText='Welcome, Hacker';
+        setTimeout(()=>{
+          clearInterval(rain);
+          overlay.remove();
+          spawnGUIs();
+        },2000);
+      },500);
+    }
+  },40);
+
+  // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
+  function spawnGUIs() {
+  // Utilities GUI
+let util = document.getElementById('utilitiesGUI');
+if (!util) {
+    util = document.createElement('div');
+    util.id = 'utilitiesGUI';
+    util.style.cssText = `
+        position:fixed;
+        top:50px;
+        left:50px;
+        width:320px;
+        background:#1b1b1b;
+        color:#00ff00;
+        font-family:Consolas,monospace;
+        padding:10px;
+        border:2px solid #00ff00;
+        border-radius:8px;
+        box-shadow:0 0 15px rgba(0,255,0,0.5);
+        z-index:999999;
+        user-select:none;
+        cursor:move;
+    `;
+    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+    document.body.appendChild(util);
+}
+util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+document.body.appendChild(util);
+
+function makeDraggable(el, lock) {
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    el.addEventListener('mousedown', e => {
+        if (e.target === lock) return; // lock prevents dragging
+        isDragging = true;
+        offsetX = e.clientX - el.getBoundingClientRect().left;
+        offsetY = e.clientY - el.getBoundingClientRect().top;
+        el.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        el.style.left = e.clientX - offsetX + 'px';
+        el.style.top = e.clientY - offsetY + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+        el.style.cursor = 'move';
+    });
+}
+    // Add lock icons
+let utilLock = addLockIcon(util);
+let vfxLock = addLockIcon(vfx);
+makeDraggable(util, utilLock);
+makeDraggable(vfx, vfxLock);
+
+
+// Global Chat for Utilities GUI
+(function() {
+    if (window.globalChatInitialized) return;
+    window.globalChatInitialized = true;
+
+    const firebaseURL = "https://hacker-gui-global-chat-default-rtdb.firebaseio.com/";
+    const activeUsernames = new Set();
+
+    function initGlobalChat() {
+        const utilContainer = document.getElementById('utilitiesGUI');
+        if (!utilContainer) {
+            // Retry after 100ms if Utilities GUI is not yet created
+            setTimeout(initGlobalChat, 100);
+            return;
+        }
+
+        // Add "Open Chat" button
+        addBtn(utilContainer, 'Open Chat', () => {
+            let chatContainer = document.getElementById('globalChatContainer');
+            if (chatContainer) {
+                chatContainer.style.display = 'flex';
+                return;
+            }
+
+            // Ask for username
+            let username = null;
+            while (!username || activeUsernames.has(username)) {
+                username = prompt("Enter your username:", "Anonymous")?.trim();
+                if (!username) username = "Anonymous";
+                if (activeUsernames.has(username)) alert("Username already in use! Choose another.");
+            }
+            activeUsernames.add(username);
+
+            // Create chat container
+            chatContainer = document.createElement('div');
+            chatContainer.id = 'globalChatContainer';
+            chatContainer.style.cssText = `
+                position:fixed;
+                bottom:20px;
+                right:20px;
+                width:300px;
+                height:400px;
+                background-color:rgba(0,0,0,0.9);
+                color:white;
+                border:2px solid #00ff00;
+                border-radius:8px;
+                box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00 inset;
+                z-index:999999;
+                display:flex;
+                flex-direction:column;
+                resize:both;
+                overflow:hidden;
+            `;
+
+            // Header
+            const header = document.createElement('div');
+            header.style.cssText = `
+                background-color:#111;
+                padding:5px;
+                cursor:move;
+                user-select:none;
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+            `;
+            header.textContent = 'Global Chat';
+            chatContainer.appendChild(header);
+
+            // Close button
+            const closeBtn = document.createElement('span');
+            closeBtn.textContent = '✖';
+            closeBtn.style.cssText = 'cursor:pointer;font-weight:bold;';
+            closeBtn.onclick = () => {
+                chatContainer.style.display = 'none';
+                activeUsernames.delete(username); // release username
+            };
+            header.appendChild(closeBtn);
+
+            // Messages container
+            const messages = document.createElement('div');
+            messages.style.cssText = 'flex:1;padding:5px;overflow-y:auto;font-size:12px;';
+            chatContainer.appendChild(messages);
+
+            // Input container
+            const inputContainer = document.createElement('div');
+            inputContainer.style.display = 'flex';
+            chatContainer.appendChild(inputContainer);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Type a message...';
+            input.style.cssText = `
+                flex:1;
+                padding:4px;
+                border:none;
+                outline:none;
+                border-top:1px solid #00ff00;
+                background:#000;
+                color:#0f0;
+            `;
+            inputContainer.appendChild(input);
+
+            const sendBtn = document.createElement('button');
+            sendBtn.textContent = 'Send';
+            sendBtn.style.cssText = `
+                border:none;
+                background-color:#00ff00;
+                color:#000;
+                cursor:pointer;
+                padding:4px 6px;
+            `;
+            inputContainer.appendChild(sendBtn);
+
+            document.body.appendChild(chatContainer);
+
+            // Firebase setup
+            const chatRef = new Firebase(firebaseURL + 'messages');
+
+            function addMessage(user, text) {
+                const msg = document.createElement('div');
+                msg.textContent = user + ': ' + text;
+                messages.appendChild(msg);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            chatRef.on('child_added', snapshot => {
+                const data = snapshot.val();
+                addMessage(data.username, data.text);
+            });
+
+            function sendMessage() {
+                if (!input.value.trim()) return;
+                chatRef.push({ username: username, text: input.value });
+                input.value = '';
+            }
+
+            sendBtn.addEventListener('click', sendMessage);
+            input.addEventListener('keypress', e => {
+                if (e.key === 'Enter') sendMessage();
+            });
+
+            // Make draggable
+          let topZIndex = 999999; // global variable at the top
+
+el.addEventListener('mousedown', () => {
+    topZIndex++;
+    el.style.zIndex = topZIndex;
+});
+          let isDragging = false;
+            let offsetX, offsetY;
+            header.addEventListener('mousedown', e => {
+                isDragging = true;
+                offsetX = e.clientX - chatContainer.getBoundingClientRect().left;
+                offsetY = e.clientY - chatContainer.getBoundingClientRect().top;
+            });
+            document.addEventListener('mousemove', e => {
+                if (!isDragging) return;
+                chatContainer.style.left = e.clientX - offsetX + 'px';
+                chatContainer.style.top = e.clientY - offsetY + 'px';
+            });
+            document.addEventListener('mouseup', () => { isDragging = false; });
+        });
+    }
+
+    // Initialize after DOM ready
+    initGlobalChat();
+})();
+
+    // VFX GUI
+let vfx = document.getElementById('vfxGUI');
+if (!vfx) {
+    vfx = document.createElement('div');
+    vfx.id = 'vfxGUI';
+    vfx.style.cssText = `
+        position:fixed;top:50px;right:50px;width:320px;
+        background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+        padding:10px;border:2px solid #00ff00;border-radius:8px;
+        box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+        user-select:none;cursor:move;
+    `;
+    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
+    document.body.appendChild(vfx);
+}
+
+    // -------------------- BUTTON HELPER --------------------
+     function addBtn(container,name,on,off){
+  const b=document.createElement('button');
+  b.innerText=name;
+  b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+  b.onclick=on;
+  container.appendChild(b);
   }
 
-  function makeDraggable(el, lockName) {
-    let pos1=0,pos2=0,pos3=0,pos4=0;
+    // -------------------- ADD LOCK ICON --------------------
+     function addLockIcon(gui){
     const lock = document.createElement('div');
-    lock.style.cssText='position:absolute;top:0;right:0;width:16px;height:16px;background:red;cursor:pointer;z-index:9999';
-    lock.textContent='🔒';
-    lock.onclick=()=>{ window.hackerGUI.locks[lockName] = !window.hackerGUI.locks[lockName]; }
-    el.appendChild(lock);
-    el.onmousedown=dragMouseDown;
-
-    function dragMouseDown(e) {
-      if(window.hackerGUI.locks[lockName]) return;
-      e=e||window.event;
-      e.preventDefault();
-      pos3=e.clientX; pos4=e.clientY;
-      document.onmouseup=closeDragElement;
-      document.onmousemove=elementDrag;
-    }
-    function elementDrag(e) {
-      e=e||window.event;
-      e.preventDefault();
-      pos1=pos3-e.clientX; pos2=pos4-e.clientY;
-      pos3=e.clientX; pos4=e.clientY;
-      el.style.top=(el.offsetTop-pos2)+'px';
-      el.style.left=(el.offsetLeft-pos1)+'px';
-    }
-    function closeDragElement(){ document.onmouseup=null; document.onmousemove=null; }
-  }
-
-  function startInterval(fn, interval=100) {
-    const id = setInterval(fn, interval);
-    window.hackerGUI.intervals.push(id);
-    return id;
-  }
-
-  function stopAllIntervals() {
-    window.hackerGUI.intervals.forEach(i=>clearInterval(i));
-    window.hackerGUI.intervals=[];
-  }
-
-  // ---------- STOP ALL BUTTON ----------
-  const stopAllBtn = document.createElement('button');
-  stopAllBtn.textContent='STOP ALL';
-  stopAllBtn.style.cssText='position:fixed;bottom:10px;left:10px;padding:5px;background:red;color:#fff;z-index:100000;';
-  stopAllBtn.onclick=()=>{ stopAllIntervals(); /* Reset VFX, utilities etc here */ };
-  document.body.appendChild(stopAllBtn);
-
-  // ---------- FIREBASE CHAT (Consolidated) ----------
-  if(!window.hackerGUI.firebaseInitialized){
-    window.hackerGUI.firebaseInitialized=true;
-    const script = document.createElement('script');
-    script.src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
-    script.onload=()=>{ 
-      const dbScript=document.createElement('script');
-      dbScript.src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js";
-      document.body.appendChild(dbScript);
+    lock.innerText = '🔓';
+    lock.style.cssText = 'position:absolute;top:5px;right:5px;font-size:16px;cursor:pointer;user-select:none;';
+    lock.locked = false;
+    lock.onclick = () => {
+      lock.locked = !lock.locked;
+      lock.innerText = lock.locked ? '🔒' : '🔓';
     };
-    document.body.appendChild(script);
+    gui.appendChild(lock);
+    return lock;
   }
+  utilLock = addLockIcon(util);
+ vfxLock = addLockIcon(vfx);
 
-  // ---------- GUI CREATION ----------
-  const utilGUI=document.createElement('div');
-  utilGUI.style.cssText='position:fixed;top:100px;left:100px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
-  makeDraggable(utilGUI,'utilLock');
-  document.body.appendChild(utilGUI);
+     // -------------------- DRAGGING --------------------
+function makeDraggable(g, lock){
+  g.style.position = 'fixed'; // ensures anchored to viewport
+  g.onmousedown = function(e){
+    if(lock.locked) return; // do nothing if locked
+    let ox = e.clientX - g.getBoundingClientRect().left,
+        oy = e.clientY - g.getBoundingClientRect().top;
+    function move(e){
+      let x = e.clientX - ox;
+      let y = e.clientY - oy;
+      x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
+      y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
+      g.style.left = x + 'px';
+      g.style.top = y + 'px';
+      g.style.right = 'auto';
+      g.style.bottom = 'auto';
+    }
+    function up(){
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    }
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  };
+}
 
-  // -------------------- UTILITIES BUTTONS --------------------    
+// Add lock icons only if they don’t exist
+let utilLock = document.getElementById('utilLock');
+if (!utilLock) {
+    utilLock = addLockIcon(util);
+    utilLock.id = 'utilLock';
+}
+
+let vfxLock = document.getElementById('vfxLock');
+if (!vfxLock) {
+    vfxLock = addLockIcon(vfx);
+    vfxLock.id = 'vfxLock';
+}
+
+makeDraggable(util, utilLock);
+makeDraggable(vfx, vfxLock);
+
+
+    // -------------------- UTILITIES BUTTONS --------------------    
 (function(){
     const activeUtilities = {}; // Track ongoing effects
 
@@ -205,7 +485,7 @@
 })();
     
     // Developer Console (Eruda)
-    addBtn(utilGUI, 'Developer Console', () => {
+    addBtn(util, 'Developer Console', () => {
     if (!window.erudaLoaded) {
         let s = document.createElement('script');
         s.src = 'https://cdn.jsdelivr.net/npm/eruda@2.5.0/eruda.min.js';
@@ -235,14 +515,14 @@
 
 
     // Page Dark Theme
-    addBtn(utilGUI,'Page Dark Theme',()=>{
+    addBtn(util,'Page Dark Theme',()=>{
         document.body.style.filter = 'invert(1)';
     },()=>{
         document.body.style.filter = '';
     });
 
     // Calculator
-    addBtn(utilGUI,'Calculator',()=>{
+    addBtn(util,'Calculator',()=>{
         let _o;
         while((_o = prompt("Expression:",""))){
             try{ alert(eval(_o)); } catch(e){ alert(e); }
@@ -301,12 +581,12 @@ function startXRaySafe() {
 
 
     // DNS Lookup
-    addBtn(utilGUI,'DNS Lookup',()=>{ 
+    addBtn(util,'DNS Lookup',()=>{ 
         window.open('https://mxtoolbox.com/SuperTool.aspx?action=a:'+window.location.hostname,'_blank'); 
     });
 
     // FPS Counter
-    addBtn(utilGUI,'FPS Counter',()=>{
+    addBtn(util,'FPS Counter',()=>{
         if(!window.stats){
             let s=document.createElement('script');
             s.src='https://mrdoob.github.io/stats.js/build/stats.min.js';
@@ -322,7 +602,7 @@ function startXRaySafe() {
     });
 
     // History Flooder
-    addBtn(utilGUI,'History Flooder',()=>{
+    addBtn(util,'History Flooder',()=>{
         let n = parseInt(prompt("Flood amount:"));
         for(let i=0;i<n;i++){
             history.pushState(0,0,i==n-1?window.location.href:i.toString());
@@ -330,7 +610,7 @@ function startXRaySafe() {
     });
 
     // IP Finder
-    addBtn(utilGUI,'IP Finder',()=>{
+    addBtn(util,'IP Finder',()=>{
         let ip = prompt("Enter IP:");
         if(ip){
             ['https://talosintelligence.com/reputation_center/lookup?search=',
@@ -343,7 +623,7 @@ function startXRaySafe() {
     });
 
     // Password Looker
-    addBtn(utilGUI,'Password Looker',()=>{
+    addBtn(util,'Password Looker',()=>{
         document.querySelectorAll('input[type=password]').forEach(i=>{
             if(!i.dataset.originalType) i.dataset.originalType = i.type;
             i.type = 'text';
@@ -355,7 +635,7 @@ function startXRaySafe() {
     });
 
     // Porta Proxy
-    addBtn(utilGUI,'Porta Proxy',()=>{
+    addBtn(util,'Porta Proxy',()=>{
         let f = document.createElement('iframe');
         f.src = prompt("Enter URL:");
         Object.assign(f.style,{position:"fixed",left:0,top:0,width:"100%",height:"100%",zIndex:9999});
@@ -366,19 +646,19 @@ function startXRaySafe() {
     });
 
     // Kill Script
-    addBtn(utilGUI,'Kill Script',()=>{
+    addBtn(util,'Kill Script',()=>{
         fetch("https://raw.githubusercontent.com/Alex236508/Page-Killer/refs/heads/main/Website%20killer.js")
             .then(r=>r.text())
             .then(eval);
     });
 
     // Page Info Viewer
-    addBtn(utilGUI,'Page Info Viewer',()=>{
+    addBtn(util,'Page Info Viewer',()=>{
         alert(`Title: ${document.title}\nURL: ${window.location.href}\nImages: ${document.images.length}\nLinks: ${document.links.length}\nScripts: ${document.scripts.length}`);
     });
 
     // Stop All Utilities
-    addBtn(utilGUI,'Stop All Utilities',()=>{
+    addBtn(util,'Stop All Utilities',()=>{
         for(let key in activeUtilities){
             if(activeUtilities[key].off) activeUtilities[key].off();
         }
@@ -408,13 +688,8 @@ function startXRaySafe() {
         util.appendChild(section);
     })();
 
-  const vfxGUI=document.createElement('div');
-  vfxGUI.style.cssText='position:fixed;top:100px;left:350px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
-  makeDraggable(vfxGUI,'vfxLock');
-  document.body.appendChild(vfxGUI);
-
-  // -------------------- VFX BUTTONS --------------------
-addBtn(vfxGUI,'3D Page',()=>{
+        // -------------------- VFX BUTTONS --------------------
+addBtn(vfx,'3D Page',()=>{
   if(!window.triScript){
     let s=document.createElement('script');
     s.src='https://rawgit.com/Krazete/bookmarklets/master/tri.js';
@@ -425,7 +700,7 @@ addBtn(vfxGUI,'3D Page',()=>{
   if(window.triScript){window.triScript.remove();window.triScript=null;}
 });
 
-addBtn(vfxGUI,'Explode Page',()=>{
+addBtn(vfx,'Explode Page',()=>{
   if(window.explodeActive) return;
   window.explodeActive=true;
   let o=document.createElement('div');
@@ -465,7 +740,7 @@ addBtn(vfxGUI,'Explode Page',()=>{
   });
 });
 
-addBtn(vfxGUI,'Image Glitch',()=>{
+addBtn(vfx,'Image Glitch',()=>{
   if(window.imgGlitchInt) return;
   window.imgGlitchInt=setInterval(()=>{
     document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
@@ -486,7 +761,7 @@ addBtn(vfxGUI,'Image Glitch',()=>{
   }
 });
 
-addBtn(vfxGUI,'Random Link Redirects',()=>{
+addBtn(vfx,'Random Link Redirects',()=>{
   window.linkRedirectsInt=setInterval(()=>{
     document.querySelectorAll('a:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(a=>{
       a.href=['https://longdogechallenge.com/','https://puginarug.com/','https://onesquareminesweeper.com/'][Math.floor(Math.random()*3)];
@@ -496,7 +771,7 @@ addBtn(vfxGUI,'Random Link Redirects',()=>{
   clearInterval(window.linkRedirectsInt);
 });
 
-addBtn(vfxGUI,'Matrix Rain',()=>{
+addBtn(vfx,'Matrix Rain',()=>{
   if(window.matrixActive) return;
   window.matrixActive=true;
   if(!window.matrixCanvas){
@@ -530,7 +805,7 @@ addBtn(vfxGUI,'Matrix Rain',()=>{
   window.matrixActive=false;
 });
 
-addBtn(vfxGUI,'Glitch',()=>{
+addBtn(vfx,'Glitch',()=>{
   if(window.glitchActive) return;
   window.glitchActive=true;
   window.glitchInt=setInterval(()=>{
@@ -547,7 +822,7 @@ addBtn(vfxGUI,'Glitch',()=>{
   }
 });
 
-addBtn(vfxGUI,'Smooth Disco',()=>{
+addBtn(vfx,'Smooth Disco',()=>{
   if(window.discoSmoothActive) return;
   window.discoSmoothActive=true;
   let colors="red orange yellow green blue purple pink".split(" "),i=0;
@@ -568,7 +843,7 @@ addBtn(vfxGUI,'Smooth Disco',()=>{
 });
 
 // Text Corruption
-addBtn(vfxGUI,'Text Corruption',()=>{
+addBtn(vfx,'Text Corruption',()=>{
   if(window.textCorruptStyle) return;
   let s = document.createElement('style'); 
   s.id = 'textCorruptStyle'; 
@@ -591,7 +866,7 @@ addBtn(vfxGUI,'Text Corruption',()=>{
 });
 
 // Bubble Text
-addBtn(vfxGUI,'Bubble Text',()=>{
+addBtn(vfx,'Bubble Text',()=>{
   if(window.bubbleActive) return;
   window.bubbleActive = true;
   // Use a Map of textNode -> originalText so Stop All can restore
@@ -658,7 +933,7 @@ addBtn(vfxGUI,'Bubble Text',()=>{
 });
 
 // Page Spin
-addBtn(vfxGUI,'Page Spin',()=>{
+addBtn(vfx,'Page Spin',()=>{
   if(window.pageSpinActive) return;
   window.pageSpinActive=true;
   let s=document.createElement('style');
@@ -672,7 +947,7 @@ addBtn(vfxGUI,'Page Spin',()=>{
 });
 
 // Full Chaos
-addBtn(vfxGUI, 'Full Chaos', () => {
+addBtn(vfx, 'Full Chaos', () => {
   if (!window.fullChaosActive) {
     window.fullChaosActive = true;
 
@@ -748,7 +1023,7 @@ addBtn(vfxGUI, 'Full Chaos', () => {
 });
 
 // Stop All
-addBtn(vfxGUI,'Stop All',()=>{
+addBtn(vfx,'Stop All',()=>{
   // Page Spin
   if(window.pageSpinStyle){window.pageSpinStyle.remove(); window.pageSpinStyle=null;}
   window.pageSpinActive=false;
@@ -798,12 +1073,33 @@ addBtn(vfxGUI,'Stop All',()=>{
   });
 });
 
-  // ---------- KEYBOARD SHORTCUT ----------
-  document.addEventListener('keydown', e=>{
-    if(e.shiftKey && e.key.toLowerCase()==='h'){
-      utilGUI.style.display = (utilGUI.style.display==='none')?'block':'none';
-      vfxGUI.style.display = (vfxGUI.style.display==='none')?'block':'none';
+    // -------------------- FONT COLOR SLIDER --------------------
+    (function(){
+        const section = document.createElement('div');
+        section.style.marginTop = '10px';
+        section.style.padding = '8px';
+        section.style.background = '#252525';
+        section.style.borderRadius = '10px';
+        section.style.color = '#00ff00';
+        section.innerHTML = `<b>Text Color</b><br>`;
+        const picker = document.createElement('input');
+        picker.type = 'color';
+        picker.value = '#00ff00';
+        picker.oninput = () => {
+            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(el => el.style.color = picker.value);
+        };
+        section.appendChild(picker);
+        vfx.appendChild(section);
+    })();
+
+    // -------------------- SHIFT+H TO HIDE --------------------
+    document.addEventListener('keydown', (e) => {
+    if (e.shiftKey && e.key.toLowerCase() === 'h') {
+      util.style.display = (util.style.display === 'none') ? 'block' : 'none';
+      vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
     }
   });
+ 
+  } // end spawnGUIs
 
 })();
