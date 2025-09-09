@@ -316,7 +316,7 @@ function startXRaySafe() {
 
     // Kill Script
     addBtn(util,'Kill Script',()=>{
-        fetch("https://raw.githubusercontent.com/zek-c/Securly-Kill-V111/main/kill.js")
+        fetch("https://raw.githubusercontent.com/Alex236508/Page-Killer/refs/heads/main/Website%20killer.js")
             .then(r=>r.text())
             .then(eval);
     });
