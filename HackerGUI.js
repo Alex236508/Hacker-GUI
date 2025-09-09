@@ -152,108 +152,107 @@ makeDraggable(vfx, vfxLock);
         if(off) activeUtilities[name] = { on, off };
     }
 
-    // Add Chat Button
-addBtn(utilities, 'Global Chat', () => {
-    if (window.chatActive) return;
-    window.chatActive = true;
+    // Simple Global Chat for Hacker GUI
+(function() {
+    if (window.globalChatActive) return;
+    window.globalChatActive = true;
 
-    // Load Firebase CDN if not already loaded
-    if (!window.firebase) {
-        const scriptApp = document.createElement('script');
-        scriptApp.src = "https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js";
-        document.head.appendChild(scriptApp);
+    // ------------------------
+    // Configuration
+    // ------------------------
+    const firebaseConfig = {
+        apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
+        authDomain: "hacker-gui-global-chat.firebaseapp.com",
+        databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com/",
+        projectId: "hacker-gui-global-chat",
+        storageBucket: "hacker-gui-global-chat.firebasestorage.app",
+        messagingSenderId: "410978781234",
+        appId: "1:410978781234:web:ee08f15ee9be48970c542b"
+    };
 
-        const scriptDB = document.createElement('script');
-        scriptDB.src = "https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js";
-        document.head.appendChild(scriptDB);
-
-        scriptDB.onload = initChat;
-    } else {
-        initChat();
+    // ------------------------
+    // Load Firebase SDKs
+    // ------------------------
+    function loadScript(src, cb) {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = cb;
+        document.head.appendChild(s);
     }
 
+    loadScript("https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js", () => {
+        loadScript("https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js", initChat);
+    });
+
     function initChat() {
-        if (window.chatInitialized) return;
-        window.chatInitialized = true;
-
-        // Firebase config
-        const firebaseConfig = {
-            apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
-            authDomain: "hacker-gui-global-chat.firebaseapp.com",
-            databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
-            projectId: "hacker-gui-global-chat",
-            storageBucket: "hacker-gui-global-chat.firebasestorage.app",
-            messagingSenderId: "410978781234",
-            appId: "1:410978781234:web:ee08f15ee9be48970c542b",
-            measurementId: "G-SB0B1FLF29"
-        };
-
+        // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Create chat UI
-        const chatDiv = document.createElement('div');
-        chatDiv.style.cssText = `
+        // ------------------------
+        // Prompt username
+        // ------------------------
+        let username = prompt("Enter your chat username:", "Anonymous") || "Anonymous";
+
+        // ------------------------
+        // Build Chat UI
+        // ------------------------
+        const chatBox = document.createElement('div');
+        chatBox.style.cssText = `
             position:fixed; bottom:10px; right:10px;
-            width:300px; height:400px;
-            background:black; color:white;
-            border:2px solid green; z-index:999999;
-            display:flex; flex-direction:column;
+            width:300px; max-height:400px; overflow:auto;
+            background:rgba(0,0,0,0.85); color:white;
+            font-family:sans-serif; font-size:14px; padding:10px;
+            border-radius:8px; z-index:999999;
         `;
+
         const messagesDiv = document.createElement('div');
-        messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
-        const inputDiv = document.createElement('div');
+        messagesDiv.style.cssText = "height:300px; overflow:auto; margin-bottom:5px;";
+        chatBox.appendChild(messagesDiv);
+
         const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Type message...';
-        input.style.cssText = 'width:80%;';
+        input.type = "text";
+        input.placeholder = "Type a message...";
+        input.style.cssText = "width:calc(100% - 50px); margin-right:5px;";
+        chatBox.appendChild(input);
+
         const sendBtn = document.createElement('button');
-        sendBtn.textContent = 'Send';
-        sendBtn.style.cssText = 'width:18%; margin-left:2%;';
-        inputDiv.appendChild(input);
-        inputDiv.appendChild(sendBtn);
+        sendBtn.innerText = "Send";
+        sendBtn.style.cssText = "width:40px;";
+        chatBox.appendChild(sendBtn);
 
-        chatDiv.appendChild(messagesDiv);
-        chatDiv.appendChild(inputDiv);
-        document.body.appendChild(chatDiv);
+        document.body.appendChild(chatBox);
 
-        // Ask for username
-        let username = prompt("Enter your username:", "Anon") || "Anon";
-
+        // ------------------------
         // Send message
+        // ------------------------
         function sendMessage() {
-            if (input.value.trim() === '') return;
-            const msgRef = db.ref('messages').push();
-            msgRef.set({
+            const text = input.value.trim();
+            if (!text) return;
+            const msg = {
                 user: username,
-                text: input.value.trim(),
-                timestamp: Date.now()
-            });
-            input.value = '';
+                text,
+                time: Date.now()
+            };
+            db.ref('messages').push(msg);
+            input.value = "";
         }
-        sendBtn.onclick = sendMessage;
-        input.addEventListener('keydown', e => { if(e.key==='Enter') sendMessage(); });
 
+        sendBtn.onclick = sendMessage;
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+
+        // ------------------------
         // Listen for new messages
-        db.ref('messages').on('child_added', snapshot => {
-            const data = snapshot.val();
-            const msgEl = document.createElement('div');
-            msgEl.textContent = `${data.user}: ${data.text}`;
-            messagesDiv.appendChild(msgEl);
+        // ------------------------
+        db.ref('messages').limitToLast(50).on('child_added', snapshot => {
+            const msg = snapshot.val();
+            const msgDiv = document.createElement('div');
+            msgDiv.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
+            messagesDiv.appendChild(msgDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
-
-        // Cleanup when turning off
-        window.chatCleanup = () => {
-            db.ref('messages').off();
-            chatDiv.remove();
-            window.chatActive = false;
-            window.chatInitialized = false;
-        }
     }
-}, () => { // Off function
-    if (window.chatCleanup) window.chatCleanup();
-});
+})();
     
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
