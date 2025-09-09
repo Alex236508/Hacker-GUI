@@ -80,32 +80,6 @@ util.style.cssText = `
 util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
 document.body.appendChild(util);
 
-// Create VFX GUI (you already have this)
-const vfx = document.createElement('div');
-vfx.id = 'vfxGUI';
-vfx.style.cssText = `
-    position:fixed;top:50px;right:50px;width:320px;
-    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
-    user-select:none;cursor:move;
-`;
-vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
-document.body.appendChild(vfx);
-  function addLockIcon(container) {
-    const lock = document.createElement('div');
-    lock.innerHTML = '🔒'; // or any icon
-    lock.style.cssText = `
-        position:absolute;
-        top:5px;
-        right:5px;
-        cursor:pointer;
-        user-select:none;
-    `;
-    container.appendChild(lock);
-    return lock;
-}
-
 function makeDraggable(el, lock) {
     let isDragging = false;
     let offsetX, offsetY;
