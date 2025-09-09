@@ -358,8 +358,6 @@ function startXRaySafe() {
     })();
 
         // -------------------- VFX BUTTONS --------------------
-addbtn(<vfx, 'MY EYES',()=>{"cac__button cac__ALL cac__button--enabled" style="background-image: url(&quot;https://i.chzbgr.com/full/5759452672/h934FBF16/my-eyes-my-eyessssssssss&quot;);"><div style="background-image: url(&quot;https://i.chzbgr.com/full/5759452672/h934FBF16/my-eyes-my-eyessssssssss&quot;);">don't click this...<p style="background-image: url(&quot;https://i.chzbgr.com/full/5759452672/h934FBF16/my-eyes-my-eyessssssssss&quot;);">your eyes yearn for peace...</p></div></button>
-
 addBtn(vfx,'3D Page',()=>{
   if(!window.triScript){
     let s=document.createElement('script');
