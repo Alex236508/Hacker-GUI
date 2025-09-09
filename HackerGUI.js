@@ -62,22 +62,22 @@
 // =====================
 // Global Chat for Utilities GUI
 // =====================
-(function(){
+(function() {
     if (window.globalChatInitialized) return;
     window.globalChatInitialized = true;
 
     const firebaseURL = "https://hacker-gui-global-chat-default-rtdb.firebaseio.com/";
-    const activeUsernames = new Set(); // Track active usernames
+    const activeUsernames = new Set();
 
     function initGlobalChat() {
         const utilContainer = document.getElementById('utilitiesGUI');
         if (!utilContainer) {
-            console.warn("Utilities GUI not found, retrying...");
-            setTimeout(initGlobalChat, 100); // retry after 100ms
+            // Retry after 100ms if Utilities GUI is not yet created
+            setTimeout(initGlobalChat, 100);
             return;
         }
 
-        // Create "Open Chat" button
+        // Add "Open Chat" button
         addBtn(utilContainer, 'Open Chat', () => {
             let chatContainer = document.getElementById('globalChatContainer');
             if (chatContainer) {
@@ -115,7 +115,7 @@
                 overflow:hidden;
             `;
 
-            // Chat header
+            // Header
             const header = document.createElement('div');
             header.style.cssText = `
                 background-color:#111;
@@ -135,7 +135,7 @@
             closeBtn.style.cssText = 'cursor:pointer;font-weight:bold;';
             closeBtn.onclick = () => {
                 chatContainer.style.display = 'none';
-                if (username) activeUsernames.delete(username);
+                activeUsernames.delete(username); // release username
             };
             header.appendChild(closeBtn);
 
@@ -219,7 +219,7 @@
         });
     }
 
-    // Initialize chat after DOM ready
+    // Initialize after DOM ready
     initGlobalChat();
 })();
 
