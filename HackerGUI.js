@@ -350,9 +350,23 @@ function makeDraggable(g, lock){
   };
 }
 
-// Attach to your GUIs after creating them and adding locks
+// Add lock icons only if they don’t exist
+let utilLock = document.getElementById('utilLock');
+if (!utilLock) {
+    utilLock = addLockIcon(util);
+    utilLock.id = 'utilLock';
+}
+
+let vfxLock = document.getElementById('vfxLock');
+if (!vfxLock) {
+    vfxLock = addLockIcon(vfx);
+    vfxLock.id = 'vfxLock';
+}
+
+// Make draggable
 makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
+
 
     // -------------------- UTILITIES BUTTONS --------------------    
 (function(){
