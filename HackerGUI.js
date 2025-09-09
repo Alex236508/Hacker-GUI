@@ -153,6 +153,86 @@ makeDraggable(vfx, vfxLock);
         if(off) activeUtilities[name] = { on, off };
     }
 
+    // Global Chat Utility
+addBtn('Global Chat', () => {
+    if(window.globalChatActive) return;
+    window.globalChatActive = true;
+
+    // Prompt for a username
+    let username = prompt("Enter your username:", "Anonymous") || "Anonymous";
+
+    // Firebase imports (make sure firebase/app and firebase/database are included)
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+    const db = getDatabase();
+    const messagesRef = ref(db, 'global-chat');
+
+    // Create chat UI
+    const chatContainer = document.createElement('div');
+    chatContainer.style.position = 'fixed';
+    chatContainer.style.bottom = '10px';
+    chatContainer.style.right = '10px';
+    chatContainer.style.width = '300px';
+    chatContainer.style.height = '400px';
+    chatContainer.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    chatContainer.style.color = 'white';
+    chatContainer.style.zIndex = '100000';
+    chatContainer.style.display = 'flex';
+    chatContainer.style.flexDirection = 'column';
+    chatContainer.style.borderRadius = '10px';
+    chatContainer.style.padding = '10px';
+    chatContainer.style.fontFamily = 'Arial, sans-serif';
+    chatContainer.id = 'globalChatContainer';
+
+    // Messages display
+    const messagesBox = document.createElement('div');
+    messagesBox.style.flex = '1';
+    messagesBox.style.overflowY = 'auto';
+    messagesBox.style.marginBottom = '10px';
+    chatContainer.appendChild(messagesBox);
+
+    // Input field
+    const inputBox = document.createElement('input');
+    inputBox.type = 'text';
+    inputBox.placeholder = 'Type a message...';
+    inputBox.style.width = '100%';
+    inputBox.style.padding = '5px';
+    inputBox.style.borderRadius = '5px';
+    inputBox.style.border = 'none';
+    chatContainer.appendChild(inputBox);
+
+    document.body.appendChild(chatContainer);
+
+    // Send message function
+    function sendMessage() {
+        const text = inputBox.value.trim();
+        if(!text) return;
+        push(messagesRef, { username, message: text, timestamp: Date.now() });
+        inputBox.value = '';
+    }
+
+    inputBox.addEventListener('keydown', e => {
+        if(e.key === 'Enter') sendMessage();
+    });
+
+    // Listen for new messages
+    onChildAdded(messagesRef, (data) => {
+        const { username, message } = data.val();
+        const msgEl = document.createElement('div');
+        msgEl.textContent = `${username}: ${message}`;
+        messagesBox.appendChild(msgEl);
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+    });
+
+    // Off function to remove chat
+    window.globalChatOff = () => {
+        window.globalChatActive = false;
+        chatContainer.remove();
+    };
+}, () => {
+    if(window.globalChatOff) window.globalChatOff();
+});
+    
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
     if (!window.erudaLoaded) {
