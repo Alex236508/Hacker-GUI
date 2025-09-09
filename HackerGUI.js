@@ -152,7 +152,7 @@ makeDraggable(vfx, vfxLock);
         if(off) activeUtilities[name] = { on, off };
     }
 
-    // Simple Global Chat for Hacker GUI
+    // Global Chat for anyone using this
 (function() {
     if (window.globalChatActive) return;
     window.globalChatActive = true;
@@ -200,28 +200,69 @@ makeDraggable(vfx, vfxLock);
         const chatBox = document.createElement('div');
         chatBox.style.cssText = `
             position:fixed; bottom:10px; right:10px;
-            width:300px; max-height:400px; overflow:auto;
+            width:300px; height:400px;
             background:rgba(0,0,0,0.85); color:white;
-            font-family:sans-serif; font-size:14px; padding:10px;
+            font-family:sans-serif; font-size:14px; padding:5px;
             border-radius:8px; z-index:999999;
+            display:flex; flex-direction:column;
+            resize:both; overflow:hidden; cursor:move;
         `;
 
+        // Header bar (draggable + close)
+        const header = document.createElement('div');
+        header.style.cssText = `
+            display:flex; justify-content:space-between; align-items:center;
+            background:rgba(255,255,255,0.1); padding:3px 5px; cursor:move;
+        `;
+        const title = document.createElement('span');
+        title.innerText = 'Global Chat';
+        const closeBtn = document.createElement('button');
+        closeBtn.innerText = '×';
+        closeBtn.style.cssText = `
+            background:none; border:none; color:white; font-size:16px; cursor:pointer;
+        `;
+        closeBtn.onclick = () => { chatBox.remove(); window.globalChatActive=false; };
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+        chatBox.appendChild(header);
+
         const messagesDiv = document.createElement('div');
-        messagesDiv.style.cssText = "height:300px; overflow:auto; margin-bottom:5px;";
+        messagesDiv.style.cssText = "flex:1; overflow:auto; margin:5px 0; padding-right:3px;";
         chatBox.appendChild(messagesDiv);
 
+        const inputDiv = document.createElement('div');
+        inputDiv.style.cssText = "display:flex;";
         const input = document.createElement('input');
         input.type = "text";
         input.placeholder = "Type a message...";
-        input.style.cssText = "width:calc(100% - 50px); margin-right:5px;";
-        chatBox.appendChild(input);
-
+        input.style.cssText = "flex:1; margin-right:5px;";
         const sendBtn = document.createElement('button');
         sendBtn.innerText = "Send";
-        sendBtn.style.cssText = "width:40px;";
-        chatBox.appendChild(sendBtn);
+        inputDiv.appendChild(input);
+        inputDiv.appendChild(sendBtn);
+        chatBox.appendChild(inputDiv);
 
         document.body.appendChild(chatBox);
+
+        // ------------------------
+        // Dragging
+        // ------------------------
+        header.onmousedown = function(e) {
+            let offsetX = e.clientX - chatBox.offsetLeft;
+            let offsetY = e.clientY - chatBox.offsetTop;
+            function moveHandler(e) {
+                chatBox.style.left = (e.clientX - offsetX) + "px";
+                chatBox.style.top = (e.clientY - offsetY) + "px";
+                chatBox.style.bottom = "auto";
+                chatBox.style.right = "auto";
+            }
+            function upHandler() {
+                document.removeEventListener('mousemove', moveHandler);
+                document.removeEventListener('mouseup', upHandler);
+            }
+            document.addEventListener('mousemove', moveHandler);
+            document.addEventListener('mouseup', upHandler);
+        };
 
         // ------------------------
         // Send message
@@ -229,15 +270,10 @@ makeDraggable(vfx, vfxLock);
         function sendMessage() {
             const text = input.value.trim();
             if (!text) return;
-            const msg = {
-                user: username,
-                text,
-                time: Date.now()
-            };
+            const msg = { user: username, text, time: Date.now() };
             db.ref('messages').push(msg);
             input.value = "";
         }
-
         sendBtn.onclick = sendMessage;
         input.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
 
