@@ -46,7 +46,7 @@
     if(progress>=100){
       clearInterval(int);
       setTimeout(()=>{
-        loading.innerText='Welcome, hacker';
+        loading.innerText='Welcome, Hacker';
         setTimeout(()=>{
           clearInterval(rain);
           overlay.remove();
