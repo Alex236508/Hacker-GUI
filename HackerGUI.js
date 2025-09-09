@@ -363,7 +363,6 @@ if (!vfxLock) {
     vfxLock.id = 'vfxLock';
 }
 
-// Make draggable
 makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
 
