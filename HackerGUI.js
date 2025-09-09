@@ -535,29 +535,45 @@ addBtn(vfx,'Text Corruption',()=>{
 });
 
 // Bubble Text
-addBtn(vfx,'Bubble Text',()=>{
-    if(window.bubbleActive) return;
-    window.bubbleActive = true;
-    window.originalText = [];
+addBtn(vfx, 'Bubble Text', () => {
+  if (window.bubbleActive) return;
+  window.bubbleActive = true;
+  window.originalText = [];
 
-    function transform(el){
-        if(!el || el.id==='vfxGUI'||el.id==='utilitiesGUI'||el.closest('#vfxGUI,#utilitiesGUI')) return;
-        if(el.nodeType===Node.TEXT_NODE && el.nodeValue.trim()){
-            window.originalText.push({el, text: el.nodeValue});
-            let chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
-            let bubbles='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ①②③④⑤⑥⑦⑧⑨⓪'.split('');
-            el.nodeValue = el.nodeValue.replace(/[a-zA-Z0-9]/g, l => bubbles[chars.indexOf(l)] || l);
-        } else if(el.childNodes && el.childNodes.length>0){
-            el.childNodes.forEach(transform);
-        }
+  const map = {
+    a: 'ⓐ', b: 'ⓑ', c: 'ⓒ', d: 'ⓓ', e: 'ⓔ', f: 'ⓕ', g: 'ⓖ',
+    h: 'ⓗ', i: 'ⓘ', j: 'ⓙ', k: 'ⓚ', l: 'ⓛ', m: 'ⓜ', n: 'ⓝ',
+    o: 'ⓞ', p: 'ⓟ', q: 'ⓠ', r: 'ⓡ', s: 'ⓢ', t: 'ⓣ', u: 'ⓤ',
+    v: 'ⓥ', w: 'ⓦ', x: 'ⓧ', y: 'ⓨ', z: 'ⓩ',
+    A: 'Ⓐ', B: 'Ⓑ', C: 'Ⓒ', D: 'Ⓓ', E: 'Ⓔ', F: 'Ⓕ', G: 'Ⓖ',
+    H: 'Ⓗ', I: 'Ⓘ', J: 'Ⓙ', K: 'Ⓚ', L: 'Ⓛ', M: 'Ⓜ', N: 'Ⓝ',
+    O: 'Ⓞ', P: 'Ⓟ', Q: 'Ⓠ', R: 'Ⓡ', S: 'Ⓢ', T: 'Ⓣ', U: 'Ⓤ',
+    V: 'Ⓥ', W: 'Ⓦ', X: 'Ⓧ', Y: 'Ⓨ', Z: 'Ⓩ',
+    0: '⓪', 1: '①', 2: '②', 3: '③', 4: '④',
+    5: '⑤', 6: '⑥', 7: '⑦', 8: '⑧', 9: '⑨'
+  };
+
+  function transform(el) {
+    if (!el || el.id === 'vfxGUI' || el.id === 'utilitiesGUI' || el.closest?.('#vfxGUI,#utilitiesGUI')) return;
+    if (el.nodeType === Node.TEXT_NODE && el.nodeValue.trim()) {
+      window.originalText.push({ el, text: el.nodeValue });
+      el.nodeValue = el.nodeValue.replace(/[a-zA-Z0-9]/g, l => map[l] || l);
+    } else if (el.childNodes && el.childNodes.length > 0) {
+      el.childNodes.forEach(transform);
     }
+  }
 
-    window.bubbleInt = setInterval(()=>{ transform(document.body); }, 50);
-},()=>{  // off function for Bubble Text
-  if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; window.bubbleActive=false;}
-  if(window.originalText){window.originalText.forEach(o=>o.el.nodeValue=o.text); window.originalText=[];}
+  transform(document.body);
+
+}, () => {  // off function for Bubble Text
+  if (window.bubbleActive) {
+    window.bubbleActive = false;
+    if (window.originalText) {
+      window.originalText.forEach(o => { o.el.nodeValue = o.text; });
+      window.originalText = [];
+    }
+  }
 });
-
 
 // Page Spin
 addBtn(vfx,'Page Spin',()=>{
