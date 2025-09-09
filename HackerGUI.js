@@ -58,25 +58,30 @@
 
   // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
   function spawnGUIs() {
-  // ---------- Utilities GUI ----------
-const util = document.createElement('div');
-util.id = 'utilitiesGUI';
-util.style.cssText = `
-    position:fixed;
-    top:50px;
-    left:50px;
-    width:320px;
-    background:#1b1b1b;
-    color:#00ff00;
-    font-family:Consolas,monospace;
-    padding:10px;
-    border:2px solid #00ff00;
-    border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);
-    z-index:999999;
-    user-select:none;
-    cursor:move;
-`;
+  // Utilities GUI
+let util = document.getElementById('utilitiesGUI');
+if (!util) {
+    util = document.createElement('div');
+    util.id = 'utilitiesGUI';
+    util.style.cssText = `
+        position:fixed;
+        top:50px;
+        left:50px;
+        width:320px;
+        background:#1b1b1b;
+        color:#00ff00;
+        font-family:Consolas,monospace;
+        padding:10px;
+        border:2px solid #00ff00;
+        border-radius:8px;
+        box-shadow:0 0 15px rgba(0,255,0,0.5);
+        z-index:999999;
+        user-select:none;
+        cursor:move;
+    `;
+    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+    document.body.appendChild(util);
+}
 util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
 document.body.appendChild(util);
 
@@ -278,18 +283,21 @@ el.addEventListener('mousedown', () => {
     initGlobalChat();
 })();
 
-    // -------------------- VFX GUI --------------------
-    const vfx = document.createElement('div');
-  vfx.id = 'vfxGUI';
-  vfx.style.cssText = `
-    position:fixed;top:50px;right:50px;width:320px;
-    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
-    user-select:none;cursor:move;
-  `;
-  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
-  document.body.appendChild(vfx);
+    // VFX GUI
+let vfx = document.getElementById('vfxGUI');
+if (!vfx) {
+    vfx = document.createElement('div');
+    vfx.id = 'vfxGUI';
+    vfx.style.cssText = `
+        position:fixed;top:50px;right:50px;width:320px;
+        background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+        padding:10px;border:2px solid #00ff00;border-radius:8px;
+        box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+        user-select:none;cursor:move;
+    `;
+    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
+    document.body.appendChild(vfx);
+}
 
     // -------------------- BUTTON HELPER --------------------
      function addBtn(container,name,on,off){
