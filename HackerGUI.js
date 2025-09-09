@@ -152,99 +152,107 @@ makeDraggable(vfx, vfxLock);
         if(off) activeUtilities[name] = { on, off };
     }
 
-    // Global Chat Utility with Colors and Timestamps
-addBtn('Global Chat', () => {
-    if(window.globalChatActive) return;
-    window.globalChatActive = true;
+    // Add Chat Button
+addBtn(utilities, 'Global Chat', () => {
+    if (window.chatActive) return;
+    window.chatActive = true;
 
-    // Prompt for username
-    let username = prompt("Enter your username:", "Anonymous") || "Anonymous";
+    // Load Firebase CDN if not already loaded
+    if (!window.firebase) {
+        const scriptApp = document.createElement('script');
+        scriptApp.src = "https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js";
+        document.head.appendChild(scriptApp);
 
-    // Simple function to generate a color based on username
-    function getUsernameColor(name) {
-        let hash = 0;
-        for(let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-        const color = `hsl(${hash % 360}, 70%, 60%)`;
-        return color;
+        const scriptDB = document.createElement('script');
+        scriptDB.src = "https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js";
+        document.head.appendChild(scriptDB);
+
+        scriptDB.onload = initChat;
+    } else {
+        initChat();
     }
 
-    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+    function initChat() {
+        if (window.chatInitialized) return;
+        window.chatInitialized = true;
 
-    const db = getDatabase();
-    const messagesRef = ref(db, 'global-chat');
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
+            authDomain: "hacker-gui-global-chat.firebaseapp.com",
+            databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
+            projectId: "hacker-gui-global-chat",
+            storageBucket: "hacker-gui-global-chat.firebasestorage.app",
+            messagingSenderId: "410978781234",
+            appId: "1:410978781234:web:ee08f15ee9be48970c542b",
+            measurementId: "G-SB0B1FLF29"
+        };
 
-    // Chat container
-    const chatContainer = document.createElement('div');
-    chatContainer.style.position = 'fixed';
-    chatContainer.style.bottom = '10px';
-    chatContainer.style.right = '10px';
-    chatContainer.style.width = '320px';
-    chatContainer.style.height = '400px';
-    chatContainer.style.backgroundColor = 'rgba(0,0,0,0.9)';
-    chatContainer.style.color = 'white';
-    chatContainer.style.zIndex = '100000';
-    chatContainer.style.display = 'flex';
-    chatContainer.style.flexDirection = 'column';
-    chatContainer.style.borderRadius = '10px';
-    chatContainer.style.padding = '10px';
-    chatContainer.style.fontFamily = 'Arial, sans-serif';
-    chatContainer.id = 'globalChatContainer';
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    // Messages box
-    const messagesBox = document.createElement('div');
-    messagesBox.style.flex = '1';
-    messagesBox.style.overflowY = 'auto';
-    messagesBox.style.marginBottom = '10px';
-    chatContainer.appendChild(messagesBox);
+        // Create chat UI
+        const chatDiv = document.createElement('div');
+        chatDiv.style.cssText = `
+            position:fixed; bottom:10px; right:10px;
+            width:300px; height:400px;
+            background:black; color:white;
+            border:2px solid green; z-index:999999;
+            display:flex; flex-direction:column;
+        `;
+        const messagesDiv = document.createElement('div');
+        messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
+        const inputDiv = document.createElement('div');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Type message...';
+        input.style.cssText = 'width:80%;';
+        const sendBtn = document.createElement('button');
+        sendBtn.textContent = 'Send';
+        sendBtn.style.cssText = 'width:18%; margin-left:2%;';
+        inputDiv.appendChild(input);
+        inputDiv.appendChild(sendBtn);
 
-    // Input box
-    const inputBox = document.createElement('input');
-    inputBox.type = 'text';
-    inputBox.placeholder = 'Type a message...';
-    inputBox.style.width = '100%';
-    inputBox.style.padding = '5px';
-    inputBox.style.borderRadius = '5px';
-    inputBox.style.border = 'none';
-    chatContainer.appendChild(inputBox);
+        chatDiv.appendChild(messagesDiv);
+        chatDiv.appendChild(inputDiv);
+        document.body.appendChild(chatDiv);
 
-    document.body.appendChild(chatContainer);
+        // Ask for username
+        let username = prompt("Enter your username:", "Anon") || "Anon";
 
-    // Send message function
-    function sendMessage() {
-        const text = inputBox.value.trim();
-        if(!text) return;
-        push(messagesRef, { username, message: text, timestamp: Date.now() });
-        inputBox.value = '';
+        // Send message
+        function sendMessage() {
+            if (input.value.trim() === '') return;
+            const msgRef = db.ref('messages').push();
+            msgRef.set({
+                user: username,
+                text: input.value.trim(),
+                timestamp: Date.now()
+            });
+            input.value = '';
+        }
+        sendBtn.onclick = sendMessage;
+        input.addEventListener('keydown', e => { if(e.key==='Enter') sendMessage(); });
+
+        // Listen for new messages
+        db.ref('messages').on('child_added', snapshot => {
+            const data = snapshot.val();
+            const msgEl = document.createElement('div');
+            msgEl.textContent = `${data.user}: ${data.text}`;
+            messagesDiv.appendChild(msgEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+
+        // Cleanup when turning off
+        window.chatCleanup = () => {
+            db.ref('messages').off();
+            chatDiv.remove();
+            window.chatActive = false;
+            window.chatInitialized = false;
+        }
     }
-
-    inputBox.addEventListener('keydown', e => {
-        if(e.key === 'Enter') sendMessage();
-    });
-
-    // Listen for new messages
-    onChildAdded(messagesRef, (data) => {
-        const { username: msgUser, message, timestamp } = data.val();
-
-        const msgEl = document.createElement('div');
-        msgEl.style.marginBottom = '5px';
-
-        const time = new Date(timestamp);
-        const hours = time.getHours().toString().padStart(2, '0');
-        const minutes = time.getMinutes().toString().padStart(2, '0');
-        const ts = `[${hours}:${minutes}]`;
-
-        msgEl.innerHTML = `<span style="color:${getUsernameColor(msgUser)}; font-weight:bold;">${msgUser}</span> ${ts}: ${message}`;
-        messagesBox.appendChild(msgEl);
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-    });
-
-    // Off function
-    window.globalChatOff = () => {
-        window.globalChatActive = false;
-        chatContainer.remove();
-    };
-}, () => {
-    if(window.globalChatOff) window.globalChatOff();
+}, () => { // Off function
+    if (window.chatCleanup) window.chatCleanup();
 });
     
     // Developer Console (Eruda)
