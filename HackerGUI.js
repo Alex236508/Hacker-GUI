@@ -321,8 +321,8 @@ if (!vfx) {
     gui.appendChild(lock);
     return lock;
   }
-  let utilLock = addLockIcon(util);
-  let vfxLock = addLockIcon(vfx);
+  utilLock = addLockIcon(util);
+ vfxLock = addLockIcon(vfx);
 
      // -------------------- DRAGGING --------------------
 function makeDraggable(g, lock){
@@ -1099,8 +1099,7 @@ addBtn(vfx,'Stop All',()=>{
       vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
     }
   });
- // ✅ Declare these once
-    let utilLock, vfxLock;
+ 
   } // end spawnGUIs
 
 })();
