@@ -1099,7 +1099,8 @@ addBtn(vfx,'Stop All',()=>{
       vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
     }
   });
-
+ // ✅ Declare these once
+    let utilLock, vfxLock;
   } // end spawnGUIs
 
 })();
