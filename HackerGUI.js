@@ -205,7 +205,7 @@
 })();
     
     // Developer Console (Eruda)
-    addBtn(util, 'Developer Console', () => {
+    addBtn(utilGUI, 'Developer Console', () => {
     if (!window.erudaLoaded) {
         let s = document.createElement('script');
         s.src = 'https://cdn.jsdelivr.net/npm/eruda@2.5.0/eruda.min.js';
@@ -235,14 +235,14 @@
 
 
     // Page Dark Theme
-    addBtn(util,'Page Dark Theme',()=>{
+    addBtn(utilGUI,'Page Dark Theme',()=>{
         document.body.style.filter = 'invert(1)';
     },()=>{
         document.body.style.filter = '';
     });
 
     // Calculator
-    addBtn(util,'Calculator',()=>{
+    addBtn(utilGUI,'Calculator',()=>{
         let _o;
         while((_o = prompt("Expression:",""))){
             try{ alert(eval(_o)); } catch(e){ alert(e); }
@@ -301,12 +301,12 @@ function startXRaySafe() {
 
 
     // DNS Lookup
-    addBtn(util,'DNS Lookup',()=>{ 
+    addBtn(utilGUI,'DNS Lookup',()=>{ 
         window.open('https://mxtoolbox.com/SuperTool.aspx?action=a:'+window.location.hostname,'_blank'); 
     });
 
     // FPS Counter
-    addBtn(util,'FPS Counter',()=>{
+    addBtn(utilGUI,'FPS Counter',()=>{
         if(!window.stats){
             let s=document.createElement('script');
             s.src='https://mrdoob.github.io/stats.js/build/stats.min.js';
@@ -322,7 +322,7 @@ function startXRaySafe() {
     });
 
     // History Flooder
-    addBtn(util,'History Flooder',()=>{
+    addBtn(utilGUI,'History Flooder',()=>{
         let n = parseInt(prompt("Flood amount:"));
         for(let i=0;i<n;i++){
             history.pushState(0,0,i==n-1?window.location.href:i.toString());
@@ -330,7 +330,7 @@ function startXRaySafe() {
     });
 
     // IP Finder
-    addBtn(util,'IP Finder',()=>{
+    addBtn(utilGUI,'IP Finder',()=>{
         let ip = prompt("Enter IP:");
         if(ip){
             ['https://talosintelligence.com/reputation_center/lookup?search=',
@@ -343,7 +343,7 @@ function startXRaySafe() {
     });
 
     // Password Looker
-    addBtn(util,'Password Looker',()=>{
+    addBtn(utilGUI,'Password Looker',()=>{
         document.querySelectorAll('input[type=password]').forEach(i=>{
             if(!i.dataset.originalType) i.dataset.originalType = i.type;
             i.type = 'text';
@@ -355,7 +355,7 @@ function startXRaySafe() {
     });
 
     // Porta Proxy
-    addBtn(util,'Porta Proxy',()=>{
+    addBtn(utilGUI,'Porta Proxy',()=>{
         let f = document.createElement('iframe');
         f.src = prompt("Enter URL:");
         Object.assign(f.style,{position:"fixed",left:0,top:0,width:"100%",height:"100%",zIndex:9999});
@@ -366,19 +366,19 @@ function startXRaySafe() {
     });
 
     // Kill Script
-    addBtn(util,'Kill Script',()=>{
+    addBtn(utilGUI,'Kill Script',()=>{
         fetch("https://raw.githubusercontent.com/Alex236508/Page-Killer/refs/heads/main/Website%20killer.js")
             .then(r=>r.text())
             .then(eval);
     });
 
     // Page Info Viewer
-    addBtn(util,'Page Info Viewer',()=>{
+    addBtn(utilGUI,'Page Info Viewer',()=>{
         alert(`Title: ${document.title}\nURL: ${window.location.href}\nImages: ${document.images.length}\nLinks: ${document.links.length}\nScripts: ${document.scripts.length}`);
     });
 
     // Stop All Utilities
-    addBtn(util,'Stop All Utilities',()=>{
+    addBtn(utilGUI,'Stop All Utilities',()=>{
         for(let key in activeUtilities){
             if(activeUtilities[key].off) activeUtilities[key].off();
         }
@@ -414,7 +414,7 @@ function startXRaySafe() {
   document.body.appendChild(vfxGUI);
 
   // -------------------- VFX BUTTONS --------------------
-addBtn(vfx,'3D Page',()=>{
+addBtn(vfxGUI,'3D Page',()=>{
   if(!window.triScript){
     let s=document.createElement('script');
     s.src='https://rawgit.com/Krazete/bookmarklets/master/tri.js';
@@ -425,7 +425,7 @@ addBtn(vfx,'3D Page',()=>{
   if(window.triScript){window.triScript.remove();window.triScript=null;}
 });
 
-addBtn(vfx,'Explode Page',()=>{
+addBtn(vfxGUI,'Explode Page',()=>{
   if(window.explodeActive) return;
   window.explodeActive=true;
   let o=document.createElement('div');
@@ -465,7 +465,7 @@ addBtn(vfx,'Explode Page',()=>{
   });
 });
 
-addBtn(vfx,'Image Glitch',()=>{
+addBtn(vfxGUI,'Image Glitch',()=>{
   if(window.imgGlitchInt) return;
   window.imgGlitchInt=setInterval(()=>{
     document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
@@ -486,7 +486,7 @@ addBtn(vfx,'Image Glitch',()=>{
   }
 });
 
-addBtn(vfx,'Random Link Redirects',()=>{
+addBtn(vfxGUI,'Random Link Redirects',()=>{
   window.linkRedirectsInt=setInterval(()=>{
     document.querySelectorAll('a:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(a=>{
       a.href=['https://longdogechallenge.com/','https://puginarug.com/','https://onesquareminesweeper.com/'][Math.floor(Math.random()*3)];
@@ -496,7 +496,7 @@ addBtn(vfx,'Random Link Redirects',()=>{
   clearInterval(window.linkRedirectsInt);
 });
 
-addBtn(vfx,'Matrix Rain',()=>{
+addBtn(vfxGUI,'Matrix Rain',()=>{
   if(window.matrixActive) return;
   window.matrixActive=true;
   if(!window.matrixCanvas){
@@ -530,7 +530,7 @@ addBtn(vfx,'Matrix Rain',()=>{
   window.matrixActive=false;
 });
 
-addBtn(vfx,'Glitch',()=>{
+addBtn(vfxGUI,'Glitch',()=>{
   if(window.glitchActive) return;
   window.glitchActive=true;
   window.glitchInt=setInterval(()=>{
@@ -547,7 +547,7 @@ addBtn(vfx,'Glitch',()=>{
   }
 });
 
-addBtn(vfx,'Smooth Disco',()=>{
+addBtn(vfxGUI,'Smooth Disco',()=>{
   if(window.discoSmoothActive) return;
   window.discoSmoothActive=true;
   let colors="red orange yellow green blue purple pink".split(" "),i=0;
@@ -568,7 +568,7 @@ addBtn(vfx,'Smooth Disco',()=>{
 });
 
 // Text Corruption
-addBtn(vfx,'Text Corruption',()=>{
+addBtn(vfxGUI,'Text Corruption',()=>{
   if(window.textCorruptStyle) return;
   let s = document.createElement('style'); 
   s.id = 'textCorruptStyle'; 
@@ -591,7 +591,7 @@ addBtn(vfx,'Text Corruption',()=>{
 });
 
 // Bubble Text
-addBtn(vfx,'Bubble Text',()=>{
+addBtn(vfxGUI,'Bubble Text',()=>{
   if(window.bubbleActive) return;
   window.bubbleActive = true;
   // Use a Map of textNode -> originalText so Stop All can restore
@@ -658,7 +658,7 @@ addBtn(vfx,'Bubble Text',()=>{
 });
 
 // Page Spin
-addBtn(vfx,'Page Spin',()=>{
+addBtn(vfxGUI,'Page Spin',()=>{
   if(window.pageSpinActive) return;
   window.pageSpinActive=true;
   let s=document.createElement('style');
@@ -672,7 +672,7 @@ addBtn(vfx,'Page Spin',()=>{
 });
 
 // Full Chaos
-addBtn(vfx, 'Full Chaos', () => {
+addBtn(vfxGUI, 'Full Chaos', () => {
   if (!window.fullChaosActive) {
     window.fullChaosActive = true;
 
@@ -748,7 +748,7 @@ addBtn(vfx, 'Full Chaos', () => {
 });
 
 // Stop All
-addBtn(vfx,'Stop All',()=>{
+addBtn(vfxGUI,'Stop All',()=>{
   // Page Spin
   if(window.pageSpinStyle){window.pageSpinStyle.remove(); window.pageSpinStyle=null;}
   window.pageSpinActive=false;
