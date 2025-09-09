@@ -70,11 +70,11 @@
     const activeUsernames = new Set(); // Track usernames in use
     
     // Create "Open Chat" button
-    addBtn('Utilities', 'Open Chat', () => {
-        if (document.getElementById('globalChatContainer')) {
-            document.getElementById('globalChatContainer').style.display = 'block';
-            return;
-        }
+   addBtn(utilContainer, 'Open Chat', () => {
+    if (document.getElementById('globalChatContainer')) {
+        document.getElementById('globalChatContainer').style.display = 'block';
+        return;
+    }
 
         let username = null;
         while (!username || activeUsernames.has(username)) {
