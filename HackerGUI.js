@@ -199,92 +199,55 @@ makeDraggable(vfx, vfxLock);
     });
 
     // ================= Web X-Ray Integration for Utilities GUI =================
-(function() {
-  if (window.webXRayIntegrated) return;
-  window.webXRayIntegrated = true;
+function startXRaySafe() {
+  if (window.webXrayUI) return; // already running
 
-  // ------------------- Utilities reference -------------------
-  const util = document.getElementById('utilitiesGUI');
-  if (!util) {
-    console.warn('Utilities GUI not found; aborting X-Ray integration.');
-    return;
-  }
-
-  // ------------------- Helper: Add button -------------------
-  function addBtn(container, name, on, off) {
-    const b = document.createElement('button');
-    b.innerText = name;
-    b.style.cssText = 'width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
-    b.onclick = on;
-    container.appendChild(b);
-    return b;
-  }
-
-  // ------------------- Load dependencies safely -------------------
-  function loadScript(url) {
-    return new Promise((resolve, reject) => {
+  function init() {
+    // Ensure jQuery is loaded
+    if (!window.jQuery) {
       const s = document.createElement('script');
-      s.src = url;
-      s.onload = () => resolve();
-      s.onerror = reject;
+      s.src = 'https://code.jquery.com/jquery-3.6.4.min.js';
+      s.onload = init; // try again after load
       document.head.appendChild(s);
-    });
-  }
+      return;
+    }
 
-  function loadCSS(url) {
-    return new Promise(resolve => {
-      const l = document.createElement('link');
-      l.rel = 'stylesheet';
-      l.href = url;
-      l.onload = resolve;
-      document.head.appendChild(l);
-    });
-  }
+    // Ensure Web X-Ray script loaded
+    if (!window.Localized || !jQuery.xRayUI) {
+      const s = document.createElement('script');
+      s.src = 'https://goggles.mozilla.org/webxray.js';
+      s.onload = init; // try again after load
+      document.head.appendChild(s);
+      return;
+    }
 
-  async function startXRay() {
+    // Ensure body exists
+    if (!document.body) {
+      setTimeout(init, 50);
+      return;
+    }
+
     try {
-      // Load jQuery if not present
-      if (!window.jQuery) await loadScript('https://code.jquery.com/jquery-3.6.4.min.js');
-
-      // Load Web X-Ray scripts
-      if (!window.Localized) {
-        await loadScript('https://goggles.mozilla.org/webxray.js'); // actual X-Ray script
-      }
-
-      // Load Web X-Ray CSS
-      await loadCSS('https://goggles.mozilla.org/webxray.css');
-
-      // Ensure Localized is defined
-      if (!window.Localized) {
-        console.warn('Localized object missing; creating fallback.');
-        window.Localized = { ready: (data, cb) => cb() };
-      }
-
-      // Initialize X-Ray safely
-      const ui = jQuery.xRayUI ? jQuery.xRayUI({ eventSource: document }) : null;
-      if (!ui) {
-        console.error('xRayUI not available; cannot start X-Ray.');
-        return;
-      }
+      // Initialize X-Ray
+      const ui = jQuery.xRayUI({ eventSource: document });
       window.webXrayUI = ui;
       ui.start();
 
-      // Defensive: Stop on unload
       window.addEventListener('beforeunload', () => {
         if (ui) ui.unload();
       });
-
-    } catch (e) {
-      console.error('Failed to load Web X-Ray:', e);
+    } catch(e) {
+      console.error('Web X-Ray initialization failed:', e);
     }
   }
 
-  // ------------------- Add button to Utilities GUI -------------------
-  addBtn(util, 'Web X-Ray', () => {
-    if (!window.webXrayUI) startXRay();
-  });
+  if (document.readyState === 'complete') {
+    init();
+  } else {
+    window.addEventListener('load', init);
+  }
+}
 
-})();
 
     // DNS Lookup
     addBtn(util,'DNS Lookup',()=>{ 
