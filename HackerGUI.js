@@ -67,15 +67,22 @@
     window.globalChatInitialized = true;
 
     const firebaseURL = "https://hacker-gui-global-chat-default-rtdb.firebaseio.com/";
-    const activeUsernames = new Set(); // Track usernames in use
-    
-    // Create "Open Chat" button
-   addBtn(utilContainer, 'Open Chat', () => {
-    if (document.getElementById('globalChatContainer')) {
-        document.getElementById('globalChatContainer').style.display = 'block';
-        return;
-    }
+    const activeUsernames = new Set(); // Track active usernames
 
+    // Get Utilities GUI container
+    const utilContainer = document.getElementById('utilitiesGUI');
+    if (!utilContainer) return console.error("Utilities GUI container not found");
+
+    // Create "Open Chat" button
+    addBtn(utilContainer, 'Open Chat', () => {
+        // If chat already exists, show it
+        let chatContainer = document.getElementById('globalChatContainer');
+        if (chatContainer) {
+            chatContainer.style.display = 'flex';
+            return;
+        }
+
+        // Ask for username
         let username = null;
         while (!username || activeUsernames.has(username)) {
             username = prompt("Enter your username:", "Anonymous")?.trim();
@@ -85,7 +92,7 @@
         activeUsernames.add(username);
 
         // Create chat container
-        const chatContainer = document.createElement('div');
+        chatContainer = document.createElement('div');
         chatContainer.id = 'globalChatContainer';
         chatContainer.style.cssText = `
             position:fixed;
