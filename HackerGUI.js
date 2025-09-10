@@ -306,7 +306,8 @@ makeDraggable(vfx, vfxLock);
     })();
 
         // -------------------- VFX BUTTONS --------------------
-addBtn(vfx,'3D Page',()=>{
+  // 3D Page
+  addBtn(vfx,'3D Page',()=>{
   if(!window.triScript){
     let s=document.createElement('script');
     s.src='https://rawgit.com/Krazete/bookmarklets/master/tri.js';
@@ -316,7 +317,7 @@ addBtn(vfx,'3D Page',()=>{
 },()=>{
   if(window.triScript){window.triScript.remove();window.triScript=null;}
 });
-
+// Explode Page
 addBtn(vfx,'Explode Page',()=>{
   if(window.explodeActive) return;
   window.explodeActive=true;
@@ -356,7 +357,7 @@ addBtn(vfx,'Explode Page',()=>{
     e.style.transition='';
   });
 });
-
+// Image Glitch
 addBtn(vfx,'Image Glitch',()=>{
   if(window.imgGlitchInt) return;
   window.imgGlitchInt=setInterval(()=>{
@@ -377,7 +378,7 @@ addBtn(vfx,'Image Glitch',()=>{
     });
   }
 });
-
+// Random Link Redirects
 addBtn(vfx,'Random Link Redirects',()=>{
   window.linkRedirectsInt=setInterval(()=>{
     document.querySelectorAll('a:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(a=>{
@@ -387,7 +388,7 @@ addBtn(vfx,'Random Link Redirects',()=>{
 },()=>{
   clearInterval(window.linkRedirectsInt);
 });
-
+// Matrix Rain
 addBtn(vfx,'Matrix Rain',()=>{
   if(window.matrixActive) return;
   window.matrixActive=true;
@@ -422,41 +423,44 @@ addBtn(vfx,'Matrix Rain',()=>{
   window.matrixActive=false;
 });
 
+// Glitch
 addBtn(vfx,'Glitch',()=>{
-  if(window.glitchActive) return;
-  window.glitchActive=true;
-  window.glitchInt=setInterval(()=>{
-    document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
-      e.style.backgroundColor=['red','orange','yellow','green','blue','purple','pink'][Math.floor(Math.random()*7)];
-    });
-  },25);
+    if(window.glitchActive) return;
+    window.glitchActive=true;
+    window.glitchInt=setInterval(()=>{
+        document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
+            e.style.backgroundColor=['red','orange','yellow','green','blue','purple','pink'][Math.floor(Math.random()*7)];
+        });
+    },25);
 },()=>{
-  if(window.glitchInt){
-    clearInterval(window.glitchInt);
-    window.glitchInt=null;
-    window.glitchActive=false;
+    if(window.glitchInt){
+        clearInterval(window.glitchInt);
+        window.glitchInt=null;
+    }
+    window.glitchActive=false; // reset the flag
     document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>e.style.backgroundColor='');
-  }
 });
 
+
+// Smooth Disco
 addBtn(vfx,'Smooth Disco',()=>{
-  if(window.discoSmoothActive) return;
-  window.discoSmoothActive=true;
-  let colors="red orange yellow green blue purple pink".split(" "),i=0;
-  window.discoSmoothInt=setInterval(()=>{
-    i>=colors.length?i=0:i++;
-    document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
-      e.style.transition="background-color 1s";
-      e.style.backgroundColor=colors[i];
-    });
-  },1000);
+    if(window.discoSmoothActive) return;
+    window.discoSmoothActive=true;
+    let colors="red orange yellow green blue purple pink".split(" "),i=0;
+    window.discoSmoothInt=setInterval(()=>{
+        i>=colors.length?i=0:i++;
+        document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
+            e.style.transition="background-color 1s";
+            e.style.backgroundColor=colors[i];
+        });
+    },1000);
 },()=>{
-  if(window.discoSmoothInt){
-    clearInterval(window.discoSmoothInt);
-    window.discoSmoothInt=null;
-    window.discoSmoothActive=false;
+    if(window.discoSmoothInt){
+        clearInterval(window.discoSmoothInt);
+        window.discoSmoothInt=null;
+    }
+    window.discoSmoothActive=false; // reset the flag
     document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>e.style.backgroundColor='');
-  }
 });
 
 // Text Corruption
@@ -481,7 +485,7 @@ addBtn(vfx,'Text Corruption',()=>{
 },()=>{
   if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}
 });
-
+// Bubble Text
 addBtn(vfx, 'Bubble Text', () => {
     if (window.bubbleActive) return;
     window.bubbleActive = true;
@@ -548,7 +552,7 @@ addBtn(vfx,'Page Spin',()=>{
   if(window.pageSpinStyle){window.pageSpinStyle.remove();window.pageSpinStyle=null;}
   window.pageSpinActive=false;
 });
-
+// Full chaos
 addBtn(vfx, 'Full Chaos', () => {
   if (!window.fullChaosActive) {
     window.fullChaosActive = true;
@@ -615,7 +619,7 @@ addBtn(vfx, 'Full Chaos', () => {
       window.fullChaosActive = false;
     });
   } else {
-    // Manual toggle off
+    
     clearInterval(window.fullChaosLoop1);
     clearInterval(window.fullChaosLoop2);
     let c = document.getElementById('chaosContainer');
@@ -623,9 +627,9 @@ addBtn(vfx, 'Full Chaos', () => {
     window.fullChaosActive = false;
   }
 });
-
+// stop all VFX
 addBtn(vfx, 'Stop All', () => {
-    // Call all registered VFX cleanup functions
+    
     if (window.stopAllVFX) {
         window.stopAllVFX.forEach(fn => { try { fn(); } catch (e) {} });
         window.stopAllVFX = [];
