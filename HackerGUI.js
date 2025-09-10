@@ -169,29 +169,90 @@ document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI)
  };
   document.body.appendChild(stopAllBtn);
 
-  // ---------- GUI CREATION (Safe for multiple runs) ----------
+  // ---------- Utilities GUI ----------
 if (!window.utilGUI) {
     window.utilGUI = document.createElement('div');
-    window.utilGUI.style.cssText = 'position:fixed;top:100px;left:100px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
+    window.utilGUI.id = 'utilitiesGUI';
+    window.utilGUI.style.cssText = `
+        position:fixed;
+        top:80px;  /* pushed down so title fits above */
+        left:50px;
+        width:320px;
+        background:#1b1b1b;
+        color:#00ff00;
+        font-family:Consolas,monospace;
+        padding:10px;
+        border:2px solid #00ff00;
+        border-radius:8px;
+        box-shadow:0 0 15px rgba(0,255,0,0.5);
+        z-index:999999;
+        user-select:none;
+        cursor:move;
+    `;
+
+    // Create title element above the GUI
+    const utilTitle = document.createElement('div');
+    utilTitle.textContent = "Utilities";
+    utilTitle.style.cssText = `
+        position:fixed;
+        top:50px;
+        left:50px;
+        width:320px;
+        text-align:center;
+        font-weight:bold;
+        color:#00ff00;
+        text-shadow:0 0 8px #00ff00;
+        font-family:Consolas,monospace;
+        z-index:1000000;
+        pointer-events:none; /* so it doesn’t block dragging */
+    `;
+    document.body.appendChild(utilTitle);
+
     makeDraggable(window.utilGUI, 'utilLock');
     document.body.appendChild(window.utilGUI);
 }
 
+// ---------- VFX GUI ----------
 if (!window.vfxGUI) {
     window.vfxGUI = document.createElement('div');
-    window.vfxGUI.style.cssText = 'position:fixed;top:100px;left:350px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
+    window.vfxGUI.id = 'vfxGUI';
+    window.vfxGUI.style.cssText = `
+        position:fixed;
+        top:80px;
+        right:50px;
+        width:320px;
+        background:#1b1b1b;
+        color:#00ff00;
+        font-family:Consolas,monospace;
+        padding:10px;
+        border:2px solid #00ff00;
+        border-radius:8px;
+        box-shadow:0 0 15px rgba(0,255,0,0.5);
+        z-index:999999;
+        user-select:none;
+        cursor:move;
+    `;
+
+    // Create title element above the GUI
+    const vfxTitle = document.createElement('div');
+    vfxTitle.textContent = "VFX Controls";
+    vfxTitle.style.cssText = `
+        position:fixed;
+        top:50px;
+        right:50px;
+        width:320px;
+        text-align:center;
+        font-weight:bold;
+        color:#00ff00;
+        text-shadow:0 0 8px #00ff00;
+        font-family:Consolas,monospace;
+        z-index:1000000;
+        pointer-events:none;
+    `;
+    document.body.appendChild(vfxTitle);
+
     makeDraggable(window.vfxGUI, 'vfxLock');
     document.body.appendChild(window.vfxGUI);
-}
-
-// References for convenience
-const util = window.utilGUI;
-const vfx = window.vfxGUI;
-
-// Function to show GUIs after bootup
-function spawnGUIs() {
-    util.style.display = 'block';
-    vfx.style.display = 'block';
 }
 
  // ---------- UTILITIES BUTTONS ----------
