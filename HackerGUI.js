@@ -56,8 +56,6 @@
     }
   },40);
 
-  okay so now the utilities gui looks like this
-
 // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
   function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
