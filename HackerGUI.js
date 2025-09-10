@@ -126,152 +126,147 @@
                 window.vfxGUI = vfx;
 
                 // ---------- VFX BUTTONS SETUP ----------
-(function() {
-    if (!window.vfxGUI) return;
 
-    // 3D Page
-    vfxAddBtn('3D Page', () => {
-        if (!window.triScript) {
-            let s = document.createElement('script');
-            s.src = 'https://rawgit.com/Krazete/bookmarklets/master/tri.js';
-            document.body.appendChild(s);
-            window.triScript = s;
-        }
-    }, () => {
-        if (window.triScript) { window.triScript.remove(); window.triScript = null; }
-    });
-
-    // Explode Page
-    vfxAddBtn('Explode Page', () => {
-        if (window.explodeActive) return;
-        window.explodeActive = true;
-        let o = document.createElement('div');
-        o.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#FF0000;font-size:50px;font-family:monospace;z-index:10000000;pointer-events:none;text-shadow:0 0 10px #FF0000;';
-        document.body.appendChild(o);
-        let c = 3;
-        o.innerText = c;
-        window.explodeInt = setInterval(() => {
-            c--;
-            if (c > 0) { o.innerText = c; } 
-            else {
-                clearInterval(window.explodeInt);
-                o.remove();
-                document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e => {
-                    e.style.transition = 'transform 1s ease-out';
-                    let x = (Math.random()-0.5)*1000, y = (Math.random()-0.5)*1000, z = (Math.random()-0.5)*200;
-                    e.style.transform = `translate3d(${x}px,${y}px,${z}px) rotate(${Math.random()*720-360}deg)`;
-                });
-                setTimeout(() => {
-                    document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e => {
-                        e.style.transform = '';
-                        e.style.transition = '';
-                    });
-                    window.explodeActive = false;
-                }, 1500);
+        // 3D Page
+        vfxAddBtn('3D Page', () => {
+            if (!window.triScript) {
+                let s = document.createElement('script');
+                s.src = 'https://rawgit.com/Krazete/bookmarklets/master/tri.js';
+                document.body.appendChild(s);
+                window.triScript = s;
             }
-        }, 1000);
-    }, () => {
-        clearInterval(window.explodeInt);
-        window.explodeInt = null;
-        window.explodeActive = false;
-        document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e => {
-            e.style.transform = '';
-            e.style.transition = '';
+        }, () => {
+            if (window.triScript) { window.triScript.remove(); window.triScript = null; }
         });
-    });
-
-    // Image Glitch
-    vfxAddBtn('Image Glitch', () => {
-        if (window.imgGlitchInt) return;
-        window.imgGlitchInt = setInterval(() => {
-            document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e => {
-                e.style.position = 'absolute';
-                e.style.left = Math.random()*window.innerWidth+'px';
-                e.style.top = Math.random()*window.innerHeight+'px';
-            });
-        }, 50);
-    }, () => {
-        if (window.imgGlitchInt) {
-            clearInterval(window.imgGlitchInt);
-            window.imgGlitchInt = null;
-            document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e => {
-                e.style.position = '';
-                e.style.left = '';
-                e.style.top = '';
-            });
-        }
-    });
-
-    // Matrix Rain
-    vfxAddBtn('Matrix Rain', () => {
-        if (window.matrixActive) return;
-        window.matrixActive = true;
-        if (!window.matrixCanvas) {
-            let c = document.createElement('canvas');
-            c.width = window.innerWidth;
-            c.height = window.innerHeight;
-            c.style.cssText = 'position:fixed;top:0;left:0;z-index:99999;pointer-events:none';
-            document.body.appendChild(c);
-            window.matrixCanvas = c;
-            let ctx = c.getContext('2d');
-            let chars = '1010';
-            let cols = Math.floor(window.innerWidth/10);
-            let drops = Array.from({length:cols}, () => Math.floor(Math.random()*c.height));
-            window.matrixInt = setInterval(() => {
-                ctx.fillStyle='rgba(0,0,0,0.05)';
-                ctx.fillRect(0,0,c.width,c.height);
-                ctx.fillStyle='#0F0';
-                ctx.font='10px monospace';
-                for(let i=0;i<cols;i++){
-                    ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);
-                    if(drops[i]*10>c.height && Math.random()>0.975) drops[i]=0;
-                    drops[i]++;
+    
+        // Explode Page
+        vfxAddBtn('Explode Page', () => {
+            if (window.explodeActive) return;
+            window.explodeActive = true;
+            let o = document.createElement('div');
+            o.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#FF0000;font-size:50px;font-family:monospace;z-index:10000000;pointer-events:none;text-shadow:0 0 10px #FF0000;';
+            document.body.appendChild(o);
+            let c = 3;
+            o.innerText = c;
+            window.explodeInt = setInterval(() => {
+                c--;
+                if (c > 0) { o.innerText = c; } 
+                else {
+                    clearInterval(window.explodeInt);
+                    o.remove();
+                    document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e => {
+                        e.style.transition = 'transform 1s ease-out';
+                        let x = (Math.random()-0.5)*1000, y = (Math.random()-0.5)*1000, z = (Math.random()-0.5)*200;
+                        e.style.transform = `translate3d(${x}px,${y}px,${z}px) rotate(${Math.random()*720-360}deg)`;
+                    });
+                    setTimeout(() => {
+                        document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e => {
+                            e.style.transform = '';
+                            e.style.transition = '';
+                        });
+                        window.explodeActive = false;
+                    }, 1500);
                 }
-            },33);
-        }
-    }, () => {
-        clearInterval(window.matrixInt);
-        window.matrixInt = null;
-        if(window.matrixCanvas){window.matrixCanvas.remove(); window.matrixCanvas=null;}
-        window.matrixActive=false;
-    });
-
-    // Glitch (colors)
-    vfxAddBtn('Glitch', () => {
-        if (window.glitchActive) return;
-        window.glitchActive = true;
-        window.glitchInt = setInterval(() => {
-            document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => {
-                e.style.backgroundColor = ['red','orange','yellow','green','blue','purple','pink'][Math.floor(Math.random()*7)];
+            }, 1000);
+        }, () => {
+            clearInterval(window.explodeInt);
+            window.explodeInt = null;
+            window.explodeActive = false;
+            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e => {
+                e.style.transform = '';
+                e.style.transition = '';
             });
-        },25);
-    }, () => {
-        if (window.glitchInt) {
-            clearInterval(window.glitchInt);
-            window.glitchInt = null;
-            window.glitchActive = false;
+        });
+    
+        // Image Glitch
+        vfxAddBtn('Image Glitch', () => {
+            if (window.imgGlitchInt) return;
+            window.imgGlitchInt = setInterval(() => {
+                document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e => {
+                    e.style.position = 'absolute';
+                    e.style.left = Math.random()*window.innerWidth+'px';
+                    e.style.top = Math.random()*window.innerHeight+'px';
+                });
+            }, 50);
+        }, () => {
+            if (window.imgGlitchInt) {
+                clearInterval(window.imgGlitchInt);
+                window.imgGlitchInt = null;
+                document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e => {
+                    e.style.position = '';
+                    e.style.left = '';
+                    e.style.top = '';
+                });
+            }
+        });
+    
+        // Matrix Rain
+        vfxAddBtn('Matrix Rain', () => {
+            if (window.matrixActive) return;
+            window.matrixActive = true;
+            if (!window.matrixCanvas) {
+                let c = document.createElement('canvas');
+                c.width = window.innerWidth;
+                c.height = window.innerHeight;
+                c.style.cssText = 'position:fixed;top:0;left:0;z-index:99999;pointer-events:none';
+                document.body.appendChild(c);
+                window.matrixCanvas = c;
+                let ctx = c.getContext('2d');
+                let chars = '1010';
+                let cols = Math.floor(window.innerWidth/10);
+                let drops = Array.from({length:cols}, () => Math.floor(Math.random()*c.height));
+                window.matrixInt = setInterval(() => {
+                    ctx.fillStyle='rgba(0,0,0,0.05)';
+                    ctx.fillRect(0,0,c.width,c.height);
+                    ctx.fillStyle='#0F0';
+                    ctx.font='10px monospace';
+                    for(let i=0;i<cols;i++){
+                        ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);
+                        if(drops[i]*10>c.height && Math.random()>0.975) drops[i]=0;
+                        drops[i]++;
+                    }
+                },33);
+            }
+        }, () => {
+            clearInterval(window.matrixInt);
+            window.matrixInt = null;
+            if(window.matrixCanvas){window.matrixCanvas.remove(); window.matrixCanvas=null;}
+            window.matrixActive=false;
+        });
+    
+        // Glitch (colors)
+        vfxAddBtn('Glitch', () => {
+            if (window.glitchActive) return;
+            window.glitchActive = true;
+            window.glitchInt = setInterval(() => {
+                document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => {
+                    e.style.backgroundColor = ['red','orange','yellow','green','blue','purple','pink'][Math.floor(Math.random()*7)];
+                });
+            },25);
+        }, () => {
+            if (window.glitchInt) {
+                clearInterval(window.glitchInt);
+                window.glitchInt = null;
+                window.glitchActive = false;
+                document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => e.style.backgroundColor='');
+            }
+        });
+    
+        // Smooth Disco
+        vfxAddBtn('Smooth Disco', () => {
+            if (window.discoSmoothActive) return;
+            window.discoSmoothActive = true;
+            let colors = "red orange yellow green blue purple pink".split(" "), i = 0;
+            window.discoSmoothInt = setInterval(() => {
+                i >= colors.length ? i = 0 : i++;
+                document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => {
+                    e.style.transition = "background-color 1s";
+                    e.style.backgroundColor = colors[i];
+                });
+            },1000);
+        }, () => {
+            if(window.discoSmoothInt){clearInterval(window.discoSmoothInt); window.discoSmoothInt=null; window.discoSmoothActive=false;}
             document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => e.style.backgroundColor='');
-        }
-    });
-
-    // Smooth Disco
-    vfxAddBtn('Smooth Disco', () => {
-        if (window.discoSmoothActive) return;
-        window.discoSmoothActive = true;
-        let colors = "red orange yellow green blue purple pink".split(" "), i = 0;
-        window.discoSmoothInt = setInterval(() => {
-            i >= colors.length ? i = 0 : i++;
-            document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => {
-                e.style.transition = "background-color 1s";
-                e.style.backgroundColor = colors[i];
-            });
-        },1000);
-    }, () => {
-        if(window.discoSmoothInt){clearInterval(window.discoSmoothInt); window.discoSmoothInt=null; window.discoSmoothActive=false;}
-        document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => e.style.backgroundColor='');
-    });
-
-})();
 
 
         // ---------- VFX BUTTON HELPER ----------
