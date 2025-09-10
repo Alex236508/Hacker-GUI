@@ -150,9 +150,9 @@
         window.vfxGUI = vfx;
     }
             // ---------- FULL VFX BUTTONS BLOCK ----------
-  if (!window.vfxInitialized) {
+if (!window.vfxInitialized) {
   window.vfxInitialized = true;
-  
+
   function createBtn(label, on, off){
     const btn = document.createElement('button');
     btn.textContent = label;
@@ -170,12 +170,19 @@
     });
     btn._active = false;
     btn.addEventListener('click', function(){
-      if (btn._active) { btn._active = false; if (typeof off === 'function') try{ off(); }catch(e){} }
-      else { btn._active = true; if (typeof on === 'function') try{ on(); }catch(e){} }
+      if (btn._active) { 
+        btn._active = false; 
+        if (typeof off === 'function') try{ off(); }catch(e){} 
+      } else { 
+        btn._active = true; 
+        if (typeof on === 'function') try{ on(); }catch(e){} 
+      }
     });
     return btn;
   }
 
+  // Make sure stopAllVFX array exists
+  if (!window.stopAllVFX) window.stopAllVFX = [];
 
   // 3D Page
   vfx.appendChild(createBtn('3D Page',
@@ -305,7 +312,7 @@
     }
   ));
 
-  // Glitch (colors)
+  // Glitch Colors
   vfx.appendChild(createBtn('Glitch',
     function onGlitch(){
       if (window.glitchActive) return;
@@ -488,7 +495,6 @@
         window.stopAllVFX = [];
       }
 
-      // also reset common styles
       document.body.style.transform = '';
       document.body.style.backgroundColor = '';
       document.body.style.filter = '';
@@ -506,7 +512,7 @@
     },
     null
   ));
-
+    
   // Font color picker section
 (function(){
   const section = document.createElement('div');
@@ -517,6 +523,7 @@
   picker.type = 'color';
   picker.value = '#00ff00';
 
+  // Change all text colors when picker value changes
   picker.addEventListener('input', function(){
     document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(function(el){
       el.style.color = picker.value;
@@ -524,7 +531,7 @@
   });
 
   section.appendChild(picker);
-vfx.appendChild(section);
+  vfx.appendChild(section);
 })();
 
 
