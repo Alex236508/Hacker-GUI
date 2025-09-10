@@ -68,19 +68,6 @@
   stopAllBtn.onclick=()=>{ stopAllIntervals(); /* Reset VFX, utilities etc here */ };
   document.body.appendChild(stopAllBtn);
 
-  // ---------- FIREBASE CHAT (Consolidated) ----------
-  if(!window.hackerGUI.firebaseInitialized){
-    window.hackerGUI.firebaseInitialized=true;
-    const script = document.createElement('script');
-    script.src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
-    script.onload=()=>{ 
-      const dbScript=document.createElement('script');
-      dbScript.src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js";
-      document.body.appendChild(dbScript);
-    };
-    document.body.appendChild(script);
-  }
-
   // ---------- GUI CREATION ----------
   const utilGUI=document.createElement('div');
   utilGUI.style.cssText='position:fixed;top:100px;left:100px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
@@ -208,11 +195,10 @@ addBtn('Global Chat', () => {
     // Prompt for a username
     let username = prompt("Enter your username:", "Anonymous") || "Anonymous";
 
-    // Firebase imports (make sure firebase/app and firebase/database are included)
-    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+    const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const messagesRef = db.ref('global-chat'); // old compat style
 
-    const db = getDatabase();
-    const messagesRef = ref(db, 'global-chat');
 
     // Create chat UI
     const chatContainer = document.createElement('div');
