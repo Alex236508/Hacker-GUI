@@ -524,8 +524,9 @@
   });
 
   section.appendChild(picker);
-  vfx.appendChild(section);
+vfx.appendChild(section);
 })();
+
 
       // ---------- DRAG HANDLER ----------
         function makeDraggable(el) {
