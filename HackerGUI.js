@@ -64,18 +64,6 @@
     scripts: {}
   };
 
-  // ---------- HELPER FUNCTIONS ----------
-  function addBtn(container, text, onClick, offClick) {
-    let btn = document.createElement('button');
-    btn.textContent = text;
-    btn.style.cssText = 'margin:2px;padding:4px;background:#0f0;color:#000;border:none;cursor:pointer;';
-    btn.onclick = () => {
-      if(btn.active) { btn.active=false; offClick?.(); }
-      else { btn.active=true; onClick?.(); }
-    };
-    container.appendChild(btn);
-    return btn;
-  }
 
   function makeDraggable(el, lockName) {
     let pos1=0,pos2=0,pos3=0,pos4=0;
@@ -169,7 +157,7 @@ document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI)
  };
   document.body.appendChild(stopAllBtn);
 
-  // ---------- Utilities GUI ----------
+ // ---------- UTILITIES GUI ----------
 let util = document.getElementById('utilitiesGUI');
 if (!util) {
     util = document.createElement('div');
@@ -190,18 +178,7 @@ if (!util) {
         user-select:none;
         cursor:move;
     `;
-
-    util.innerHTML = `
-        <div style="
-            text-align:center;
-            margin-bottom:8px;
-            font-weight:bold;
-            text-shadow:0 0 8px #00ff00;
-        ">
-            Utilities
-        </div>
-    `;
-
+    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
     document.body.appendChild(util);
 }
 
@@ -212,8 +189,8 @@ if (!vfx) {
     vfx.id = 'vfxGUI';
     vfx.style.cssText = `
         position:fixed;
-        top:50px;
-        right:50px;
+        top:100px;
+        left:400px;
         width:320px;
         background:#1b1b1b;
         color:#00ff00;
@@ -226,20 +203,226 @@ if (!vfx) {
         user-select:none;
         cursor:move;
     `;
-
-    vfx.innerHTML = `
-        <div style="
-            text-align:center;
-            margin-bottom:8px;
-            font-weight:bold;
-            text-shadow:0 0 8px #00ff00;
-        ">
-            Hacker GUI
-        </div>
-    `;
-
+    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>VFX</b></div>';
     document.body.appendChild(vfx);
 }
+
+// ---------- HELPER: BUTTON CREATION ----------
+function addBtn(container, text, onClick) {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.style.cssText = `
+        display:block;
+        width:100%;
+        margin:4px 0;
+        padding:6px;
+        background:#000;
+        color:#0f0;
+        border:1px solid #0f0;
+        border-radius:4px;
+        cursor:pointer;
+        font-family:Consolas,monospace;
+    `;
+    btn.onclick = onClick;
+    container.appendChild(btn);
+}
+
+// ---------- UTILITIES BUTTONS ----------
+
+// Global Chat
+addBtn(util, "Global Chat", () => {
+    if (window.globalChatActive) return;
+    window.globalChatActive = false;
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
+        authDomain: "hacker-gui-global-chat.firebaseapp.com",
+        databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com/",
+        projectId: "hacker-gui-global-chat",
+        storageBucket: "hacker-gui-global-chat.firebasestorage.app",
+        messagingSenderId: "410978781234",
+        appId: "1:410978781234:web:ee08f15ee9be48970c542b"
+    };
+
+    function loadFirebase(cb) {
+        if (window.firebase && window.firebase.database) return cb();
+        const s1 = document.createElement('script');
+        s1.src = "https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js";
+        s1.onload = function() {
+            const s2 = document.createElement('script');
+            s2.src = "https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js";
+            s2.onload = cb;
+            document.head.appendChild(s2);
+        };
+        document.head.appendChild(s1);
+    }
+
+    function initChat() {
+        if (window.globalChatActive) return;
+        window.globalChatActive = true;
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const messagesRef = db.ref('global-chat');
+
+        const username = prompt("Enter your chat username:", "Anonymous") || "Anonymous";
+
+        const chatBox = document.createElement('div');
+        chatBox.id = 'globalChatContainer';
+        chatBox.style.cssText = `
+            position:fixed; bottom:10px; right:10px;
+            width:300px; height:400px;
+            background:rgba(0,0,0,0.85); color:white;
+            font-family:sans-serif; font-size:14px;
+            padding:5px; border-radius:8px; z-index:999999;
+            display:flex; flex-direction:column; resize:both; overflow:hidden;
+        `;
+
+        const header = document.createElement('div');
+        header.style.cssText = `display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.1); padding:3px 5px; cursor:move;`;
+        const title = document.createElement('span'); title.innerText = 'Global Chat';
+        const closeBtn = document.createElement('button'); closeBtn.innerText = '×';
+        closeBtn.style.cssText = "background:none; border:none; color:white; font-size:16px; cursor:pointer;";
+        closeBtn.onclick = () => { chatBox.remove(); window.globalChatActive = false; };
+        header.appendChild(title); header.appendChild(closeBtn);
+        chatBox.appendChild(header);
+
+        const messagesDiv = document.createElement('div');
+        messagesDiv.style.cssText = "flex:1; overflow:auto; margin:5px 0; padding-right:3px;";
+        chatBox.appendChild(messagesDiv);
+
+        const inputDiv = document.createElement('div'); inputDiv.style.cssText = "display:flex;";
+        const input = document.createElement('input'); input.type="text"; input.placeholder="Type a message...";
+        input.style.cssText = "flex:1; margin-right:5px; padding:4px; border-radius:4px; border:none;";
+        const sendBtn = document.createElement('button'); sendBtn.innerText="Send";
+        inputDiv.appendChild(input); inputDiv.appendChild(sendBtn);
+        chatBox.appendChild(inputDiv);
+
+        document.body.appendChild(chatBox);
+
+        // Drag support
+        header.onmousedown = function(e) {
+            const ox = e.clientX - chatBox.offsetLeft;
+            const oy = e.clientY - chatBox.offsetTop;
+            function moveHandler(e){ chatBox.style.left=(e.clientX-ox)+'px'; chatBox.style.top=(e.clientY-oy)+'px'; chatBox.style.bottom='auto'; chatBox.style.right='auto'; }
+            function upHandler(){ document.removeEventListener('mousemove',moveHandler); document.removeEventListener('mouseup',upHandler); }
+            document.addEventListener('mousemove', moveHandler);
+            document.addEventListener('mouseup', upHandler);
+        };
+
+        // Send message
+        function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+            messagesRef.push({ user: username, text: text, time: Date.now() });
+            input.value = '';
+        }
+        sendBtn.onclick = sendMessage;
+        input.addEventListener('keydown', e => { if (e.key==='Enter') sendMessage(); });
+
+        messagesRef.limitToLast(50).on('child_added', snap => {
+            const msg = snap.val();
+            const msgDiv = document.createElement('div');
+            msgDiv.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+    }
+
+    loadFirebase(initChat);
+});
+
+// Page Dark Theme
+addBtn(util,'Page Dark Theme',()=>{ document.body.style.filter='invert(1)'; });
+
+// Calculator
+addBtn(util,'Calculator',()=>{
+    let _o;
+    while((_o = prompt("Expression:",""))){
+        try{ alert(eval(_o)); } catch(e){ alert(e); }
+    }
+});
+
+
+// 3D Page
+addBtn(vfx,'3D Page',()=>{
+    if(!window.triScript){
+        let s=document.createElement('script');
+        s.src='https://rawgit.com/Krazete/bookmarklets/master/tri.js';
+        document.body.appendChild(s);
+        window.triScript=s;
+    }
+});
+
+// Explode Page
+addBtn(vfx,'Explode Page',()=>{
+    if(window.explodeActive) return;
+    window.explodeActive=true;
+    let o=document.createElement('div');
+    o.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#FF0000;font-size:50px;font-family:monospace;z-index:10000000;pointer-events:none;text-shadow:0 0 10px #FF0000;';
+    document.body.appendChild(o);
+    let c=3;
+    o.innerText=c;
+    window.explodeInt=setInterval(()=>{
+        c--;
+        if(c>0){ o.innerText=c; } 
+        else{
+            clearInterval(window.explodeInt);
+            o.remove();
+            document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
+                e.style.transition='transform 1s ease-out';
+                let x=(Math.random()-0.5)*1000,
+                    y=(Math.random()-0.5)*1000,
+                    z=(Math.random()-0.5)*200;
+                e.style.transform=`translate3d(${x}px,${y}px,${z}px) rotate(${Math.random()*720-360}deg)`;
+            });
+            setTimeout(()=>{
+                document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
+                    e.style.transform='';
+                    e.style.transition='';
+                });
+                window.explodeActive=false;
+            },1500);
+        }
+    },1000);
+});
+
+// Matrix Rain
+addBtn(vfx,'Matrix Rain',()=>{
+    if(window.matrixActive) return;
+    window.matrixActive=true;
+    if(!window.matrixCanvas){
+        let c=document.createElement('canvas');
+        c.width=window.innerWidth;
+        c.height=window.innerHeight;
+        c.style.cssText='position:fixed;top:0;left:0;z-index:99999;pointer-events:none';
+        document.body.appendChild(c);
+        window.matrixCanvas=c;
+        let ctx=c.getContext('2d');
+        let chars='1010';
+        let cols=Math.floor(window.innerWidth/10);
+        let drops=[];
+        for(let i=0;i<cols;i++) drops[i]=Math.floor(Math.random()*c.height);
+        window.matrixInt=setInterval(()=>{
+            ctx.fillStyle='rgba(0,0,0,0.05)';
+            ctx.fillRect(0,0,c.width,c.height);
+            ctx.fillStyle='#0F0';
+            ctx.font='10px monospace';
+            for(let i=0;i<cols;i++){
+                ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);
+                if(drops[i]*10>c.height && Math.random()>0.975) drops[i]=0;
+                drops[i]++;
+            }
+        },33);
+    }
+});
+
+// ---------- DRAG + LOCK ----------
+let utilLock = addLockIcon(util);
+let vfxLock = addLockIcon(vfx);
+makeDraggable(util, utilLock);
+makeDraggable(vfx, vfxLock);
+
 
 // ---------- Shared Lock + Dragging ----------
 function addLockIcon(container) {
