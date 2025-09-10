@@ -4,7 +4,7 @@
 
   // ---------- BOOTUP ----------
   const bootOverlay = document.createElement('div');
-  overlay.style.cssText = `
+  bootOverlay.style.cssText = `
     position: fixed;
     top: 0;
     left: 0;
@@ -25,7 +25,7 @@
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
-  overlay.appendChild(canvas);
+  bootOverlay.appendChild(canvas);
 
   const msg = document.createElement('div');
   msg.innerText = '[ BOOTING SYSTEM... ]';
@@ -35,7 +35,7 @@
     z-index: 1000001;
     text-shadow: 0 0 5px #00ff00;
   `;
-  overlay.appendChild(msg);
+  bootOverlay.appendChild(msg);
 
   const loading = document.createElement('div');
   loading.style.cssText = `
@@ -45,7 +45,7 @@
     text-shadow: 0 0 10px #00ff00;
   `;
   loading.innerText = 'Loading 0%';
-  overlay.appendChild(loading);
+  bootOverlay.appendChild(loading);
 
   document.body.appendChild(overlay);
 
@@ -149,7 +149,7 @@ const style = createElement("style", { textContent: `
 document.head.appendChild(style);
 
 // ---------- OVERLAY & PANELS ----------
-const overlay = createElement("div", { className: "hacker-overlay" }, document.body);
+const bootOverlay = createElement("div", { className: "hacker-overlay" }, document.body);
 
 const mainPanel = createElement("div", { className: "hacker-panel" }, overlay);
 mainPanel.textContent = "Main Control Panel";
