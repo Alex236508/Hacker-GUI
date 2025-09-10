@@ -62,14 +62,14 @@
 // ----- GLOBAL CHAT BOX -----
 (function() {
   // Ask for username once
-  const chatUsername = prompt("Enter a username for chat") || "Anon";
+  const chatUsername = prompt("Enter a username for chat") || "Anonymous";
 
   // Create chat container
   const chatContainer = document.createElement("div");
   chatContainer.id = "globalChat";
   chatContainer.style.cssText = `
     position:fixed;top:100px;left:100px;width:300px;height:400px;
-    background: rgba(0,0,0,0.8); color:#0f0; font-family:Consolas,monospace;
+    background: rgba(0,0,0,0.85); color:#0f0; font-family:Consolas,monospace;
     border:2px solid #00ff00; border-radius:8px; z-index:1000000;
     display:flex; flex-direction:column; resize:both; overflow:hidden;
     user-select:none; cursor:move;
