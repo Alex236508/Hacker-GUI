@@ -57,8 +57,27 @@
   },40);
 
 // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
-  function spawnGUIs() {
+function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
+    const util = document.createElement('div');
+    util.id = 'utilitiesGUI';
+    util.style.cssText = `
+      position:fixed;
+      top:50px; left:50px;
+      width:320px;
+      background:#1b1b1b;
+      color:#00ff00;
+      font-family:Consolas,monospace;
+      padding:10px;
+      border:2px solid #00ff00;
+      border-radius:8px;
+      box-shadow:0 0 15px rgba(0,255,0,0.5);
+      user-select:none;
+      cursor:move;
+    `;
+    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities GUI</b></div>';
+    document.body.appendChild(util);
+
 const util = document.createElement('div');
 util.id = 'utilitiesGUI';
 util.style.cssText = `
