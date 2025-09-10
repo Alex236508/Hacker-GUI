@@ -5,23 +5,19 @@
   // ---------- BOOTUP ----------
   let overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00ff00;font-family:Consolas,monospace;pointer-events:none;';
-  
   let canvas = document.createElement('canvas');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
   overlay.appendChild(canvas);
-
   let msg = document.createElement('div');
   msg.innerText = '[ BOOTING SYSTEM... ]';
   msg.style.cssText = 'font-size:20px;margin-bottom:10px;z-index:1000001;text-shadow:0 0 5px #00ff00;';
   overlay.appendChild(msg);
-
   let loading = document.createElement('div');
   loading.style.cssText = 'font-size:24px;font-weight:bold;z-index:1000001;text-shadow:0 0 10px #00ff00;';
   loading.innerText = 'Loading 0%';
   overlay.appendChild(loading);
-
   document.body.appendChild(overlay);
 
   // Matrix rain for bootup
@@ -64,11 +60,81 @@
   function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
     const util = document.createElement('div');
-    util.id = 'utilitiesGUI';
-    util.style.cssText = 'position:fixed;top:50px;left:50px;width:280px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
-    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
-    document.body.appendChild(util);
+  util.id = 'utilitiesGUI';
+  util.style.cssText = `
+    position:fixed;top:50px;left:50px;width:280px;
+    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+    padding:10px;border:2px solid #00ff00;border-radius:8px;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+    user-select:none;cursor:move;
+  `;
+  util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+  document.body.appendChild(util);
+    // -------------------- VFX GUI --------------------
+    const vfx = document.createElement('div');
+  vfx.id = 'vfxGUI';
+  vfx.style.cssText = `
+    position:fixed;top:50px;right:50px;width:320px;
+    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+    padding:10px;border:2px solid #00ff00;border-radius:8px;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+    user-select:none;cursor:move;
+  `;
+  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
+  document.body.appendChild(vfx);
 
+    // -------------------- BUTTON HELPER --------------------
+     function addBtn(container, name, on, off){
+    const b=document.createElement('button');
+    b.innerText=name;
+    b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+    b.onclick = on;
+    container.appendChild(b);
+  }
+
+    // -------------------- ADD LOCK ICON --------------------
+     function addLockIcon(gui){
+    const lock = document.createElement('div');
+    lock.innerText = '🔓';
+    lock.style.cssText = 'position:absolute;top:5px;right:5px;font-size:16px;cursor:pointer;user-select:none;';
+    lock.locked = false;
+    lock.onclick = () => {
+      lock.locked = !lock.locked;
+      lock.innerText = lock.locked ? '🔒' : '🔓';
+    };
+    gui.appendChild(lock);
+    return lock;
+  }
+  let utilLock = addLockIcon(util);
+  let vfxLock = addLockIcon(vfx);
+
+    // -------------------- DRAGGING --------------------
+     function makeDraggable(gui, lock){
+    gui.onmousedown = function(e){
+      if(lock && lock.locked) return;
+      let ox = e.clientX - gui.getBoundingClientRect().left,
+          oy = e.clientY - gui.getBoundingClientRect().top;
+      function move(e){
+        let x = e.clientX - ox;
+        let y = e.clientY - oy;
+        x = Math.max(0, Math.min(window.innerWidth - gui.offsetWidth, x));
+        y = Math.max(0, Math.min(window.innerHeight - gui.offsetHeight, y));
+        gui.style.left = x + 'px';
+        gui.style.top = y + 'px';
+        gui.style.right = 'auto';
+        gui.style.bottom = 'auto';
+      }
+      function up(){
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+      }
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    };
+  }
+  makeDraggable(util, utilLock);
+  makeDraggable(vfx, vfxLock);
+    
     // -------------------- UTILITIES BUTTONS --------------------
     function addBtn(container,name,on,off){const b=document.createElement('button');b.innerText=name;b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';b.onclick=on;container.appendChild(b);}
     
@@ -114,14 +180,7 @@
         util.appendChild(section);
     })();
 
-    // -------------------- VFX GUI --------------------
-    const vfx = document.createElement('div');
-    vfx.id = 'vfxGUI';
-    vfx.style.cssText = 'position:fixed;top:50px;right:50px;width:320px;background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;padding:10px;border:2px solid #00ff00;border-radius:8px;box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;user-select:none;cursor:move;';
-    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
-    document.body.appendChild(vfx);
-
-    // -------------------- VFX BUTTONS --------------------
+        // -------------------- VFX BUTTONS --------------------
 addBtn(vfx,'3D Page',()=>{
   if(!window.triScript){
     let s=document.createElement('script');
@@ -300,32 +359,37 @@ addBtn(vfx,'Text Corruption',()=>{
 
 // Bubble Text
 addBtn(vfx,'Bubble Text',()=>{
-  if(window.bubbleActive) return;
-  window.bubbleActive = true;
-  window.originalText = [];
-  let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
-  let bubbles = 'ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ①②③④⑤⑥⑦⑧⑨⓪'.split('');
-  function transform(el){
-    if(el.id==='vfxGUI'||el.id==='utilitiesGUI'||el.closest('#vfxGUI,#utilitiesGUI')) return;
-    if(el.nodeType===Node.TEXT_NODE && el.nodeValue.trim()){
-      window.originalText.push({el, text: el.nodeValue});
-      el.textContent = el.nodeValue.replace(/[a-zA-Z0-9]/g,l=>{
-        let idx = chars.indexOf(l);
-        return idx>=0 ? bubbles[idx] : l;
-      });
-    } else if(el.childNodes.length>0){
-      el.childNodes.forEach(transform);
+    if(window.bubbleActive) return;
+    window.bubbleActive = true;
+    window.originalText = [];
+
+    function transform(el){
+      if(!el || el.id==='vfxGUI'||el.id==='utilitiesGUI'||el.closest('#vfxGUI,#utilitiesGUI')) return;
+      if(el.nodeType===Node.TEXT_NODE && el.nodeValue.trim()){
+        window.originalText.push({el, text: el.nodeValue});
+        let chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+        let bubbles='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ①②③④⑤⑥⑦⑧⑨⓪'.split('');
+        el.nodeValue = el.nodeValue.replace(/[a-zA-Z0-9]/g, l => bubbles[chars.indexOf(l)] || l);
+      }
+      else if(el.childNodes && el.childNodes.length>0){
+        el.childNodes.forEach(transform);
+      }
     }
+
+    window.bubbleInt = setInterval(()=>{ transform(document.body) }, 50);
+  },()=>{
+    if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; window.bubbleActive=false;}
+    if(window.originalText){window.originalText.forEach(o=>o.el.nodeValue=o.text); window.originalText=[];}
+  });
+
+    window.bubbleInt=setInterval(()=>{transform(document.body)},50);
   }
-  window.bubbleInt = setInterval(()=>{ transform(document.body); },50);
 },()=>{
   clearInterval(window.bubbleInt);
   window.bubbleInt=null;
   window.bubbleActive=false;
-  if(window.originalText){
-    window.originalText.forEach(o=>o.el.nodeValue=o.text);
-    window.originalText=[];
-  }
+  window.originalText.forEach(o=>o.el.nodeValue=o.text);
+  window.originalText=[];
 });
 
 // Page Spin
@@ -430,7 +494,6 @@ addBtn(vfx,'Stop All',()=>{
   });
 });
 
-
     // -------------------- FONT COLOR SLIDER --------------------
     (function(){
         const section = document.createElement('div');
@@ -478,11 +541,12 @@ addBtn(vfx,'Stop All',()=>{
 
     // -------------------- SHIFT+H TO HIDE --------------------
     document.addEventListener('keydown', (e) => {
-      if (e.shiftKey && e.key.toLowerCase() === 'h') {
-        util.style.display = (util.style.display === 'none') ? 'block' : 'none';
-        vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
-      }
-    });
+    if (e.shiftKey && e.key.toLowerCase() === 'h') {
+      util.style.display = (util.style.display === 'none') ? 'block' : 'none';
+      vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
+    }
+  });
+}
 
   } // end spawnGUIs
 
