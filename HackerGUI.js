@@ -150,8 +150,9 @@
         window.vfxGUI = vfx;
     }
             // ---------- FULL VFX BUTTONS BLOCK ----------
-  if (!window.vfxGUI) return;               // require the vfx GUI to exist
-  window.stopAllVFX = window.stopAllVFX || [];
+  if (!window.vfxInitialized) {
+  window.vfxInitialized = true;
+  const vfx = window.vfxGUI;
 
   function createBtn(label, on, off){
     const btn = document.createElement('button');
@@ -176,7 +177,6 @@
     return btn;
   }
 
-  const vfx = window.vfxGUI;
 
   // 3D Page
   vfx.appendChild(createBtn('3D Page',
