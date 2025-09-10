@@ -486,7 +486,6 @@ addBtn(vfx, 'Bubble Text', () => {
     if (window.bubbleActive) return;
     window.bubbleActive = true;
 
-    // Fresh map for this run
     const originalTextMap = new Map();
 
     const bubbleMap = {
@@ -517,24 +516,24 @@ addBtn(vfx, 'Bubble Text', () => {
 
     transform(document.body);
 
-    // Cleanup function for this run
+    // Cleanup function keeps reference to originalTextMap
     const cleanup = () => {
         originalTextMap.forEach((orig, node) => { try { node.nodeValue = orig; } catch (e) { } });
         window.bubbleActive = false;
     };
 
-    // Save cleanup globally for Stop All
     window._bubbleCleanup = cleanup;
 
-    // Ensure Stop All calls the latest cleanup
     if (!window.stopAllVFX) window.stopAllVFX = [];
-    // remove old reference to avoid duplicates
+    // Remove old references
     window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
     window.stopAllVFX.push(cleanup);
 
 }, () => {
-    if (window._bubbleCleanup) { window._bubbleCleanup(); window._bubbleCleanup = null; }
+    // Off-button just calls cleanup, does not null anything
+    if (window._bubbleCleanup) window._bubbleCleanup();
 });
+
 
 // Page Spin
 addBtn(vfx,'Page Spin',()=>{
