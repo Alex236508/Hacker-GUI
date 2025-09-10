@@ -3,7 +3,7 @@
   window.hackerLoaded = true;
 
   // ---------- BOOTUP ----------
-  const overlay = document.createElement('div');
+  const bootOverlay = document.createElement('div');
   overlay.style.cssText = `
     position: fixed;
     top: 0;
