@@ -84,12 +84,12 @@
   document.body.appendChild(vfx);
 
     // -------------------- BUTTON HELPER --------------------
-     function addBtn(container, name, on, off){
-    const b=document.createElement('button');
-    b.innerText=name;
-    b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
-    b.onclick = on;
-    container.appendChild(b);
+     function addBtn(container,name,on,off){
+  const b=document.createElement('button');
+  b.innerText=name;
+  b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+  b.onclick=on;
+  container.appendChild(b);
   }
 
     // -------------------- ADD LOCK ICON --------------------
@@ -109,15 +109,15 @@
   let vfxLock = addLockIcon(vfx);
 
      // -------------------- DRAGGING --------------------
-    function makeDraggable(g){
+function makeDraggable(g, lock){
   g.style.position = 'fixed'; // ensures anchored to viewport
   g.onmousedown = function(e){
+    if(lock.locked) return; // do nothing if locked
     let ox = e.clientX - g.getBoundingClientRect().left,
         oy = e.clientY - g.getBoundingClientRect().top;
     function move(e){
       let x = e.clientX - ox;
       let y = e.clientY - oy;
-      // Constrain inside viewport
       x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
       y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
       g.style.left = x + 'px';
@@ -132,10 +132,13 @@
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseup', up);
   };
-}    
-    // -------------------- UTILITIES BUTTONS --------------------
-    function addBtn(container,name,on,off){const b=document.createElement('button');b.innerText=name;b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';b.onclick=on;container.appendChild(b);}
-    
+}
+
+// Apply draggable to your GUIs
+makeDraggable(util, utilLock);
+makeDraggable(vfx, vfxLock);
+
+    // -------------------- UTILITIES BUTTONS --------------------    
     addBtn(util,'Developer Console',()=>{if(!window.erudaLoaded){let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/eruda@2.5.0/eruda.min.js';document.body.appendChild(s);s.onload=()=>{eruda.init();eruda.theme='Dark';window.erudaLoaded=true;};}else{eruda.show();}});
     addBtn(util,'Page Dark Theme',()=>{document.body.style.filter="invert(1)";});
     addBtn(util,'Calculator',()=>{let _o;while((_o=prompt("Expression:",""))){try{alert(eval(_o));}catch(e){alert(e);}}});
@@ -373,7 +376,8 @@ addBtn(vfx,'Bubble Text',()=>{
         }
     }
 
-    },()=>{  // off function for Bubble Text
+    window.bubbleInt = setInterval(()=>{ transform(document.body); }, 50);
+},()=>{  // off function for Bubble Text
   if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; window.bubbleActive=false;}
   if(window.originalText){window.originalText.forEach(o=>o.el.nodeValue=o.text); window.originalText=[];}
 });
