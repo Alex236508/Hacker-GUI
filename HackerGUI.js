@@ -59,121 +59,92 @@
   function spawnGUIs() {
       // -------------------- UTILITIES GUI WITH CHAT --------------------
 
-// 1. Dynamically load Firebase SDKs
-function loadFirebase(cb) {
-  const scripts = [
-    "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
-    "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"
-  ];
-  let loaded = 0;
-  scripts.forEach(src => {
-    const s = document.createElement("script");
-    s.src = src;
-    s.onload = () => {
-      loaded++;
-      if (loaded === scripts.length && cb) cb();
-    };
-    document.head.appendChild(s);
-  });
-}
+// ----- GLOBAL CHAT BOX -----
+(function() {
+  // Ask for username once
+  const chatUsername = prompt("Enter a username for chat") || "Anon";
 
-// 2. Initialize Firebase + setup chat logic
-loadFirebase(() => {
-  const firebaseConfig = {
-    apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
-    authDomain: "hacker-gui-global-chat.firebaseapp.com",
-    databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
-    projectId: "hacker-gui-global-chat",
-    storageBucket: "hacker-gui-global-chat.appspot.com",
-    messagingSenderId: "410978781234",
-    appId: "1:410978781234:web:ee08f15ee9be48970c542b"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // --- Utilities GUI box ---
-  const util = document.createElement('div');
-  util.id = 'utilitiesGUI';
-  util.style.cssText = `
-    position:fixed;top:50px;left:50px;width:280px;
-    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
-    user-select:none;cursor:move;
-  `;
-  util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
-  document.body.appendChild(util);
-
-  // --- Chat UI ---
-  const usernameInput = document.createElement("input");
-  usernameInput.placeholder = "Username";
-  usernameInput.style.cssText = `
-    width:100%; padding:3px; margin-bottom:5px;
-    background:#111; color:#0f0; border:1px solid #0f0;
+  // Create chat container
+  const chatContainer = document.createElement("div");
+  chatContainer.id = "globalChat";
+  chatContainer.style.cssText = `
+    position:fixed;top:100px;left:100px;width:300px;height:400px;
+    background: rgba(0,0,0,0.8); color:#0f0; font-family:Consolas,monospace;
+    border:2px solid #00ff00; border-radius:8px; z-index:1000000;
+    display:flex; flex-direction:column; resize:both; overflow:hidden;
+    user-select:none; cursor:move;
   `;
 
-  const chatBox = document.createElement("div");
-  chatBox.style.cssText = `
-    margin-top:10px; border:1px solid #00ff00; padding:5px;
-    height:200px; overflow-y:auto; background:#000; font-size:12px;
+  // Create messages area
+  const messagesBox = document.createElement("div");
+  messagesBox.id = "chatMessages";
+  messagesBox.style.cssText = `
+    flex:1; overflow-y:auto; padding:5px; font-size:12px;
   `;
-  chatBox.id = "chatMessages";
+  chatContainer.appendChild(messagesBox);
+
+  // Create input container
+  const inputContainer = document.createElement("div");
+  inputContainer.style.cssText = `display:flex; border-top:1px solid #0f0;`;
 
   const messageInput = document.createElement("input");
   messageInput.placeholder = "Type a message...";
   messageInput.style.cssText = `
-    width:70%; padding:3px;
-    background:#111; color:#0f0; border:1px solid #0f0;
+    flex:1; padding:5px; background:#111; color:#0f0; border:none;
   `;
 
   const sendBtn = document.createElement("button");
   sendBtn.textContent = "Send";
   sendBtn.style.cssText = `
-    width:25%; padding:3px; margin-left:5px;
-    background:#0f0; color:#000; border:none; cursor:pointer;
+    padding:5px 10px; background:#0f0; color:#000; border:none; cursor:pointer;
   `;
 
-  util.appendChild(usernameInput);
-  util.appendChild(chatBox);
-  util.appendChild(messageInput);
-  util.appendChild(sendBtn);
+  inputContainer.appendChild(messageInput);
+  inputContainer.appendChild(sendBtn);
+  chatContainer.appendChild(inputContainer);
 
-  // --- Send button logic ---
-  function sendMessage(username, text) {
-    db.ref("global-chat").push({
-      user: username,
-      message: text,
-      timestamp: Date.now()
-    });
-  }
+  document.body.appendChild(chatContainer);
 
+  // Make draggable
+  chatContainer.onmousedown = function(e) {
+    if(e.target === messageInput || e.target === sendBtn) return; // ignore input drag
+    let offsetX = e.clientX - chatContainer.offsetLeft;
+    let offsetY = e.clientY - chatContainer.offsetTop;
+    function moveHandler(e) {
+      chatContainer.style.left = e.clientX - offsetX + "px";
+      chatContainer.style.top = e.clientY - offsetY + "px";
+    }
+    function upHandler() {
+      document.removeEventListener("mousemove", moveHandler);
+      document.removeEventListener("mouseup", upHandler);
+    }
+    document.addEventListener("mousemove", moveHandler);
+    document.addEventListener("mouseup", upHandler);
+  };
+
+  // Firebase: send message
   sendBtn.onclick = () => {
-    const user = usernameInput.value.trim() || "Anon";
     const text = messageInput.value.trim();
-    if (text) {
-      sendMessage(user, text);
+    if(text) {
+      sendMessage(chatUsername, text); // assumes sendMessage function already defined
       messageInput.value = "";
     }
   };
 
-  // --- Display incoming messages ---
+  // Display messages
   function displayMessage(user, text) {
     const msg = document.createElement("div");
     msg.textContent = `[${user}] ${text}`;
-    chatBox.appendChild(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    messagesBox.appendChild(msg);
+    messagesBox.scrollTop = messagesBox.scrollHeight; // auto-scroll
   }
 
+  // Hook Firebase listener
   db.ref("global-chat").on("child_added", snapshot => {
     const data = snapshot.val();
     displayMessage(data.user, data.message);
   });
-
-  console.log("✅ Firebase connected, chat is ready!");
-});
-
-
+})();
     
     // -------------------- VFX GUI --------------------
     const vfx = document.createElement('div');
