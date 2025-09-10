@@ -627,7 +627,7 @@ addBtn(vfx, 'Full Chaos', () => {
 addBtn(vfx, 'Stop All', () => {
     // Call all registered VFX cleanup functions
     if (window.stopAllVFX) {
-        window.stopAllVFX.forEach(fn => { try { fn(); } catch(e){} });
+        window.stopAllVFX.forEach(fn => { try { fn(); } catch (e) {} });
         window.stopAllVFX = [];
     }
 
@@ -639,16 +639,18 @@ addBtn(vfx, 'Stop All', () => {
     window.fullChaosActive = false;
     window.pageSpinActive = false;
 
-    // Remove any dynamically added elements
+    // Remove dynamic elements
     if (window.matrixCanvas) { window.matrixCanvas.remove(); window.matrixCanvas = null; }
     if (window.pageSpinStyle) { window.pageSpinStyle.remove(); window.pageSpinStyle = null; }
     const chaos = document.getElementById('chaosContainer');
     if (chaos) chaos.remove();
 
-    // Reset page styles and all element inline styles
+    // Reset page styles
     document.body.style.transform = '';
     document.body.style.backgroundColor = '';
     document.body.style.filter = '';
+
+    // Reset **all inline styles for every element**, including backgroundColor
     document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => {
         e.style.backgroundColor = '';
         e.style.height = '';
