@@ -534,44 +534,70 @@ addBtn(vfx,'Text Corruption',()=>{
 });
 
 // Bubble Text
-addBtn(vfx, 'Bubble Text', () => {
-  if (window.bubbleActive) return;
+addBtn(vfx,'Bubble Text',()=>{
+  if(window.bubbleActive) return;
   window.bubbleActive = true;
-  window.originalText = [];
+  // Use a Map of textNode -> originalText so Stop All can restore
+  if(!window.originalTextMap) window.originalTextMap = new Map();
 
-  const map = {
-    a: 'ⓐ', b: 'ⓑ', c: 'ⓒ', d: 'ⓓ', e: 'ⓔ', f: 'ⓕ', g: 'ⓖ',
-    h: 'ⓗ', i: 'ⓘ', j: 'ⓙ', k: 'ⓚ', l: 'ⓛ', m: 'ⓜ', n: 'ⓝ',
-    o: 'ⓞ', p: 'ⓟ', q: 'ⓠ', r: 'ⓡ', s: 'ⓢ', t: 'ⓣ', u: 'ⓤ',
-    v: 'ⓥ', w: 'ⓦ', x: 'ⓧ', y: 'ⓨ', z: 'ⓩ',
-    A: 'Ⓐ', B: 'Ⓑ', C: 'Ⓒ', D: 'Ⓓ', E: 'Ⓔ', F: 'Ⓕ', G: 'Ⓖ',
-    H: 'Ⓗ', I: 'Ⓘ', J: 'Ⓙ', K: 'Ⓚ', L: 'Ⓛ', M: 'Ⓜ', N: 'Ⓝ',
-    O: 'Ⓞ', P: 'Ⓟ', Q: 'Ⓠ', R: 'Ⓡ', S: 'Ⓢ', T: 'Ⓣ', U: 'Ⓤ',
-    V: 'Ⓥ', W: 'Ⓦ', X: 'Ⓧ', Y: 'Ⓨ', Z: 'Ⓩ',
-    0: '⓪', 1: '①', 2: '②', 3: '③', 4: '④',
-    5: '⑤', 6: '⑥', 7: '⑦', 8: '⑧', 9: '⑨'
+  const bubbleMap = {
+    a:'ⓐ',b:'ⓑ',c:'ⓒ',d:'ⓓ',e:'ⓔ',f:'ⓕ',g:'ⓖ',h:'ⓗ',i:'ⓘ',j:'ⓙ',k:'ⓚ',l:'ⓛ',m:'ⓜ',n:'ⓝ',o:'ⓞ',p:'ⓟ',q:'ⓠ',r:'ⓡ',s:'ⓢ',t:'ⓣ',u:'ⓤ',v:'ⓥ',w:'ⓦ',x:'ⓧ',y:'ⓨ',z:'ⓩ',
+    A:'Ⓐ',B:'Ⓑ',C:'Ⓒ',D:'Ⓓ',E:'Ⓔ',F:'Ⓕ',G:'Ⓖ',H:'Ⓗ',I:'Ⓘ',J:'Ⓙ',K:'Ⓚ',L:'Ⓛ',M:'Ⓜ',N:'Ⓝ',O:'Ⓞ',P:'Ⓟ',Q:'Ⓠ',R:'Ⓡ',S:'Ⓢ',T:'Ⓣ',U:'Ⓤ',V:'Ⓥ',W:'Ⓦ',X:'Ⓧ',Y:'Ⓨ',Z:'Ⓩ',
+    '0':'⓪','1':'①','2':'②','3':'③','4':'④','5':'⑤','6':'⑥','7':'⑦','8':'⑧','9':'⑨'
   };
 
-  function transform(el) {
-    if (!el || el.id === 'vfxGUI' || el.id === 'utilitiesGUI' || el.closest?.('#vfxGUI,#utilitiesGUI')) return;
-    if (el.nodeType === Node.TEXT_NODE && el.nodeValue.trim()) {
-      window.originalText.push({ el, text: el.nodeValue });
-      el.nodeValue = el.nodeValue.replace(/[a-zA-Z0-9]/g, l => map[l] || l);
-    } else if (el.childNodes && el.childNodes.length > 0) {
-      el.childNodes.forEach(transform);
+  function transform(node){
+    if(!node) return;
+    // If element node: skip whole subtree if it's a GUI or inside GUI
+    if(node.nodeType === Node.ELEMENT_NODE){
+      try{
+        if(node.id==='vfxGUI' || node.id==='utilitiesGUI' || (node.closest && node.closest('#vfxGUI,#utilitiesGUI'))) return;
+      }catch(e){
+        // defensive: if closest throws, skip this node to be safe
+        return;
+      }
+      // recurse children
+      node.childNodes.forEach(transform);
+      return;
+    }
+    // If text node: transform it unless it's whitespace or inside GUI
+    if(node.nodeType === Node.TEXT_NODE){
+      const txt = node.nodeValue;
+      if(!txt || !txt.trim()) return;
+      const parent = node.parentElement;
+      if(parent){
+        try{
+          if(parent.closest && parent.closest('#vfxGUI,#utilitiesGUI')) return;
+        }catch(e){
+          return;
+        }
+      }
+      if(!window.originalTextMap.has(node)) window.originalTextMap.set(node, txt);
+      node.nodeValue = txt.replace(/[a-zA-Z0-9]/g, ch => bubbleMap[ch] || ch);
     }
   }
 
+  // run once (no continuous interval) — transforms all visible text nodes (except GUIs)
   transform(document.body);
 
-}, () => {  // off function for Bubble Text
-  if (window.bubbleActive) {
-    window.bubbleActive = false;
-    if (window.originalText) {
-      window.originalText.forEach(o => { o.el.nodeValue = o.text; });
-      window.originalText = [];
+  // register cleanup so Stop All can call it (and for manual toggle-off)
+  const cleanup = () => {
+    if(window.originalTextMap){
+      window.originalTextMap.forEach((orig, textNode)=>{
+        try{ textNode.nodeValue = orig; }catch(e){}
+      });
+      window.originalTextMap = null;
     }
-  }
+    window.bubbleActive = false;
+  };
+  // store reference so off-button can call it
+  window._bubbleCleanup = cleanup;
+  if(!window.stopAllVFX) window.stopAllVFX = [];
+  window.stopAllVFX.push(cleanup);
+
+},()=>{
+  // off function for Bubble Text (button)
+  if(window._bubbleCleanup){ window._bubbleCleanup(); window._bubbleCleanup = null; }
 });
 
 // Page Spin
