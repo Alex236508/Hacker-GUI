@@ -59,57 +59,63 @@
   function spawnGUIs() {
   // -------------------- UTILITIES GUI --------------------
 
-// Dynamically load Firebase SDKs
-function loadFirebase(cb) {
-  const scripts = [
-    "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
-    "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"
-  ];
+// --- Chat UI inside Utilities GUI ---
+const chatBox = document.createElement("div");
+chatBox.style.cssText = `
+  margin-top:10px; border:1px solid #00ff00; padding:5px;
+  height:200px; overflow-y:auto; background:#000; font-size:12px;
+`;
+chatBox.id = "chatMessages";
 
-  let loaded = 0;
-  scripts.forEach(src => {
-    const s = document.createElement("script");
-    s.src = src;
-    s.onload = () => {
-      loaded++;
-      if (loaded === scripts.length && cb) cb();
-    };
-    document.head.appendChild(s);
-  });
+const usernameInput = document.createElement("input");
+usernameInput.placeholder = "Username";
+usernameInput.style.cssText = `
+  width:100%; padding:3px; margin-bottom:5px;
+  background:#111; color:#0f0; border:1px solid #0f0;
+`;
+
+const messageInput = document.createElement("input");
+messageInput.placeholder = "Type a message...";
+messageInput.style.cssText = `
+  width:70%; padding:3px;
+  background:#111; color:#0f0; border:1px solid #0f0;
+`;
+
+const sendBtn = document.createElement("button");
+sendBtn.textContent = "Send";
+sendBtn.style.cssText = `
+  width:25%; padding:3px; margin-left:5px;
+  background:#0f0; color:#000; border:none; cursor:pointer;
+`;
+
+// Add to utilities box
+util.appendChild(usernameInput);
+util.appendChild(chatBox);
+util.appendChild(messageInput);
+util.appendChild(sendBtn);
+
+// Send button logic
+sendBtn.onclick = () => {
+  const user = usernameInput.value.trim() || "Anon";
+  const text = messageInput.value.trim();
+  if (text) {
+    sendMessage(user, text);
+    messageInput.value = "";
+  }
+};
+
+// Listen for new messages and display them
+function displayMessage(user, text) {
+  const msg = document.createElement("div");
+  msg.textContent = `[${user}] ${text}`;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight; // auto-scroll
 }
 
-// When Firebase is ready, initialize it
-loadFirebase(() => {
-  const firebaseConfig = {
-    apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
-    authDomain: "hacker-gui-global-chat.firebaseapp.com",
-    databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
-    projectId: "hacker-gui-global-chat",
-    storageBucket: "hacker-gui-global-chat.appspot.com",
-    messagingSenderId: "410978781234",
-    appId: "1:410978781234:web:ee08f15ee9be48970c542b"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // Send a message
-  window.sendMessage = function(username, text) {
-    db.ref("global-chat").push({
-      user: username,
-      message: text,
-      timestamp: Date.now()
-    });
-  };
-
-  // Listen for new messages
-  db.ref("global-chat").on("child_added", snapshot => {
-    const data = snapshot.val();
-    console.log(`[${data.user}] ${data.message}`);
-    // later we’ll make this show inside the GUI instead of console
-  });
-
-  console.log("✅ Firebase connected to global chat");
+// Hook into Firebase listener
+db.ref("global-chat").on("child_added", snapshot => {
+  const data = snapshot.val();
+  displayMessage(data.user, data.message);
 });
 
 // --- Utilities GUI box ---
