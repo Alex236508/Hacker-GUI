@@ -513,27 +513,26 @@ if (!window.vfxInitialized) {
     null
   ));
     
-  // Font color picker section
-(function(){
-  const section = document.createElement('div');
-  section.style.cssText = 'margin-top:10px;padding:8px;background:#252525;border-radius:10px;color:#00ff00;font-family:Consolas,monospace;';
-  section.innerHTML = '<b>Text Color</b><br>';
+  (function(){
+    const section = document.createElement('div');
+    section.style.cssText = 'margin-top:10px;padding:8px;background:#252525;border-radius:10px;color:#00ff00;font-family:Consolas,monospace;';
+    section.innerHTML = '<b>Text Color</b><br>';
 
-  const picker = document.createElement('input');
-  picker.type = 'color';
-  picker.value = '#00ff00';
+    const picker = document.createElement('input');
+    picker.type = 'color';
+    picker.value = '#00ff00';
 
-  // Change all text colors when picker value changes
-  picker.addEventListener('input', function(){
-    document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(function(el){
-      el.style.color = picker.value;
+    picker.addEventListener('input', function(){
+      document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(function(el){
+        el.style.color = picker.value;
+      });
     });
-  });
 
-  section.appendChild(picker);
-  vfx.appendChild(section);
-})();
+    section.appendChild(picker);
+    vfx.appendChild(section);
+  })(); // <-- IIFE is correctly closed
 
+} // <-- closes if (!window.vfxInitialized)
 
       // ---------- DRAG HANDLER ----------
         function makeDraggable(el) {
