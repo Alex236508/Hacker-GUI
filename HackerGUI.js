@@ -59,7 +59,109 @@
   // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
   function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
-    const util = document.createElement('div');
+  addBtn('Global Chat', () => {
+    if(window.chatActive) return;
+    window.chatActive = true;
+
+    // Firebase setup
+    const firebaseConfig = {
+        apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
+        authDomain: "hacker-gui-global-chat.firebaseapp.com",
+        databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
+        projectId: "hacker-gui-global-chat",
+        storageBucket: "hacker-gui-global-chat.firebasestorage.app",
+        messagingSenderId: "410978781234",
+        appId: "1:410978781234:web:ee08f15ee9be48970c542b",
+        measurementId: "G-SB0B1FLF29"
+    };
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const username = prompt("Enter your username:") || "Anon";
+
+    // Create chat window
+    const chat = document.createElement('div');
+    chat.style.position = 'fixed';
+    chat.style.bottom = '50px';
+    chat.style.right = '50px';
+    chat.style.width = '300px';
+    chat.style.height = '400px';
+    chat.style.background = 'rgba(0,0,0,0.85)';
+    chat.style.color = '#0f0';
+    chat.style.fontFamily = 'monospace';
+    chat.style.border = '2px solid #0f0';
+    chat.style.borderRadius = '8px';
+    chat.style.zIndex = 999999;
+    chat.style.display = 'flex';
+    chat.style.flexDirection = 'column';
+
+    const messagesDiv = document.createElement('div');
+    messagesDiv.style.flex = '1';
+    messagesDiv.style.overflowY = 'auto';
+    messagesDiv.style.padding = '5px';
+    chat.appendChild(messagesDiv);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Type a message...';
+    input.style.border = 'none';
+    input.style.outline = 'none';
+    input.style.padding = '5px';
+    input.style.background = 'black';
+    input.style.color = '#0f0';
+    chat.appendChild(input);
+
+    document.body.appendChild(chat);
+
+    // Make draggable
+    let offsetX, offsetY, isDragging = false;
+    chat.addEventListener('mousedown', e => {
+        isDragging = true;
+        offsetX = e.clientX - chat.offsetLeft;
+        offsetY = e.clientY - chat.offsetTop;
+    });
+    document.addEventListener('mousemove', e => {
+        if(isDragging){
+            chat.style.left = e.clientX - offsetX + 'px';
+            chat.style.top = e.clientY - offsetY + 'px';
+            chat.style.right = 'auto';
+            chat.style.bottom = 'auto';
+        }
+    });
+    document.addEventListener('mouseup', e => { isDragging = false; });
+
+    // Firebase messaging
+    function addMessage(msg){
+        const msgDiv = document.createElement('div');
+        msgDiv.textContent = msg;
+        messagesDiv.appendChild(msgDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    db.ref('messages').on('child_added', snapshot => {
+        const data = snapshot.val();
+        addMessage(data.user + ": " + data.text);
+    });
+
+    input.addEventListener('keydown', e => {
+        if(e.key === 'Enter' && input.value.trim()){
+            const msg = input.value.trim();
+            db.ref('messages').push({ user: username, text: msg });
+            input.value = '';
+        }
+    });
+
+}, () => { // off function
+    if(window.chatActive){
+        window.chatActive = false;
+        document.querySelectorAll('div').forEach(d => {
+            if(d.contains(document.querySelector('input'))) d.remove();
+        });
+    }
+});
+  
+
+  const util = document.createElement('div');
   util.id = 'utilitiesGUI';
   util.style.cssText = `
     position:fixed;top:50px;left:50px;width:280px;
