@@ -107,6 +107,7 @@
   `;
   util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
   document.body.appendChild(util);
+    
     // -------------------- VFX GUI --------------------
     const vfx = document.createElement('div');
   vfx.id = 'vfxGUI';
