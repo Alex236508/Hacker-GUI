@@ -56,99 +56,89 @@
     }
   },40);
 
-// ---------- MAIN FUNCTION TO SPAWN GUIs ----------
-function spawnGUIs() {
-    // -------------------- HELPER FUNCTIONS --------------------
-    function addBtn(container, name, on, off) {
-        const b = document.createElement('button');
-        b.innerText = name;
-        b.style.cssText = 'width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
-        b.onclick = on;
-        container.appendChild(b);
-        if(off) {
-            if(!window.activeUtilities) window.activeUtilities = {};
-            window.activeUtilities[name] = { on, off };
-        }
-    }
-
-    function addLockIcon(gui) {
-        const lock = document.createElement('div');
-        lock.innerText = '🔓';
-        lock.style.cssText = 'position:absolute;top:5px;right:5px;font-size:16px;cursor:pointer;user-select:none;';
-        lock.locked = false;
-        lock.onclick = () => {
-            lock.locked = !lock.locked;
-            lock.innerText = lock.locked ? '🔒' : '🔓';
-        };
-        gui.appendChild(lock);
-        return lock;
-    }
-
-    function makeDraggable(gui, lock) {
-        gui.style.position = 'fixed';
-        gui.onmousedown = function(e){
-            if(lock.locked) return;
-            let ox = e.clientX - gui.getBoundingClientRect().left,
-                oy = e.clientY - gui.getBoundingClientRect().top;
-            function move(e){
-                let x = e.clientX - ox;
-                let y = e.clientY - oy;
-                x = Math.max(0, Math.min(window.innerWidth - gui.offsetWidth, x));
-                y = Math.max(0, Math.min(window.innerHeight - gui.offsetHeight, y));
-                gui.style.left = x + 'px';
-                gui.style.top = y + 'px';
-                gui.style.right = 'auto';
-                gui.style.bottom = 'auto';
-            }
-            function up(){
-                document.removeEventListener('mousemove', move);
-                document.removeEventListener('mouseup', up);
-            }
-            document.addEventListener('mousemove', move);
-            document.addEventListener('mouseup', up);
-        };
-    }
-
+  // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
+  function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
     const util = document.createElement('div');
-    util.id = 'utilitiesGUI';
-    util.style.cssText = `
-      position:fixed;
-      top:50px; left:50px;
-      width:320px;
-      background:#1b1b1b;
-      color:#00ff00;
-      font-family:Consolas,monospace;
-      padding:10px;
-      border:2px solid #00ff00;
-      border-radius:8px;
-      box-shadow:0 0 15px rgba(0,255,0,0.5);
-      user-select:none;
-      cursor:move;
-      z-index:999999;
-    `;
-    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities GUI</b></div>';
-    document.body.appendChild(util);
-
-    const utilLock = addLockIcon(util);
-    makeDraggable(util, utilLock);
-
+  util.id = 'utilitiesGUI';
+  util.style.cssText = `
+    position:fixed;top:50px;left:50px;width:280px;
+    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+    padding:10px;border:2px solid #00ff00;border-radius:8px;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+    user-select:none;cursor:move;
+  `;
+  util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+  document.body.appendChild(util);
     // -------------------- VFX GUI --------------------
     const vfx = document.createElement('div');
-    vfx.id = 'vfxGUI';
-    vfx.style.cssText = `
-      position:fixed;top:50px;right:50px;width:320px;
-      background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
-      padding:10px;border:2px solid #00ff00;border-radius:8px;
-      box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
-      user-select:none;cursor:move;
-    `;
-    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
-    document.body.appendChild(vfx);
+  vfx.id = 'vfxGUI';
+  vfx.style.cssText = `
+    position:fixed;top:50px;right:50px;width:320px;
+    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+    padding:10px;border:2px solid #00ff00;border-radius:8px;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+    user-select:none;cursor:move;
+  `;
+  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
+  document.body.appendChild(vfx);
 
-    const vfxLock = addLockIcon(vfx);
-    makeDraggable(vfx, vfxLock);
+    // -------------------- BUTTON HELPER --------------------
+     function addBtn(container,name,on,off){
+  const b=document.createElement('button');
+  b.innerText=name;
+  b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+  b.onclick=on;
+  container.appendChild(b);
+  }
 
+    // -------------------- ADD LOCK ICON --------------------
+     function addLockIcon(gui){
+    const lock = document.createElement('div');
+    lock.innerText = '🔓';
+    lock.style.cssText = 'position:absolute;top:5px;right:5px;font-size:16px;cursor:pointer;user-select:none;';
+    lock.locked = false;
+    lock.onclick = () => {
+      lock.locked = !lock.locked;
+      lock.innerText = lock.locked ? '🔒' : '🔓';
+    };
+    gui.appendChild(lock);
+    return lock;
+  }
+  let utilLock = addLockIcon(util);
+  let vfxLock = addLockIcon(vfx);
+
+     // -------------------- DRAGGING --------------------
+function makeDraggable(g, lock){
+  g.style.position = 'fixed'; // ensures anchored to viewport
+  g.onmousedown = function(e){
+    if(lock.locked) return; // do nothing if locked
+    let ox = e.clientX - g.getBoundingClientRect().left,
+        oy = e.clientY - g.getBoundingClientRect().top;
+    function move(e){
+      let x = e.clientX - ox;
+      let y = e.clientY - oy;
+      x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
+      y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
+      g.style.left = x + 'px';
+      g.style.top = y + 'px';
+      g.style.right = 'auto';
+      g.style.bottom = 'auto';
+    }
+    function up(){
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    }
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  };
+}
+
+// Attach to your GUIs after creating them and adding locks
+makeDraggable(util, utilLock);
+makeDraggable(vfx, vfxLock);
+
+    // -------------------- UTILITIES BUTTONS --------------------    
     // ---------- UTILITIES BUTTONS ----------
 (function(){
     const activeUtilities = {}; // Track ongoing effects
@@ -257,8 +247,7 @@ function spawnGUIs() {
   }
 }
 
-
-    // DNS Lookup
+  // DNS Lookup
     addBtn(util,'DNS Lookup',()=>{ 
         window.open('https://mxtoolbox.com/SuperTool.aspx?action=a:'+window.location.hostname,'_blank'); 
     });
@@ -366,7 +355,7 @@ function spawnGUIs() {
         util.appendChild(section);
     })();
 
-    // -------------------- VFX BUTTONS --------------------
+        // -------------------- VFX BUTTONS --------------------
 addBtn(vfx,'3D Page',()=>{
   if(!window.triScript){
     let s=document.createElement('script');
@@ -545,69 +534,26 @@ addBtn(vfx,'Text Corruption',()=>{
 
 // Bubble Text
 addBtn(vfx,'Bubble Text',()=>{
-  if(window.bubbleActive) return;
-  window.bubbleActive = true;
-  // Use a Map of textNode -> originalText so Stop All can restore
-  if(!window.originalTextMap) window.originalTextMap = new Map();
+    if(window.bubbleActive) return;
+    window.bubbleActive = true;
+    window.originalText = [];
 
-  const bubbleMap = {
-    a:'ⓐ',b:'ⓑ',c:'ⓒ',d:'ⓓ',e:'ⓔ',f:'ⓕ',g:'ⓖ',h:'ⓗ',i:'ⓘ',j:'ⓙ',k:'ⓚ',l:'ⓛ',m:'ⓜ',n:'ⓝ',o:'ⓞ',p:'ⓟ',q:'ⓠ',r:'ⓡ',s:'ⓢ',t:'ⓣ',u:'ⓤ',v:'ⓥ',w:'ⓦ',x:'ⓧ',y:'ⓨ',z:'ⓩ',
-    A:'Ⓐ',B:'Ⓑ',C:'Ⓒ',D:'Ⓓ',E:'Ⓔ',F:'Ⓕ',G:'Ⓖ',H:'Ⓗ',I:'Ⓘ',J:'Ⓙ',K:'Ⓚ',L:'Ⓛ',M:'Ⓜ',N:'Ⓝ',O:'Ⓞ',P:'Ⓟ',Q:'Ⓠ',R:'Ⓡ',S:'Ⓢ',T:'Ⓣ',U:'Ⓤ',V:'Ⓥ',W:'Ⓦ',X:'Ⓧ',Y:'Ⓨ',Z:'Ⓩ',
-    '0':'⓪','1':'①','2':'②','3':'③','4':'④','5':'⑤','6':'⑥','7':'⑦','8':'⑧','9':'⑨'
-  };
-
-  function transform(node){
-    if(!node) return;
-    // If element node: skip whole subtree if it's a GUI or inside GUI
-    if(node.nodeType === Node.ELEMENT_NODE){
-      try{
-        if(node.id==='vfxGUI' || node.id==='utilitiesGUI' || (node.closest && node.closest('#vfxGUI,#utilitiesGUI'))) return;
-      }catch(e){
-        // defensive: if closest throws, skip this node to be safe
-        return;
-      }
-      // recurse children
-      node.childNodes.forEach(transform);
-      return;
-    }
-    // If text node: transform it unless it's whitespace or inside GUI
-    if(node.nodeType === Node.TEXT_NODE){
-      const txt = node.nodeValue;
-      if(!txt || !txt.trim()) return;
-      const parent = node.parentElement;
-      if(parent){
-        try{
-          if(parent.closest && parent.closest('#vfxGUI,#utilitiesGUI')) return;
-        }catch(e){
-          return;
+    function transform(el){
+        if(!el || el.id==='vfxGUI'||el.id==='utilitiesGUI'||el.closest('#vfxGUI,#utilitiesGUI')) return;
+        if(el.nodeType===Node.TEXT_NODE && el.nodeValue.trim()){
+            window.originalText.push({el, text: el.nodeValue});
+            let chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+            let bubbles='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ①②③④⑤⑥⑦⑧⑨⓪'.split('');
+            el.nodeValue = el.nodeValue.replace(/[a-zA-Z0-9]/g, l => bubbles[chars.indexOf(l)] || l);
+        } else if(el.childNodes && el.childNodes.length>0){
+            el.childNodes.forEach(transform);
         }
-      }
-      if(!window.originalTextMap.has(node)) window.originalTextMap.set(node, txt);
-      node.nodeValue = txt.replace(/[a-zA-Z0-9]/g, ch => bubbleMap[ch] || ch);
     }
-  }
 
-  // run once (no continuous interval) — transforms all visible text nodes (except GUIs)
-  transform(document.body);
-
-  // register cleanup so Stop All can call it (and for manual toggle-off)
-  const cleanup = () => {
-    if(window.originalTextMap){
-      window.originalTextMap.forEach((orig, textNode)=>{
-        try{ textNode.nodeValue = orig; }catch(e){}
-      });
-      window.originalTextMap = null;
-    }
-    window.bubbleActive = false;
-  };
-  // store reference so off-button can call it
-  window._bubbleCleanup = cleanup;
-  if(!window.stopAllVFX) window.stopAllVFX = [];
-  window.stopAllVFX.push(cleanup);
-
-},()=>{
-  // off function for Bubble Text (button)
-  if(window._bubbleCleanup){ window._bubbleCleanup(); window._bubbleCleanup = null; }
+    window.bubbleInt = setInterval(()=>{ transform(document.body); }, 50);
+},()=>{  // off function for Bubble Text
+  if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; window.bubbleActive=false;}
+  if(window.originalText){window.originalText.forEach(o=>o.el.nodeValue=o.text); window.originalText=[];}
 });
 
 
@@ -728,8 +674,71 @@ addBtn(vfx,'Stop All',()=>{
   window.matrixActive=false;
 
   // Bubble Text
-  if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; window.bubbleActive=false;}
-  if(window.originalTextMap){window.originalTextMap.forEach((text, el)=>{ el.nodeValue=text; }); window.originalTextMap=null;}
+addBtn(vfx,'Bubble Text',()=>{
+  if(window.bubbleActive) return;
+  window.bubbleActive = true;
+  // Use a Map of textNode -> originalText so Stop All can restore
+  if(!window.originalTextMap) window.originalTextMap = new Map();
+
+  const bubbleMap = {
+    a:'ⓐ',b:'ⓑ',c:'ⓒ',d:'ⓓ',e:'ⓔ',f:'ⓕ',g:'ⓖ',h:'ⓗ',i:'ⓘ',j:'ⓙ',k:'ⓚ',l:'ⓛ',m:'ⓜ',n:'ⓝ',o:'ⓞ',p:'ⓟ',q:'ⓠ',r:'ⓡ',s:'ⓢ',t:'ⓣ',u:'ⓤ',v:'ⓥ',w:'ⓦ',x:'ⓧ',y:'ⓨ',z:'ⓩ',
+    A:'Ⓐ',B:'Ⓑ',C:'Ⓒ',D:'Ⓓ',E:'Ⓔ',F:'Ⓕ',G:'Ⓖ',H:'Ⓗ',I:'Ⓘ',J:'Ⓙ',K:'Ⓚ',L:'Ⓛ',M:'Ⓜ',N:'Ⓝ',O:'Ⓞ',P:'Ⓟ',Q:'Ⓠ',R:'Ⓡ',S:'Ⓢ',T:'Ⓣ',U:'Ⓤ',V:'Ⓥ',W:'Ⓦ',X:'Ⓧ',Y:'Ⓨ',Z:'Ⓩ',
+    '0':'⓪','1':'①','2':'②','3':'③','4':'④','5':'⑤','6':'⑥','7':'⑦','8':'⑧','9':'⑨'
+  };
+
+  function transform(node){
+    if(!node) return;
+    // If element node: skip whole subtree if it's a GUI or inside GUI
+    if(node.nodeType === Node.ELEMENT_NODE){
+      try{
+        if(node.id==='vfxGUI' || node.id==='utilitiesGUI' || (node.closest && node.closest('#vfxGUI,#utilitiesGUI'))) return;
+      }catch(e){
+        // defensive: if closest throws, skip this node to be safe
+        return;
+      }
+      // recurse children
+      node.childNodes.forEach(transform);
+      return;
+    }
+    // If text node: transform it unless it's whitespace or inside GUI
+    if(node.nodeType === Node.TEXT_NODE){
+      const txt = node.nodeValue;
+      if(!txt || !txt.trim()) return;
+      const parent = node.parentElement;
+      if(parent){
+        try{
+          if(parent.closest && parent.closest('#vfxGUI,#utilitiesGUI')) return;
+        }catch(e){
+          return;
+        }
+      }
+      if(!window.originalTextMap.has(node)) window.originalTextMap.set(node, txt);
+      node.nodeValue = txt.replace(/[a-zA-Z0-9]/g, ch => bubbleMap[ch] || ch);
+    }
+  }
+
+  // run once (no continuous interval) — transforms all visible text nodes (except GUIs)
+  transform(document.body);
+
+  // register cleanup so Stop All can call it (and for manual toggle-off)
+  const cleanup = () => {
+    if(window.originalTextMap){
+      window.originalTextMap.forEach((orig, textNode)=>{
+        try{ textNode.nodeValue = orig; }catch(e){}
+      });
+      window.originalTextMap = null;
+    }
+    window.bubbleActive = false;
+  };
+  // store reference so off-button can call it
+  window._bubbleCleanup = cleanup;
+  if(!window.stopAllVFX) window.stopAllVFX = [];
+  window.stopAllVFX.push(cleanup);
+
+},()=>{
+  // off function for Bubble Text (button)
+  if(window._bubbleCleanup){ window._bubbleCleanup(); window._bubbleCleanup = null; }
+});
 
   // Text Corruption
   if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}
@@ -770,12 +779,14 @@ addBtn(vfx,'Stop All',()=>{
         vfx.appendChild(section);
     })();
 
-    // -------------------- SHIFT+H TO TOGGLE --------------------
+    // -------------------- SHIFT+H TO HIDE --------------------
     document.addEventListener('keydown', (e) => {
-        if(e.shiftKey && e.key.toLowerCase() === 'h'){
-            util.style.display = (util.style.display==='none') ? 'block' : 'none';
-            vfx.style.display = (vfx.style.display==='none') ? 'block' : 'none';
-        }
-    });
-}
+    if (e.shiftKey && e.key.toLowerCase() === 'h') {
+      util.style.display = (util.style.display === 'none') ? 'block' : 'none';
+      vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
+    }
+  });
 
+  } // end spawnGUIs
+
+})();
