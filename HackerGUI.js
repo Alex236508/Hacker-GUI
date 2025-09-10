@@ -252,21 +252,26 @@
             }
         });
     
-        // Smooth Disco
         vfxAddBtn('Smooth Disco', () => {
-            if (window.discoSmoothActive) return;
-            window.discoSmoothActive = true;
-            let colors = "red orange yellow green blue purple pink".split(" "), i = 0;
-            window.discoSmoothInt = setInterval(() => {
-                i >= colors.length ? i = 0 : i++;
-                document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => {
-                    e.style.transition = "background-color 1s";
-                    e.style.backgroundColor = colors[i];
-                });
-            },1000);
-        }, () => {
-            if(window.discoSmoothInt){clearInterval(window.discoSmoothInt); window.discoSmoothInt=null; window.discoSmoothActive=false;}
-            document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => e.style.backgroundColor='');
+    if (window.discoSmoothActive) return;
+    window.discoSmoothActive = true;
+    let colors = "red orange yellow green blue purple pink".split(" "), i = 0;
+    window.discoSmoothInt = setInterval(() => {
+        i >= colors.length ? i = 0 : i++;
+        document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => {
+            e.style.transition = "background-color 1s";
+            e.style.backgroundColor = colors[i];
+        });
+    },1000);
+}, () => {
+    if(window.discoSmoothInt){
+        clearInterval(window.discoSmoothInt);
+        window.discoSmoothInt = null;
+        window.discoSmoothActive = false;
+    }
+    document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => e.style.backgroundColor='');
+});
+
 
 
         // ---------- VFX BUTTON HELPER ----------
