@@ -59,12 +59,30 @@
   function spawnGUIs() {
       // -------------------- UTILITIES GUI WITH CHAT --------------------
 
-// ----- GLOBAL CHAT BOX -----
+// Ensure Firebase is loaded and db is available
 (function() {
-  // Ask for username once
+  if (!window.db) {
+    console.error("Firebase database (db) is not defined. Make sure Firebase is initialized first.");
+    return;
+  }
+
+  // ----- GLOBAL CHAT BOX -----
   const chatUsername = prompt("Enter a username for chat") || "Anonymous";
 
-  // Create chat container
+  // Create Utilities container
+  const util = document.createElement('div');
+  util.id = 'utilitiesGUI';
+  util.style.cssText = `
+    position:fixed;top:50px;left:50px;width:280px;
+    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+    padding:10px;border:2px solid #00ff00;border-radius:8px;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+    user-select:none;cursor:move;
+  `;
+  util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+  document.body.appendChild(util);
+
+  // ----- GLOBAL CHAT BOX -----
   const chatContainer = document.createElement("div");
   chatContainer.id = "globalChat";
   chatContainer.style.cssText = `
@@ -75,7 +93,7 @@
     user-select:none; cursor:move;
   `;
 
-  // Create messages area
+  // Messages display area
   const messagesBox = document.createElement("div");
   messagesBox.id = "chatMessages";
   messagesBox.style.cssText = `
@@ -83,7 +101,7 @@
   `;
   chatContainer.appendChild(messagesBox);
 
-  // Create input container
+  // Input container
   const inputContainer = document.createElement("div");
   inputContainer.style.cssText = `display:flex; border-top:1px solid #0f0;`;
 
@@ -102,12 +120,11 @@
   inputContainer.appendChild(messageInput);
   inputContainer.appendChild(sendBtn);
   chatContainer.appendChild(inputContainer);
-
   document.body.appendChild(chatContainer);
 
-  // Make draggable
+  // Make chat draggable
   chatContainer.onmousedown = function(e) {
-    if(e.target === messageInput || e.target === sendBtn) return; // ignore input drag
+    if (e.target === messageInput || e.target === sendBtn) return;
     let offsetX = e.clientX - chatContainer.offsetLeft;
     let offsetY = e.clientY - chatContainer.offsetTop;
     function moveHandler(e) {
@@ -122,29 +139,34 @@
     document.addEventListener("mouseup", upHandler);
   };
 
-  // Firebase: send message
+  // Send button logic
   sendBtn.onclick = () => {
     const text = messageInput.value.trim();
-    if(text) {
-      sendMessage(chatUsername, text); // assumes sendMessage function already defined
+    if (text) {
+      window.db.ref("global-chat").push({
+        user: chatUsername,
+        message: text,
+        timestamp: Date.now()
+      });
       messageInput.value = "";
     }
   };
 
-  // Display messages
+  // Display messages in chat
   function displayMessage(user, text) {
     const msg = document.createElement("div");
     msg.textContent = `[${user}] ${text}`;
     messagesBox.appendChild(msg);
-    messagesBox.scrollTop = messagesBox.scrollHeight; // auto-scroll
+    messagesBox.scrollTop = messagesBox.scrollHeight;
   }
 
-  // Hook Firebase listener
-  db.ref("global-chat").on("child_added", snapshot => {
+  // Firebase listener for new messages
+  window.db.ref("global-chat").on("child_added", snapshot => {
     const data = snapshot.val();
     displayMessage(data.user, data.message);
   });
 })();
+
     
     // -------------------- VFX GUI --------------------
     const vfx = document.createElement('div');
