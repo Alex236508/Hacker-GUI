@@ -75,7 +75,7 @@
         return el;
     }
 
-    // ---------- BUTTON HELPER ----------
+    // ---------- BUTTON HELPERS ----------
     function addBtn(container, label, on, off = null) {
         if (!container) return null;
         const btn = createElement('button', {textContent: label}, container);
