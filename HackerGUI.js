@@ -108,33 +108,31 @@
   let utilLock = addLockIcon(util);
   let vfxLock = addLockIcon(vfx);
 
-    // -------------------- DRAGGING --------------------
-     function makeDraggable(gui, lock){
-    gui.onmousedown = function(e){
-      if(lock && lock.locked) return;
-      let ox = e.clientX - gui.getBoundingClientRect().left,
-          oy = e.clientY - gui.getBoundingClientRect().top;
-      function move(e){
-        let x = e.clientX - ox;
-        let y = e.clientY - oy;
-        x = Math.max(0, Math.min(window.innerWidth - gui.offsetWidth, x));
-        y = Math.max(0, Math.min(window.innerHeight - gui.offsetHeight, y));
-        gui.style.left = x + 'px';
-        gui.style.top = y + 'px';
-        gui.style.right = 'auto';
-        gui.style.bottom = 'auto';
-      }
-      function up(){
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', up);
-      }
-      document.addEventListener('mousemove', move);
-      document.addEventListener('mouseup', up);
-    };
-  }
-  makeDraggable(util, utilLock);
-  makeDraggable(vfx, vfxLock);
-    
+     // -------------------- DRAGGING --------------------
+    function makeDraggable(g){
+  g.style.position = 'fixed'; // ensures anchored to viewport
+  g.onmousedown = function(e){
+    let ox = e.clientX - g.getBoundingClientRect().left,
+        oy = e.clientY - g.getBoundingClientRect().top;
+    function move(e){
+      let x = e.clientX - ox;
+      let y = e.clientY - oy;
+      // Constrain inside viewport
+      x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
+      y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
+      g.style.left = x + 'px';
+      g.style.top = y + 'px';
+      g.style.right = 'auto';
+      g.style.bottom = 'auto';
+    }
+    function up(){
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    }
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  };
+}    
     // -------------------- UTILITIES BUTTONS --------------------
     function addBtn(container,name,on,off){const b=document.createElement('button');b.innerText=name;b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';b.onclick=on;container.appendChild(b);}
     
@@ -375,11 +373,11 @@ addBtn(vfx,'Bubble Text',()=>{
         }
     }
 
-    window.bubbleInt = setInterval(()=>{ transform(document.body) }, 50);
-},()=>{
-    if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; window.bubbleActive=false;}
-    if(window.originalText){window.originalText.forEach(o=>o.el.nodeValue=o.text); window.originalText=[];}
+    },()=>{  // off function for Bubble Text
+  if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; window.bubbleActive=false;}
+  if(window.originalText){window.originalText.forEach(o=>o.el.nodeValue=o.text); window.originalText=[];}
 });
+
 
 // Page Spin
 addBtn(vfx,'Page Spin',()=>{
@@ -502,32 +500,6 @@ addBtn(vfx,'Stop All',()=>{
         vfx.appendChild(section);
     })();
 
-    // -------------------- DRAGGING --------------------
-    function makeDraggable(g){
-  g.style.position = 'fixed'; // ensures anchored to viewport
-  g.onmousedown = function(e){
-    let ox = e.clientX - g.getBoundingClientRect().left,
-        oy = e.clientY - g.getBoundingClientRect().top;
-    function move(e){
-      let x = e.clientX - ox;
-      let y = e.clientY - oy;
-      // Constrain inside viewport
-      x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
-      y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
-      g.style.left = x + 'px';
-      g.style.top = y + 'px';
-      g.style.right = 'auto';
-      g.style.bottom = 'auto';
-    }
-    function up(){
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseup', up);
-    }
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
-  };
-}
-
     // -------------------- SHIFT+H TO HIDE --------------------
     document.addEventListener('keydown', (e) => {
     if (e.shiftKey && e.key.toLowerCase() === 'h') {
@@ -535,7 +507,6 @@ addBtn(vfx,'Stop All',()=>{
       vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
     }
   });
-}
 
   } // end spawnGUIs
 
