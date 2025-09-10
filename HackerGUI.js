@@ -44,23 +44,59 @@
         });
     },33);
 
-    let progress = 0;
-    const int = setInterval(()=>{
-        progress++;
-        loading.innerText=`Loading ${progress}%`;
-        if(progress>=100){
-            clearInterval(int);
-            setTimeout(()=>{
-                loading.innerText='Welcome, Hacker';
-                setTimeout(()=>{
-                    clearInterval(rain);
-                    bootOverlay.remove();
-                    if(window.spawnGUIs) window.spawnGUIs();
-                },2000);
-            },500);
-        }
-    },40);
-})();
+    // ---------- Bootup end ----------
+let progress = 0;
+const int = setInterval(() => {
+    progress++;
+    loading.innerText = `Loading ${progress}%`;
+    if (progress >= 100) {
+        clearInterval(int);
+        setTimeout(() => {
+            loading.innerText = 'Welcome, Hacker';
+            setTimeout(() => {
+                clearInterval(rain);
+                bootOverlay.remove();           // Remove boot overlay
+                if (window.spawnGUIs) window.spawnGUIs(); // Create panels
+            }, 2000);
+        }, 500);
+    }
+}, 40);
+
+// ---------- GUI SPAWNER ----------
+window.spawnGUIs = function() {
+    // Utilities GUI
+    let util = document.getElementById('utilitiesGUI');
+    if (!util) {
+        util = createElement('div', {
+            id: 'utilitiesGUI',
+            innerHTML: '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>'
+        }, document.body);
+        Object.assign(util.style, {
+            position: 'fixed', top: '50px', left: '50px', width: '320px',
+            background: '#1b1b1b', color: '#00ff00', fontFamily: 'Consolas,monospace',
+            padding: '10px', border: '2px solid #00ff00', borderRadius: '8px',
+            boxShadow: '0 0 15px rgba(0,255,0,0.5)', zIndex: 999999, userSelect: 'none', cursor: 'move'
+        });
+        window.utilGUI = util;
+    }
+
+    // VFX GUI
+    let vfx = document.getElementById('vfxGUI');
+    if (!vfx) {
+        vfx = createElement('div', {
+            id: 'vfxGUI',
+            innerHTML: '<div style="text-align:center;margin-bottom:8px;"><b>VFX</b></div>'
+        }, document.body);
+        Object.assign(vfx.style, {
+            position: 'fixed', top: '100px', left: '400px', width: '320px',
+            background: '#1b1b1b', color: '#00ff00', fontFamily: 'Consolas,monospace',
+            padding: '10px', border: '2px solid #00ff00', borderRadius: '8px',
+            boxShadow: '0 0 15px rgba(0,255,0,0.5)', zIndex: 999999, userSelect: 'none', cursor: 'move'
+        });
+        window.vfxGUI = vfx;
+    }
+};
+
 
 function createElement(tag, props={}, parent=null){
     const el=document.createElement(tag);
