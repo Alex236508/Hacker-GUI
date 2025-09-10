@@ -56,9 +56,143 @@
     }
   },40);
 
-  // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
+  okay so now the utilities gui looks like this
+
+// ---------- MAIN FUNCTION TO SPAWN GUIs ----------
   function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
+    // =====================
+// Global Chat for Utilities GUI
+// =====================
+(function(){
+    if (window.globalChatInitialized) return;
+    window.globalChatInitialized = true;
+
+    const firebaseURL = "https://hacker-gui-global-chat-default-rtdb.firebaseio.com/";
+    
+    // Create "Open Chat" button
+    addBtn('Utilities', 'Open Chat', () => {
+        if (document.getElementById('globalChatContainer')) {
+            document.getElementById('globalChatContainer').style.display = 'block';
+            return;
+        }
+
+        // Create chat container
+        const chatContainer = document.createElement('div');
+        chatContainer.id = 'globalChatContainer';
+        chatContainer.style.position = 'fixed';
+        chatContainer.style.bottom = '20px';
+        chatContainer.style.right = '20px';
+        chatContainer.style.width = '300px';
+        chatContainer.style.height = '400px';
+        chatContainer.style.backgroundColor = 'rgba(0,0,0,0.9)';
+        chatContainer.style.color = 'white';
+        chatContainer.style.border = '2px solid #00ff00';
+        chatContainer.style.borderRadius = '8px';
+        chatContainer.style.zIndex = 999999;
+        chatContainer.style.display = 'flex';
+        chatContainer.style.flexDirection = 'column';
+        chatContainer.style.resize = 'both';
+        chatContainer.style.overflow = 'hidden';
+
+        // Chat header
+        const header = document.createElement('div');
+        header.style.backgroundColor = '#111';
+        header.style.padding = '5px';
+        header.style.cursor = 'move';
+        header.style.userSelect = 'none';
+        header.textContent = 'Global Chat';
+        chatContainer.appendChild(header);
+
+        // Close button
+        const closeBtn = document.createElement('span');
+        closeBtn.textContent = '✖';
+        closeBtn.style.float = 'right';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.onclick = () => { chatContainer.style.display = 'none'; };
+        header.appendChild(closeBtn);
+
+        // Messages container
+        const messages = document.createElement('div');
+        messages.style.flex = '1';
+        messages.style.padding = '5px';
+        messages.style.overflowY = 'auto';
+        messages.style.fontSize = '12px';
+        chatContainer.appendChild(messages);
+
+        // Input container
+        const inputContainer = document.createElement('div');
+        inputContainer.style.display = 'flex';
+        chatContainer.appendChild(inputContainer);
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Type a message...';
+        input.style.flex = '1';
+        input.style.padding = '4px';
+        input.style.border = 'none';
+        input.style.outline = 'none';
+        input.style.borderTop = '1px solid #00ff00';
+        inputContainer.appendChild(input);
+
+        const sendBtn = document.createElement('button');
+        sendBtn.textContent = 'Send';
+        sendBtn.style.border = 'none';
+        sendBtn.style.backgroundColor = '#00ff00';
+        sendBtn.style.color = '#000';
+        sendBtn.style.cursor = 'pointer';
+        inputContainer.appendChild(sendBtn);
+
+        document.body.appendChild(chatContainer);
+
+        // Firebase Realtime Database setup
+        const chatRef = new Firebase(firebaseURL + 'messages');
+
+        function addMessage(username, text) {
+            const msg = document.createElement('div');
+            msg.textContent = username + ': ' + text;
+            messages.appendChild(msg);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // Listen for new messages
+        chatRef.on('child_added', snapshot => {
+            const data = snapshot.val();
+            addMessage(data.username, data.text);
+        });
+
+        function sendMessage() {
+            if (!input.value.trim()) return;
+            const username = prompt("Enter your username:", "Anonymous") || "Anonymous";
+            chatRef.push({ username: username, text: input.value });
+            input.value = '';
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        input.addEventListener('keypress', e => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Make draggable
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        header.addEventListener('mousedown', e => {
+            isDragging = true;
+            offsetX = e.clientX - chatContainer.getBoundingClientRect().left;
+            offsetY = e.clientY - chatContainer.getBoundingClientRect().top;
+        });
+
+        document.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            chatContainer.style.left = e.clientX - offsetX + 'px';
+            chatContainer.style.top = e.clientY - offsetY + 'px';
+        });
+
+        document.addEventListener('mouseup', () => { isDragging = false; });
+    });
+})();
+    
     const util = document.createElement('div');
   util.id = 'utilitiesGUI';
   util.style.cssText = `
@@ -70,6 +204,7 @@
   `;
   util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
   document.body.appendChild(util);
+    
     // -------------------- VFX GUI --------------------
     const vfx = document.createElement('div');
   vfx.id = 'vfxGUI';
