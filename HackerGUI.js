@@ -513,11 +513,11 @@ document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(
 section.appendChild(slider);
 util.appendChild(section);
 })();
-
-  const vfxGUI=document.createElement('div');
-  vfxGUI.style.cssText='position:fixed;top:100px;left:350px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
-  makeDraggable(vfxGUI,'vfxLock');
-  document.body.appendChild(vfxGUI);
+  
+// Reuse existing vfxGUI
+vfxGUI.style.cssText='position:fixed;top:100px;left:350px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
+makeDraggable(vfxGUI,'vfxLock');
+document.body.appendChild(vfxGUI);
 
   // -------------------- VFX BUTTONS --------------------
 addBtn(vfx,'3D Page',()=>{
