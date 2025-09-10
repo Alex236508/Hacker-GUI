@@ -56,15 +56,29 @@
     }
   },40);
 
-  // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
-  function spawnGUIs() {
-    // -------------------- UTILITIES GUI --------------------
-    <!-- Add Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  // -------------------- UTILITIES GUI --------------------
 
-<script>
-  // Your Firebase config (from Firebase Console)
+// Dynamically load Firebase SDKs
+function loadFirebase(cb) {
+  const scripts = [
+    "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
+    "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"
+  ];
+
+  let loaded = 0;
+  scripts.forEach(src => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = () => {
+      loaded++;
+      if (loaded === scripts.length && cb) cb();
+    };
+    document.head.appendChild(s);
+  });
+}
+
+// When Firebase is ready, initialize it
+loadFirebase(() => {
   const firebaseConfig = {
     apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
     authDomain: "hacker-gui-global-chat.firebaseapp.com",
@@ -75,38 +89,40 @@
     appId: "1:410978781234:web:ee08f15ee9be48970c542b"
   };
 
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Function to send a message
-  function sendMessage(username, text) {
+  // Send a message
+  window.sendMessage = function(username, text) {
     db.ref("global-chat").push({
       user: username,
       message: text,
       timestamp: Date.now()
     });
-  }
+  };
 
-  // Function to listen for new messages
+  // Listen for new messages
   db.ref("global-chat").on("child_added", snapshot => {
     const data = snapshot.val();
     console.log(`[${data.user}] ${data.message}`);
-    // Here you could also display messages in your GUI instead of console
+    // later we’ll make this show inside the GUI instead of console
   });
-</script>
 
-  const util = document.createElement('div');
-  util.id = 'utilitiesGUI';
-  util.style.cssText = `
-    position:fixed;top:50px;left:50px;width:280px;
-    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
-    user-select:none;cursor:move;
-  `;
-  util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
-  document.body.appendChild(util);
+  console.log("✅ Firebase connected to global chat");
+});
+
+// --- Utilities GUI box ---
+const util = document.createElement('div');
+util.id = 'utilitiesGUI';
+util.style.cssText = `
+  position:fixed;top:50px;left:50px;width:280px;
+  background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+  padding:10px;border:2px solid #00ff00;border-radius:8px;
+  box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+  user-select:none;cursor:move;
+`;
+util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+document.body.appendChild(util);
     
     // -------------------- VFX GUI --------------------
     const vfx = document.createElement('div');
