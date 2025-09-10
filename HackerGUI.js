@@ -124,10 +124,32 @@
   document.body.appendChild(stopAllBtn);
 
   // ---------- GUI CREATION ----------
-  const utilGUI=document.createElement('div');
-  utilGUI.style.cssText='position:fixed;top:100px;left:100px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
-  makeDraggable(utilGUI,'utilLock');
-  document.body.appendChild(utilGUI);
+const utilGUI = document.createElement('div');
+utilGUI.style.cssText='position:fixed;top:100px;left:100px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
+makeDraggable(utilGUI,'utilLock');
+document.body.appendChild(utilGUI);
+
+const vfxGUI = document.createElement('div');
+vfxGUI.style.cssText='position:fixed;top:100px;left:350px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
+makeDraggable(vfxGUI,'vfxLock');
+document.body.appendChild(vfxGUI);
+
+// Define util and vfx references
+const util = utilGUI;
+const vfx = vfxGUI;
+
+// Function to show GUIs after bootup
+function spawnGUIs() {
+    utilGUI.style.display = 'block';
+    vfxGUI.style.display = 'block';
+}
+
+// Replace your previous spawnGUIs() call in bootup:
+setTimeout(() => {
+    overlay.remove();
+    spawnGUIs();
+}, 2000);
+
 
  // ---------- UTILITIES BUTTONS ----------
 (function(){
