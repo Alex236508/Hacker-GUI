@@ -482,56 +482,58 @@ addBtn(vfx,'Text Corruption',()=>{
   if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}
 });
 
-addBtn(vfx,'Bubble Text',()=> {
-  // allow rerun
-  if(window.bubbleActive) return;
-  window.bubbleActive = true;
+addBtn(vfx, 'Bubble Text', () => {
+    if (window.bubbleActive) return;
+    window.bubbleActive = true;
 
-  // Fresh map for this run
-  const originalTextMap = new Map();
+    // Fresh map for this run
+    const originalTextMap = new Map();
 
-  const bubbleMap = {
-    a:'ⓐ',b:'ⓑ',c:'ⓒ',d:'ⓓ',e:'ⓔ',f:'ⓕ',g:'ⓖ',h:'ⓗ',i:'ⓘ',j:'ⓙ',k:'ⓚ',l:'ⓛ',m:'ⓜ',n:'ⓝ',o:'ⓞ',p:'ⓟ',q:'ⓠ',r:'ⓡ',s:'ⓢ',t:'ⓣ',u:'ⓤ',v:'ⓥ',w:'ⓦ',x:'ⓧ',y:'ⓨ',z:'ⓩ',
-    A:'Ⓐ',B:'Ⓑ',C:'Ⓒ',D:'Ⓓ',E:'Ⓔ',F:'Ⓕ',G:'Ⓖ',H:'Ⓗ',I:'Ⓘ',J:'Ⓙ',K:'Ⓚ',L:'Ⓛ',M:'Ⓜ',N:'Ⓝ',O:'Ⓞ',P:'Ⓟ',Q:'Ⓠ',R:'Ⓡ',S:'Ⓢ',T:'Ⓣ',U:'Ⓤ',V:'Ⓥ',W:'Ⓦ',X:'Ⓧ',Y:'Ⓨ',Z:'Ⓩ',
-    '0':'⓪','1':'①','2':'②','3':'③','4':'④','5':'⑤','6':'⑥','7':'⑦','8':'⑧','9':'⑨'
-  };
+    const bubbleMap = {
+        a: 'ⓐ', b: 'ⓑ', c: 'ⓒ', d: 'ⓓ', e: 'ⓔ', f: 'ⓕ', g: 'ⓖ', h: 'ⓗ', i: 'ⓘ', j: 'ⓙ', k: 'ⓚ', l: 'ⓛ',
+        m: 'ⓜ', n: 'ⓝ', o: 'ⓞ', p: 'ⓟ', q: 'ⓠ', r: 'ⓡ', s: 'ⓢ', t: 'ⓣ', u: 'ⓤ', v: 'ⓥ', w: 'ⓦ', x: 'ⓧ',
+        y: 'ⓨ', z: 'ⓩ', A: 'Ⓐ', B: 'Ⓑ', C: 'Ⓒ', D: 'Ⓓ', E: 'Ⓔ', F: 'Ⓕ', G: 'Ⓖ', H: 'Ⓗ', I: 'Ⓘ', J: 'Ⓙ',
+        K: 'Ⓚ', L: 'Ⓛ', M: 'Ⓜ', N: 'Ⓝ', O: 'Ⓞ', P: 'Ⓟ', Q: 'Ⓠ', R: 'Ⓡ', S: 'Ⓢ', T: 'Ⓣ', U: 'Ⓤ', V: 'Ⓥ',
+        W: 'Ⓦ', X: 'Ⓧ', Y: 'Ⓨ', Z: 'Ⓩ', '0': '⓪', '1': '①', '2': '②', '3': '③', '4': '④', '5': '⑤', '6': '⑥',
+        '7': '⑦', '8': '⑧', '9': '⑨'
+    };
 
-  function transform(node){
-    if(!node) return;
-    if(node.nodeType === Node.ELEMENT_NODE){
-      try{ if(node.id==='vfxGUI'||node.id==='utilitiesGUI'||(node.closest&&node.closest('#vfxGUI,#utilitiesGUI'))) return; }catch(e){ return; }
-      node.childNodes.forEach(transform);
-      return;
+    function transform(node) {
+        if (!node) return;
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            try { if (node.id === 'vfxGUI' || node.id === 'utilitiesGUI' || (node.closest && node.closest('#vfxGUI,#utilitiesGUI'))) return; } catch (e) { return; }
+            node.childNodes.forEach(transform);
+            return;
+        }
+        if (node.nodeType === Node.TEXT_NODE) {
+            const txt = node.nodeValue;
+            if (!txt || !txt.trim()) return;
+            const parent = node.parentElement;
+            if (parent && parent.closest && parent.closest('#vfxGUI,#utilitiesGUI')) return;
+            if (!originalTextMap.has(node)) originalTextMap.set(node, txt);
+            node.nodeValue = txt.replace(/[a-zA-Z0-9]/g, ch => bubbleMap[ch] || ch);
+        }
     }
-    if(node.nodeType === Node.TEXT_NODE){
-      const txt = node.nodeValue;
-      if(!txt || !txt.trim()) return;
-      const parent = node.parentElement;
-      if(parent && parent.closest && parent.closest('#vfxGUI,#utilitiesGUI')) return;
-      if(!originalTextMap.has(node)) originalTextMap.set(node, txt);
-      node.nodeValue = txt.replace(/[a-zA-Z0-9]/g,ch=>bubbleMap[ch]||ch);
-    }
-  }
 
-  transform(document.body);
+    transform(document.body);
 
-  // Cleanup function for Stop All
-  const cleanup = () => {
-    originalTextMap.forEach((orig, node)=>{ try{ node.nodeValue=orig; }catch(e){} });
-    window.bubbleActive = false;
-  };
+    // Cleanup function for this run
+    const cleanup = () => {
+        originalTextMap.forEach((orig, node) => { try { node.nodeValue = orig; } catch (e) { } });
+        window.bubbleActive = false;
+    };
 
-  // store globally so off button can call it
-  window._bubbleCleanup = cleanup;
+    // Save cleanup globally for Stop All
+    window._bubbleCleanup = cleanup;
 
-  // Register Stop All support
-  if(!window.stopAllVFX) window.stopAllVFX = [];
-  // remove old _bubbleCleanup references
-  window.stopAllVFX = window.stopAllVFX.filter(f => f !== window._bubbleCleanup);
-  window.stopAllVFX.push(window._bubbleCleanup);
+    // Ensure Stop All calls the latest cleanup
+    if (!window.stopAllVFX) window.stopAllVFX = [];
+    // remove old reference to avoid duplicates
+    window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
+    window.stopAllVFX.push(cleanup);
 
-},()=>{ // off-button
-  if(window._bubbleCleanup){ window._bubbleCleanup(); window._bubbleCleanup=null; }
+}, () => {
+    if (window._bubbleCleanup) { window._bubbleCleanup(); window._bubbleCleanup = null; }
 });
 
 // Page Spin
