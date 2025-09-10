@@ -463,11 +463,6 @@ function makeDraggable(el, lock) {
     });
 }
 
-// Apply locks and draggable
-let utilLock = addLockIcon(util);
-let vfxLock = addLockIcon(vfx);
-makeDraggable(util, utilLock);
-makeDraggable(vfx, vfxLock);
 
  // ---------- UTILITIES BUTTONS ----------
 (function(){
