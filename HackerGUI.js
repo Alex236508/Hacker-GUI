@@ -625,55 +625,43 @@ addBtn(vfx, 'Full Chaos', () => {
   }
 });
 
-// Stop All
-addBtn(vfx,'Stop All',()=>{
-  // Page Spin
-  if(window.pageSpinStyle){window.pageSpinStyle.remove(); window.pageSpinStyle=null;}
-  window.pageSpinActive=false;
+addBtn(vfx, 'Stop All', () => {
+    // Call all registered VFX cleanup functions
+    if (window.stopAllVFX) {
+        window.stopAllVFX.forEach(fn => { try { fn(); } catch(e){} });
+        window.stopAllVFX = [];
+    }
 
-  // Smooth Disco
-  if(window.discoSmoothInt){clearInterval(window.discoSmoothInt); window.discoSmoothInt=null; window.discoSmoothActive=false;}
+    // Reset global flags
+    window.bubbleActive = false;
+    window.matrixActive = false;
+    window.glitchActive = false;
+    window.discoSmoothActive = false;
+    window.fullChaosActive = false;
+    window.pageSpinActive = false;
 
-  // Glitch
-  if(window.glitchInt){clearInterval(window.glitchInt); window.glitchInt=null; window.glitchActive=false;}
+    // Remove any dynamically added elements
+    if (window.matrixCanvas) { window.matrixCanvas.remove(); window.matrixCanvas = null; }
+    if (window.pageSpinStyle) { window.pageSpinStyle.remove(); window.pageSpinStyle = null; }
+    const chaos = document.getElementById('chaosContainer');
+    if (chaos) chaos.remove();
 
-  // Full Chaos
-  if(window.fullChaosLoop1){clearInterval(window.fullChaosLoop1); window.fullChaosLoop1=null;}
-  if(window.fullChaosLoop2){clearInterval(window.fullChaosLoop2); window.fullChaosLoop2=null;}
-  window.fullChaosActive=false;
-
-  // Image Glitch
-  if(window.imgGlitchInt){clearInterval(window.imgGlitchInt); window.imgGlitchInt=null;
-    document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{e.style.position=''; e.style.left=''; e.style.top='';});
-  }
-
-  // Matrix Rain
-  if(window.matrixInt){clearInterval(window.matrixInt); window.matrixInt=null;}
-  if(window.matrixCanvas){window.matrixCanvas.remove(); window.matrixCanvas=null;}
-  window.matrixActive=false;
-
-  // Bubble Text
-  if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; window.bubbleActive=false;}
-  if(window.originalTextMap){window.originalTextMap.forEach((text, el)=>{ el.nodeValue=text; }); window.originalTextMap=null;}
-
-  // Text Corruption
-  if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}
-
-  // Reset page
-  document.body.style.transform='';
-  document.body.style.backgroundColor='';
-  document.body.style.filter='';
-  document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
-    e.style.backgroundColor='';
-    e.style.height='';
-    e.style.transform='';
-    e.style.transition='';
-    e.style.color='';
-    e.style.fontSize='';
-    e.style.position='';
-    e.style.left='';
-    e.style.top='';
-  });
+    // Reset page styles and all element inline styles
+    document.body.style.transform = '';
+    document.body.style.backgroundColor = '';
+    document.body.style.filter = '';
+    document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e => {
+        e.style.backgroundColor = '';
+        e.style.height = '';
+        e.style.transform = '';
+        e.style.transition = '';
+        e.style.color = '';
+        e.style.fontSize = '';
+        e.style.position = '';
+        e.style.left = '';
+        e.style.top = '';
+        e.style.textShadow = '';
+    });
 });
 
     // -------------------- FONT COLOR SLIDER --------------------
