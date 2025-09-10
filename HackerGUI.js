@@ -59,95 +59,42 @@
   // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
   function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
-    addBtn('Global Chat', () => {
-  // Ask for username
-  let username = prompt("Enter your username for Global Chat:", "Anon");
-  if(!username) username = "Anon";
+    <!-- Add Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  // Prevent multiple instances
-  if(window.globalChatActive) return;
-  window.globalChatActive = true;
+<script>
+  // Your Firebase config (from Firebase Console)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
+    authDomain: "hacker-gui-global-chat.firebaseapp.com",
+    databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
+    projectId: "hacker-gui-global-chat",
+    storageBucket: "hacker-gui-global-chat.appspot.com",
+    messagingSenderId: "410978781234",
+    appId: "1:410978781234:web:ee08f15ee9be48970c542b"
+  };
 
-  // Create chat box UI
-  const chatBox = document.createElement('div');
-  chatBox.style.position = 'fixed';
-  chatBox.style.bottom = '10px';
-  chatBox.style.right = '10px';
-  chatBox.style.width = '300px';
-  chatBox.style.height = '400px';
-  chatBox.style.backgroundColor = 'rgba(0,0,0,0.85)';
-  chatBox.style.color = 'white';
-  chatBox.style.zIndex = 999999;
-  chatBox.style.display = 'flex';
-  chatBox.style.flexDirection = 'column';
-  chatBox.style.border = '2px solid #00ff00';
-  chatBox.style.borderRadius = '8px';
-  chatBox.style.overflow = 'hidden';
-  document.body.appendChild(chatBox);
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-  const messagesDiv = document.createElement('div');
-  messagesDiv.style.flex = '1';
-  messagesDiv.style.padding = '5px';
-  messagesDiv.style.overflowY = 'auto';
-  messagesDiv.style.fontSize = '12px';
-  chatBox.appendChild(messagesDiv);
-
-  const inputDiv = document.createElement('div');
-  inputDiv.style.display = 'flex';
-  chatBox.appendChild(inputDiv);
-
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.placeholder = 'Type a message...';
-  input.style.flex = '1';
-  input.style.padding = '5px';
-  input.style.border = 'none';
-  input.style.outline = 'none';
-  inputDiv.appendChild(input);
-
-  const sendBtn = document.createElement('button');
-  sendBtn.innerText = 'Send';
-  sendBtn.style.padding = '5px';
-  sendBtn.style.cursor = 'pointer';
-  inputDiv.appendChild(sendBtn);
-
-  // Firebase setup
-  import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-  const db = getDatabase(firebase.app());
-  const chatRef = ref(db, 'global-chat');
-
-  // Send message function
-  function sendMessage() {
-    const msg = input.value.trim();
-    if(!msg) return;
-    push(chatRef, {
+  // Function to send a message
+  function sendMessage(username, text) {
+    db.ref("global-chat").push({
       user: username,
-      text: msg,
+      message: text,
       timestamp: Date.now()
     });
-    input.value = '';
   }
 
-  sendBtn.onclick = sendMessage;
-  input.addEventListener('keydown', e => {
-    if(e.key === 'Enter') sendMessage();
+  // Function to listen for new messages
+  db.ref("global-chat").on("child_added", snapshot => {
+    const data = snapshot.val();
+    console.log(`[${data.user}] ${data.message}`);
+    // Here you could also display messages in your GUI instead of console
   });
-
-  // Receive messages live
-  onChildAdded(chatRef, snapshot => {
-    const msg = snapshot.val();
-    const msgEl = document.createElement('div');
-    msgEl.innerHTML = `<strong>${msg.user}:</strong> ${msg.text}`;
-    messagesDiv.appendChild(msgEl);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  });
-
-  // Cleanup if needed
-  window.removeGlobalChat = () => {
-    document.body.removeChild(chatBox);
-    window.globalChatActive = false;
-  };
-});
+</script>
 
   const util = document.createElement('div');
   util.id = 'utilitiesGUI';
