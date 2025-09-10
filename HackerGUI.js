@@ -59,28 +59,35 @@
   // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
   function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
-    // Global Chat Utility
+    // Global Chat Utility with Colors and Timestamps
 addBtn('Global Chat', () => {
     if(window.globalChatActive) return;
     window.globalChatActive = true;
 
-    // Prompt for a username
+    // Prompt for username
     let username = prompt("Enter your username:", "Anonymous") || "Anonymous";
 
-    // Firebase imports (make sure firebase/app and firebase/database are included)
+    // Simple function to generate a color based on username
+    function getUsernameColor(name) {
+        let hash = 0;
+        for(let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        const color = `hsl(${hash % 360}, 70%, 60%)`;
+        return color;
+    }
+
     import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
     const db = getDatabase();
     const messagesRef = ref(db, 'global-chat');
 
-    // Create chat UI
+    // Chat container
     const chatContainer = document.createElement('div');
     chatContainer.style.position = 'fixed';
     chatContainer.style.bottom = '10px';
     chatContainer.style.right = '10px';
-    chatContainer.style.width = '300px';
+    chatContainer.style.width = '320px';
     chatContainer.style.height = '400px';
-    chatContainer.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    chatContainer.style.backgroundColor = 'rgba(0,0,0,0.9)';
     chatContainer.style.color = 'white';
     chatContainer.style.zIndex = '100000';
     chatContainer.style.display = 'flex';
@@ -90,14 +97,14 @@ addBtn('Global Chat', () => {
     chatContainer.style.fontFamily = 'Arial, sans-serif';
     chatContainer.id = 'globalChatContainer';
 
-    // Messages display
+    // Messages box
     const messagesBox = document.createElement('div');
     messagesBox.style.flex = '1';
     messagesBox.style.overflowY = 'auto';
     messagesBox.style.marginBottom = '10px';
     chatContainer.appendChild(messagesBox);
 
-    // Input field
+    // Input box
     const inputBox = document.createElement('input');
     inputBox.type = 'text';
     inputBox.placeholder = 'Type a message...';
@@ -123,14 +130,22 @@ addBtn('Global Chat', () => {
 
     // Listen for new messages
     onChildAdded(messagesRef, (data) => {
-        const { username, message } = data.val();
+        const { username: msgUser, message, timestamp } = data.val();
+
         const msgEl = document.createElement('div');
-        msgEl.textContent = `${username}: ${message}`;
+        msgEl.style.marginBottom = '5px';
+
+        const time = new Date(timestamp);
+        const hours = time.getHours().toString().padStart(2, '0');
+        const minutes = time.getMinutes().toString().padStart(2, '0');
+        const ts = `[${hours}:${minutes}]`;
+
+        msgEl.innerHTML = `<span style="color:${getUsernameColor(msgUser)}; font-weight:bold;">${msgUser}</span> ${ts}: ${message}`;
         messagesBox.appendChild(msgEl);
         messagesBox.scrollTop = messagesBox.scrollHeight;
     });
 
-    // Off function to remove chat
+    // Off function
     window.globalChatOff = () => {
         window.globalChatActive = false;
         chatContainer.remove();
