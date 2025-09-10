@@ -482,12 +482,12 @@ addBtn(vfx,'Text Corruption',()=>{
   if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}
 });
 
-// Bubble Text
-addBtn(vfx,'Bubble Text',()=>{
+addBtn(vfx,'Bubble Text',()=> {
   if(window.bubbleActive) return;
   window.bubbleActive = true;
-  // Use a Map of textNode -> originalText so Stop All can restore
-  if(!window.originalTextMap) window.originalTextMap = new Map();
+
+  // Always create a fresh map for this run
+  window.originalTextMap = new Map();
 
   const bubbleMap = {
     a:'ⓐ',b:'ⓑ',c:'ⓒ',d:'ⓓ',e:'ⓔ',f:'ⓕ',g:'ⓖ',h:'ⓗ',i:'ⓘ',j:'ⓙ',k:'ⓚ',l:'ⓛ',m:'ⓜ',n:'ⓝ',o:'ⓞ',p:'ⓟ',q:'ⓠ',r:'ⓡ',s:'ⓢ',t:'ⓣ',u:'ⓤ',v:'ⓥ',w:'ⓦ',x:'ⓧ',y:'ⓨ',z:'ⓩ',
@@ -497,58 +497,39 @@ addBtn(vfx,'Bubble Text',()=>{
 
   function transform(node){
     if(!node) return;
-    // If element node: skip whole subtree if it's a GUI or inside GUI
     if(node.nodeType === Node.ELEMENT_NODE){
-      try{
-        if(node.id==='vfxGUI' || node.id==='utilitiesGUI' || (node.closest && node.closest('#vfxGUI,#utilitiesGUI'))) return;
-      }catch(e){
-        // defensive: if closest throws, skip this node to be safe
-        return;
-      }
-      // recurse children
+      try{ if(node.id==='vfxGUI'||node.id==='utilitiesGUI'||(node.closest&&node.closest('#vfxGUI,#utilitiesGUI'))) return; }catch(e){ return; }
       node.childNodes.forEach(transform);
       return;
     }
-    // If text node: transform it unless it's whitespace or inside GUI
     if(node.nodeType === Node.TEXT_NODE){
       const txt = node.nodeValue;
       if(!txt || !txt.trim()) return;
       const parent = node.parentElement;
-      if(parent){
-        try{
-          if(parent.closest && parent.closest('#vfxGUI,#utilitiesGUI')) return;
-        }catch(e){
-          return;
-        }
-      }
+      if(parent && parent.closest && parent.closest('#vfxGUI,#utilitiesGUI')) return;
       if(!window.originalTextMap.has(node)) window.originalTextMap.set(node, txt);
-      node.nodeValue = txt.replace(/[a-zA-Z0-9]/g, ch => bubbleMap[ch] || ch);
+      node.nodeValue = txt.replace(/[a-zA-Z0-9]/g,ch=>bubbleMap[ch]||ch);
     }
   }
 
-  // run once (no continuous interval) — transforms all visible text nodes (except GUIs)
   transform(document.body);
 
-  // register cleanup so Stop All can call it (and for manual toggle-off)
-  const cleanup = () => {
+  // Define cleanup each time
+  window._bubbleCleanup = () => {
     if(window.originalTextMap){
-      window.originalTextMap.forEach((orig, textNode)=>{
-        try{ textNode.nodeValue = orig; }catch(e){}
-      });
+      window.originalTextMap.forEach((orig, node)=>{ try{ node.nodeValue=orig; }catch(e){} });
       window.originalTextMap = null;
     }
     window.bubbleActive = false;
   };
-  // store reference so off-button can call it
-  window._bubbleCleanup = cleanup;
+
+  // Register Stop All support
   if(!window.stopAllVFX) window.stopAllVFX = [];
-  window.stopAllVFX.push(cleanup);
+  window.stopAllVFX.push(window._bubbleCleanup);
 
-},()=>{
-  // off function for Bubble Text (button)
-  if(window._bubbleCleanup){ window._bubbleCleanup(); window._bubbleCleanup = null; }
+},()=>{ // off-button
+  if(window._bubbleCleanup){ window._bubbleCleanup(); window._bubbleCleanup=null; }
 });
-
 
 // Page Spin
 addBtn(vfx,'Page Spin',()=>{
