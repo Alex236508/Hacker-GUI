@@ -150,7 +150,6 @@
         window.vfxGUI = vfx;
     }
             // ---------- FULL VFX BUTTONS BLOCK ----------
-(function(){
   if (!window.vfxGUI) return;               // require the vfx GUI to exist
   window.stopAllVFX = window.stopAllVFX || [];
 
@@ -525,7 +524,7 @@
     vfx.appendChild(section);
   })();
 
-})();
+        }
 
         // ---------- DRAG HANDLER ----------
         function makeDraggable(el) {
