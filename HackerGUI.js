@@ -78,7 +78,7 @@
         loading.innerText = 'Welcome, Hacker';
         setTimeout(() => {
           clearInterval(rain);
-          overlay.remove();
+          bootOverlay.remove();
           spawnGUIs();
         }, 2000);
       }, 500);
@@ -149,12 +149,10 @@ const style = createElement("style", { textContent: `
 document.head.appendChild(style);
 
 // ---------- OVERLAY & PANELS ----------
-const bootOverlay = createElement("div", { className: "hacker-overlay" }, document.body);
-
-const mainPanel = createElement("div", { className: "hacker-panel" }, overlay);
+const mainPanel = createElement("div", { className: "hacker-panel" }, bootOverlay);
 mainPanel.textContent = "Main Control Panel";
 
-const secondaryPanel = createElement("div", { className: "hacker-panel" }, overlay);
+const secondaryPanel = createElement("div", { className: "hacker-panel" }, bootOverlay);
 secondaryPanel.textContent = "Secondary Panel";
 
 // ---------- GUI SPAWNER ----------
