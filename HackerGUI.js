@@ -59,109 +59,7 @@
   // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
   function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
-  addBtn('Global Chat', () => {
-    if(window.chatActive) return;
-    window.chatActive = true;
-
-    // Firebase setup
-    const firebaseConfig = {
-        apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
-        authDomain: "hacker-gui-global-chat.firebaseapp.com",
-        databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
-        projectId: "hacker-gui-global-chat",
-        storageBucket: "hacker-gui-global-chat.firebasestorage.app",
-        messagingSenderId: "410978781234",
-        appId: "1:410978781234:web:ee08f15ee9be48970c542b",
-        measurementId: "G-SB0B1FLF29"
-    };
-    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const username = prompt("Enter your username:") || "Anon";
-
-    // Create chat window
-    const chat = document.createElement('div');
-    chat.style.position = 'fixed';
-    chat.style.bottom = '50px';
-    chat.style.right = '50px';
-    chat.style.width = '300px';
-    chat.style.height = '400px';
-    chat.style.background = 'rgba(0,0,0,0.85)';
-    chat.style.color = '#0f0';
-    chat.style.fontFamily = 'monospace';
-    chat.style.border = '2px solid #0f0';
-    chat.style.borderRadius = '8px';
-    chat.style.zIndex = 999999;
-    chat.style.display = 'flex';
-    chat.style.flexDirection = 'column';
-
-    const messagesDiv = document.createElement('div');
-    messagesDiv.style.flex = '1';
-    messagesDiv.style.overflowY = 'auto';
-    messagesDiv.style.padding = '5px';
-    chat.appendChild(messagesDiv);
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = 'Type a message...';
-    input.style.border = 'none';
-    input.style.outline = 'none';
-    input.style.padding = '5px';
-    input.style.background = 'black';
-    input.style.color = '#0f0';
-    chat.appendChild(input);
-
-    document.body.appendChild(chat);
-
-    // Make draggable
-    let offsetX, offsetY, isDragging = false;
-    chat.addEventListener('mousedown', e => {
-        isDragging = true;
-        offsetX = e.clientX - chat.offsetLeft;
-        offsetY = e.clientY - chat.offsetTop;
-    });
-    document.addEventListener('mousemove', e => {
-        if(isDragging){
-            chat.style.left = e.clientX - offsetX + 'px';
-            chat.style.top = e.clientY - offsetY + 'px';
-            chat.style.right = 'auto';
-            chat.style.bottom = 'auto';
-        }
-    });
-    document.addEventListener('mouseup', e => { isDragging = false; });
-
-    // Firebase messaging
-    function addMessage(msg){
-        const msgDiv = document.createElement('div');
-        msgDiv.textContent = msg;
-        messagesDiv.appendChild(msgDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-
-    db.ref('messages').on('child_added', snapshot => {
-        const data = snapshot.val();
-        addMessage(data.user + ": " + data.text);
-    });
-
-    input.addEventListener('keydown', e => {
-        if(e.key === 'Enter' && input.value.trim()){
-            const msg = input.value.trim();
-            db.ref('messages').push({ user: username, text: msg });
-            input.value = '';
-        }
-    });
-
-}, () => { // off function
-    if(window.chatActive){
-        window.chatActive = false;
-        document.querySelectorAll('div').forEach(d => {
-            if(d.contains(document.querySelector('input'))) d.remove();
-        });
-    }
-});
-  
-
-  const util = document.createElement('div');
+    const util = document.createElement('div');
   util.id = 'utilitiesGUI';
   util.style.cssText = `
     position:fixed;top:50px;left:50px;width:280px;
@@ -300,56 +198,26 @@ makeDraggable(vfx, vfxLock);
         }
     });
 
-    function startXRaySafe() {
-  if (window.webXrayUI) return; // already running
-
-  function init() {
-    // Ensure jQuery is loaded
-    if (!window.jQuery) {
-      const s = document.createElement('script');
-      s.src = 'https://code.jquery.com/jquery-3.6.4.min.js';
-      s.onload = init; // try again after load
-      document.head.appendChild(s);
-      return;
+    // Web X-Ray
+    addBtn(util, 'Web X-Ray', () => {
+    if (!window.webXRayLoaded) {
+        let s = document.createElement('script');
+        s.src = 'https://x-ray-goggles.mouse.org/webxray.js';
+        s.onload = () => {
+            window.webXRayLoaded = true;
+        };
+        document.body.appendChild(s);
+        window.webXRayScript = s;
     }
-
-    // Ensure Web X-Ray script loaded
-    if (!window.Localized || !jQuery.xRayUI) {
-      const s = document.createElement('script');
-      s.src = 'https://goggles.mozilla.org/webxray.js';
-      s.onload = init; // try again after load
-      document.head.appendChild(s);
-      return;
+}, () => {
+    if (window.webXRayScript) {
+        window.webXRayScript.remove();
+        window.webXRayScript = null;
+        window.webXRayLoaded = false;
     }
+});
 
-    // Ensure body exists
-    if (!document.body) {
-      setTimeout(init, 50);
-      return;
-    }
-
-    try {
-      // Initialize X-Ray
-      const ui = jQuery.xRayUI({ eventSource: document });
-      window.webXrayUI = ui;
-      ui.start();
-
-      window.addEventListener('beforeunload', () => {
-        if (ui) ui.unload();
-      });
-    } catch(e) {
-      console.error('Web X-Ray initialization failed:', e);
-    }
-  }
-
-  if (document.readyState === 'complete') {
-    init();
-  } else {
-    window.addEventListener('load', init);
-  }
-}
-
-  // DNS Lookup
+    // DNS Lookup
     addBtn(util,'DNS Lookup',()=>{ 
         window.open('https://mxtoolbox.com/SuperTool.aspx?action=a:'+window.location.hostname,'_blank'); 
     });
@@ -673,79 +541,41 @@ addBtn(vfx,'Page Spin',()=>{
   window.pageSpinActive=false;
 });
 
-addBtn(vfx, 'Full Chaos', () => {
-  if (!window.fullChaosActive) {
-    window.fullChaosActive = true;
-
-    // Container just for chaos layers
-    let chaosContainer = document.createElement('div');
-    chaosContainer.id = 'chaosContainer';
-    chaosContainer.style.cssText = `
-      position:fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      pointer-events:none;
-      z-index:99998; /* keep below GUIs */
-    `;
-    document.body.appendChild(chaosContainer);
-
-    function randColor() {
-      return '#' + Math.floor(16777215 * Math.random()).toString(16);
-    }
-    function rand(n) {
-      return Math.floor(Math.random() * n) + 1;
-    }
-
-    // Build chaos bars
-    let h = window.innerHeight;
-    for (let i = 0; i < h; i++) {
-      let bar = document.createElement('div');
-      bar.id = 'chaosBar' + i;
-      bar.style.cssText = `
-        width:100%; height:1px;
-        background:${randColor()};
-      `;
-      chaosContainer.appendChild(bar);
-    }
-
-    // Loop effects
-    window.fullChaosLoop1 = setInterval(() => {
-      for (let e = 0; e < 10; e++) {
-        let bar = document.getElementById('chaosBar' + rand(h));
-        if (bar) {
-          bar.style.backgroundColor = randColor();
-          bar.style.height = rand(4) + 'px';
-        }
+// Full Chaos
+addBtn(vfx,'Full Chaos',()=>{
+  if(window.fullChaosActive) return;
+  window.fullChaosActive=true;
+  let d=document;
+  function c(){return '#'+Math.floor(16777215*Math.random()).toString(16)}
+  function r(e){return Math.floor(Math.random()*e)+1}
+  d.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
+    e.style.margin='0'; e.style.padding='0'; e.style.overflow='hidden'; e.style.transformOrigin='50% 50%';
+  });
+  window.fullChaosLoop1=setInterval(()=>{
+    for(let i=0;i<10;i++){
+      let els=d.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)');
+      if(els.length){
+        let el=els[r(els.length)-1];
+        el.style.backgroundColor=c();
+        el.style.height=r(4)+'px';
+        d.body.style.backgroundColor=c();
+        d.body.style.transform=r(256)>128?'scale(3) rotate('+r(35)+'deg)':'rotate(0deg) scale(1)';
+        window.scrollTo(0,d.body.scrollHeight);
       }
-      chaosContainer.style.backgroundColor = randColor();
-      chaosContainer.style.transform =
-        rand(256) > 128
-          ? `scale(3) rotate(${rand(35)}deg)`
-          : 'scale(1) rotate(0deg)';
-      window.scrollTo(0, document.body.scrollHeight);
-    }, 10);
-
-    window.fullChaosLoop2 = setInterval(() => {
-      window.scrollTo(0, 0);
-    }, 50);
-
-    // StopAll support
-    if (!window.stopAllVFX) window.stopAllVFX = [];
-    window.stopAllVFX.push(() => {
-      clearInterval(window.fullChaosLoop1);
-      clearInterval(window.fullChaosLoop2);
-      let c = document.getElementById('chaosContainer');
-      if (c) c.remove();
-      window.fullChaosActive = false;
-    });
-  } else {
-    // Manual toggle off
-    clearInterval(window.fullChaosLoop1);
-    clearInterval(window.fullChaosLoop2);
-    let c = document.getElementById('chaosContainer');
-    if (c) c.remove();
-    window.fullChaosActive = false;
-  }
+    }
+  },10);
+  window.fullChaosLoop2=setInterval(()=>{window.scrollTo(0,0)},50);
+},()=>{
+  if(window.fullChaosLoop1){clearInterval(window.fullChaosLoop1); window.fullChaosLoop1=null;}
+  if(window.fullChaosLoop2){clearInterval(window.fullChaosLoop2); window.fullChaosLoop2=null;}
+  window.fullChaosActive=false;
+  document.body.style.transform='';
+  document.body.style.backgroundColor='';
+  document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
+    e.style.backgroundColor='';
+    e.style.height='';
+    e.style.transform='';
+  });
 });
 
 // Stop All
@@ -776,71 +606,8 @@ addBtn(vfx,'Stop All',()=>{
   window.matrixActive=false;
 
   // Bubble Text
-addBtn(vfx,'Bubble Text',()=>{
-  if(window.bubbleActive) return;
-  window.bubbleActive = true;
-  // Use a Map of textNode -> originalText so Stop All can restore
-  if(!window.originalTextMap) window.originalTextMap = new Map();
-
-  const bubbleMap = {
-    a:'ⓐ',b:'ⓑ',c:'ⓒ',d:'ⓓ',e:'ⓔ',f:'ⓕ',g:'ⓖ',h:'ⓗ',i:'ⓘ',j:'ⓙ',k:'ⓚ',l:'ⓛ',m:'ⓜ',n:'ⓝ',o:'ⓞ',p:'ⓟ',q:'ⓠ',r:'ⓡ',s:'ⓢ',t:'ⓣ',u:'ⓤ',v:'ⓥ',w:'ⓦ',x:'ⓧ',y:'ⓨ',z:'ⓩ',
-    A:'Ⓐ',B:'Ⓑ',C:'Ⓒ',D:'Ⓓ',E:'Ⓔ',F:'Ⓕ',G:'Ⓖ',H:'Ⓗ',I:'Ⓘ',J:'Ⓙ',K:'Ⓚ',L:'Ⓛ',M:'Ⓜ',N:'Ⓝ',O:'Ⓞ',P:'Ⓟ',Q:'Ⓠ',R:'Ⓡ',S:'Ⓢ',T:'Ⓣ',U:'Ⓤ',V:'Ⓥ',W:'Ⓦ',X:'Ⓧ',Y:'Ⓨ',Z:'Ⓩ',
-    '0':'⓪','1':'①','2':'②','3':'③','4':'④','5':'⑤','6':'⑥','7':'⑦','8':'⑧','9':'⑨'
-  };
-
-  function transform(node){
-    if(!node) return;
-    // If element node: skip whole subtree if it's a GUI or inside GUI
-    if(node.nodeType === Node.ELEMENT_NODE){
-      try{
-        if(node.id==='vfxGUI' || node.id==='utilitiesGUI' || (node.closest && node.closest('#vfxGUI,#utilitiesGUI'))) return;
-      }catch(e){
-        // defensive: if closest throws, skip this node to be safe
-        return;
-      }
-      // recurse children
-      node.childNodes.forEach(transform);
-      return;
-    }
-    // If text node: transform it unless it's whitespace or inside GUI
-    if(node.nodeType === Node.TEXT_NODE){
-      const txt = node.nodeValue;
-      if(!txt || !txt.trim()) return;
-      const parent = node.parentElement;
-      if(parent){
-        try{
-          if(parent.closest && parent.closest('#vfxGUI,#utilitiesGUI')) return;
-        }catch(e){
-          return;
-        }
-      }
-      if(!window.originalTextMap.has(node)) window.originalTextMap.set(node, txt);
-      node.nodeValue = txt.replace(/[a-zA-Z0-9]/g, ch => bubbleMap[ch] || ch);
-    }
-  }
-
-  // run once (no continuous interval) — transforms all visible text nodes (except GUIs)
-  transform(document.body);
-
-  // register cleanup so Stop All can call it (and for manual toggle-off)
-  const cleanup = () => {
-    if(window.originalTextMap){
-      window.originalTextMap.forEach((orig, textNode)=>{
-        try{ textNode.nodeValue = orig; }catch(e){}
-      });
-      window.originalTextMap = null;
-    }
-    window.bubbleActive = false;
-  };
-  // store reference so off-button can call it
-  window._bubbleCleanup = cleanup;
-  if(!window.stopAllVFX) window.stopAllVFX = [];
-  window.stopAllVFX.push(cleanup);
-
-},()=>{
-  // off function for Bubble Text (button)
-  if(window._bubbleCleanup){ window._bubbleCleanup(); window._bubbleCleanup = null; }
-});
+  if(window.bubbleInt){clearInterval(window.bubbleInt); window.bubbleInt=null; window.bubbleActive=false;}
+  if(window.originalTextMap){window.originalTextMap.forEach((text, el)=>{ el.nodeValue=text; }); window.originalTextMap=null;}
 
   // Text Corruption
   if(window.textCorruptStyle){window.textCorruptStyle.remove(); window.textCorruptStyle=null;}
