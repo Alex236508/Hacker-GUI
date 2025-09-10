@@ -1,4 +1,4 @@
-javascript:(function() {
+(function() {
     function main() {
         if (window.hackerLoaded) return;
         window.hackerLoaded = true;
@@ -60,7 +60,6 @@ javascript:(function() {
                         clearInterval(rain);
                         bootOverlay.remove(); // remove boot overlay
                         spawnGUIs();          // create panels
-                        addTestButtons();     // add buttons after GUIs exist
                     }, 2000);
                 }, 500);
             }
@@ -77,7 +76,7 @@ javascript:(function() {
             return el;
         }
 
-        // ---------- BUTTON HELPERS ----------
+        // ---------- BUTTON HELPER ----------
         function addBtn(container, label, on, off = null) {
             if (!container) return null;
             const btn = createElement('button', {textContent: label}, container);
@@ -95,6 +94,46 @@ javascript:(function() {
             return btn;
         }
 
+        // ---------- GUI SPAWNER ----------
+        window.spawnGUIs = function() {
+            // Utilities Panel
+            let util = document.getElementById('utilitiesGUI');
+            if (!util) {
+                util = createElement('div', {id:'utilitiesGUI', innerHTML:'<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>'}, document.body);
+                Object.assign(util.style, {
+                    position:'fixed', top:'50px', left:'50px', width:'320px',
+                    background:'#1b1b1b', color:'#00ff00', fontFamily:'Consolas, monospace',
+                    padding:'10px', border:'2px solid #00ff00', borderRadius:'8px',
+                    boxShadow:'0 0 15px rgba(0,255,0,0.5)', zIndex:999999, userSelect:'none', cursor:'move'
+                });
+                window.utilGUI = util;
+
+                // Add Utilities button
+                addBtn(util, 'Test Utility', () => alert('Utility Activated!'));
+                makeDraggable(util);
+            }
+
+            // VFX Panel
+            let vfx = document.getElementById('vfxGUI');
+            if (!vfx) {
+                vfx = createElement('div', {id:'vfxGUI', innerHTML:'<div style="text-align:center;margin-bottom:8px;"><b>VFX</b></div>'}, document.body);
+                Object.assign(vfx.style, {
+                    position:'fixed', top:'100px', left:'400px', width:'320px',
+                    background:'#1b1b1b', color:'#00ff00', fontFamily:'Consolas, monospace',
+                    padding:'10px', border:'2px solid #00ff00', borderRadius:'8px',
+                    boxShadow:'0 0 15px rgba(0,255,0,0.5)', zIndex:999999, userSelect:'none', cursor:'move'
+                });
+                window.vfxGUI = vfx;
+
+                // Add VFX button
+                vfxAddBtn('Test VFX', () => alert('VFX On'), () => alert('VFX Off'));
+                makeDraggable(vfx);
+            }
+
+            console.log('GUIs spawned');
+        };
+
+        // ---------- VFX BUTTON HELPER ----------
         window.vfxAddBtn = function(label, on, off) {
             if (!window.vfxGUI) return;
             const btn = createElement('button', {textContent: label}, window.vfxGUI);
@@ -111,46 +150,28 @@ javascript:(function() {
             return btn;
         };
 
-        // ---------- GUI SPAWNER ----------
-        window.spawnGUIs = function() {
-            // Utilities Panel
-            let util = document.getElementById('utilitiesGUI');
-            if (!util) {
-                util = createElement('div', {id:'utilitiesGUI', innerHTML:'<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>'}, document.body);
-                Object.assign(util.style, {
-                    position:'fixed', top:'50px', left:'50px', width:'320px',
-                    background:'#1b1b1b', color:'#00ff00', fontFamily:'Consolas, monospace',
-                    padding:'10px', border:'2px solid #00ff00', borderRadius:'8px',
-                    boxShadow:'0 0 15px rgba(0,255,0,0.5)', zIndex:999999, userSelect:'none', cursor:'move'
-                });
-                window.utilGUI = util;
-            }
+        // ---------- DRAG HANDLER ----------
+        function makeDraggable(el) {
+            let isDragging = false, offsetX = 0, offsetY = 0;
 
-            // VFX Panel
-            let vfx = document.getElementById('vfxGUI');
-            if (!vfx) {
-                vfx = createElement('div', {id:'vfxGUI', innerHTML:'<div style="text-align:center;margin-bottom:8px;"><b>VFX</b></div>'}, document.body);
-                Object.assign(vfx.style, {
-                    position:'fixed', top:'100px', left:'400px', width:'320px',
-                    background:'#1b1b1b', color:'#00ff00', fontFamily:'Consolas, monospace',
-                    padding:'10px', border:'2px solid #00ff00', borderRadius:'8px',
-                    boxShadow:'0 0 15px rgba(0,255,0,0.5)', zIndex:999999, userSelect:'none', cursor:'move'
-                });
-                window.vfxGUI = vfx;
-            }
-        };
+            el.addEventListener('mousedown', e => {
+                if(e.target.tagName === 'BUTTON') return; // don't drag when clicking buttons
+                isDragging = true;
+                offsetX = e.clientX - el.offsetLeft;
+                offsetY = e.clientY - el.offsetTop;
+                el.style.pointerEvents = 'auto';
+            });
 
-        // ---------- ADD TEST BUTTONS ----------
-        function addTestButtons() {
-            if (!window.utilGUI || !window.vfxGUI) return;
+            document.addEventListener('mousemove', e => {
+                if (!isDragging) return;
+                el.style.left = (e.clientX - offsetX) + 'px';
+                el.style.top = (e.clientY - offsetY) + 'px';
+            });
 
-            // Utilities button
-            addBtn(window.utilGUI, 'Test Utility', () => alert('Utility Activated!'));
-
-            // VFX button
-            vfxAddBtn('Test VFX', () => alert('VFX On'), () => alert('VFX Off'));
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
         }
-
     }
 
     if (document.readyState === 'loading') {
