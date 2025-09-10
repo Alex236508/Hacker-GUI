@@ -59,45 +59,44 @@
 // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
 function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
-    const util = document.createElement('div');
-    util.id = 'utilitiesGUI';
-    util.style.cssText = `
-      position:fixed;
-      top:50px; left:50px;
-      width:320px;
-      background:#1b1b1b;
-      color:#00ff00;
-      font-family:Consolas,monospace;
-      padding:10px;
-      border:2px solid #00ff00;
-      border-radius:8px;
-      box-shadow:0 0 15px rgba(0,255,0,0.5);
-      user-select:none;
-      cursor:move;
-    `;
-    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities GUI</b></div>';
-    document.body.appendChild(util);
+    if (!window.util) {
+        window.util = document.createElement('div');
+        window.util.id = 'utilitiesGUI';
+        window.util.style.cssText = `
+            position:fixed;top:50px;left:50px;width:320px;
+            background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+            padding:10px;border:2px solid #00ff00;border-radius:8px;
+            box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+            user-select:none;cursor:move;
+        `;
+        window.util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities GUI</b></div>';
+        document.body.appendChild(window.util);
+    }
 
-const util = document.createElement('div');
-util.id = 'utilitiesGUI';
-util.style.cssText = `
-  position:fixed; top:50px; left:50px; width:320px;
-  background:#1b1b1b; color:#00ff00; font-family:Consolas,monospace;
-  padding:10px; border:2px solid #00ff00; border-radius:8px;
-  box-shadow:0 0 15px rgba(0,255,0,0.5); z-index:999999;
-  user-select:none; cursor:move;
-`;
-util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities GUI</b></div>';
-document.body.appendChild(util);
+    // -------------------- VFX GUI --------------------
+    if (!window.vfx) {
+        window.vfx = document.createElement('div');
+        window.vfx.id = 'vfxGUI';
+        window.vfx.style.cssText = `
+            position:fixed;top:50px;right:50px;width:320px;
+            background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+            padding:10px;border:2px solid #00ff00;border-radius:8px;
+            box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+            user-select:none;cursor:move;
+        `;
+        window.vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
+        document.body.appendChild(window.vfx);
+    }
 
-// -------------------- ADD LOCK ICONS --------------------
-let utilLock = addLockIcon(util);
-let vfxLock = addLockIcon(vfx);
+    // -------------------- ADD LOCK ICONS --------------------
+    if (!window.utilLock) window.utilLock = addLockIcon(window.util);
+    if (!window.vfxLock) window.vfxLock = addLockIcon(window.vfx);
 
-// -------------------- MAKE DRAGGABLE --------------------
-makeDraggable(util, utilLock);
-makeDraggable(vfx, vfxLock);
+    // -------------------- MAKE DRAGGABLE --------------------
+    makeDraggable(window.util, window.utilLock);
+    makeDraggable(window.vfx, window.vfxLock);
 
+  
 // Global Chat for Utilities GUI
 (function() {
     if (window.globalChatInitialized) return;
