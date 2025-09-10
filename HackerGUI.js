@@ -600,6 +600,7 @@ addBtn(vfx,'Bubble Text',()=>{
   if(window._bubbleCleanup){ window._bubbleCleanup(); window._bubbleCleanup = null; }
 });
 
+
 // Page Spin
 addBtn(vfx,'Page Spin',()=>{
   if(window.pageSpinActive) return;
