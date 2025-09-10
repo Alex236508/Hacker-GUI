@@ -170,12 +170,13 @@ document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI)
   document.body.appendChild(stopAllBtn);
 
   // ---------- Utilities GUI ----------
-if (!window.utilGUI) {
-    window.utilGUI = document.createElement('div');
-    window.utilGUI.id = 'utilitiesGUI';
-    window.utilGUI.style.cssText = `
+let util = document.getElementById('utilitiesGUI');
+if (!util) {
+    util = document.createElement('div');
+    util.id = 'utilitiesGUI';
+    util.style.cssText = `
         position:fixed;
-        top:80px;  /* pushed down so title fits above */
+        top:50px;
         left:50px;
         width:320px;
         background:#1b1b1b;
@@ -190,35 +191,28 @@ if (!window.utilGUI) {
         cursor:move;
     `;
 
-    // Create title element above the GUI
-    const utilTitle = document.createElement('div');
-    utilTitle.textContent = "Utilities";
-    utilTitle.style.cssText = `
-        position:fixed;
-        top:50px;
-        left:50px;
-        width:320px;
-        text-align:center;
-        font-weight:bold;
-        color:#00ff00;
-        text-shadow:0 0 8px #00ff00;
-        font-family:Consolas,monospace;
-        z-index:1000000;
-        pointer-events:none; /* so it doesn’t block dragging */
+    util.innerHTML = `
+        <div style="
+            text-align:center;
+            margin-bottom:8px;
+            font-weight:bold;
+            text-shadow:0 0 8px #00ff00;
+        ">
+            Utilities
+        </div>
     `;
-    document.body.appendChild(utilTitle);
 
-    makeDraggable(window.utilGUI, 'utilLock');
-    document.body.appendChild(window.utilGUI);
+    document.body.appendChild(util);
 }
 
 // ---------- VFX GUI ----------
-if (!window.vfxGUI) {
-    window.vfxGUI = document.createElement('div');
-    window.vfxGUI.id = 'vfxGUI';
-    window.vfxGUI.style.cssText = `
+let vfx = document.getElementById('vfxGUI');
+if (!vfx) {
+    vfx = document.createElement('div');
+    vfx.id = 'vfxGUI';
+    vfx.style.cssText = `
         position:fixed;
-        top:80px;
+        top:50px;
         right:50px;
         width:320px;
         background:#1b1b1b;
@@ -233,27 +227,64 @@ if (!window.vfxGUI) {
         cursor:move;
     `;
 
-    // Create title element above the GUI
-    const vfxTitle = document.createElement('div');
-    vfxTitle.textContent = "VFX Controls";
-    vfxTitle.style.cssText = `
-        position:fixed;
-        top:50px;
-        right:50px;
-        width:320px;
-        text-align:center;
-        font-weight:bold;
-        color:#00ff00;
-        text-shadow:0 0 8px #00ff00;
-        font-family:Consolas,monospace;
-        z-index:1000000;
-        pointer-events:none;
+    vfx.innerHTML = `
+        <div style="
+            text-align:center;
+            margin-bottom:8px;
+            font-weight:bold;
+            text-shadow:0 0 8px #00ff00;
+        ">
+            Hacker GUI
+        </div>
     `;
-    document.body.appendChild(vfxTitle);
 
-    makeDraggable(window.vfxGUI, 'vfxLock');
-    document.body.appendChild(window.vfxGUI);
+    document.body.appendChild(vfx);
 }
+
+// ---------- Shared Lock + Dragging ----------
+function addLockIcon(container) {
+    const lock = document.createElement('div');
+    lock.innerHTML = '🔒'; // Change icon if you want
+    lock.style.cssText = `
+        position:absolute;
+        top:5px;
+        right:5px;
+        cursor:pointer;
+        user-select:none;
+    `;
+    container.appendChild(lock);
+    return lock;
+}
+
+function makeDraggable(el, lock) {
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    el.addEventListener('mousedown', e => {
+        if (e.target === lock) return;
+        isDragging = true;
+        offsetX = e.clientX - el.getBoundingClientRect().left;
+        offsetY = e.clientY - el.getBoundingClientRect().top;
+        el.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        el.style.left = (e.clientX - offsetX) + 'px';
+        el.style.top = (e.clientY - offsetY) + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+        el.style.cursor = 'move';
+    });
+}
+
+// Apply locks and draggable
+let utilLock = addLockIcon(util);
+let vfxLock = addLockIcon(vfx);
+makeDraggable(util, utilLock);
+makeDraggable(vfx, vfxLock);
 
  // ---------- UTILITIES BUTTONS ----------
 (function(){
