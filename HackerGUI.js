@@ -120,7 +120,53 @@
   const stopAllBtn = document.createElement('button');
   stopAllBtn.textContent='STOP ALL';
   stopAllBtn.style.cssText='position:fixed;bottom:10px;left:10px;padding:5px;background:red;color:#fff;z-index:100000;';
-  stopAllBtn.onclick=()=>{ stopAllIntervals(); /* Reset VFX, utilities etc here */ };
+  stopAllBtn.onclick=()=>{ stopAllIntervals(); // Stop all VFX
+if (window.matrixInt) { clearInterval(window.matrixInt); window.matrixInt = null; }
+if (window.matrixCanvas) { window.matrixCanvas.remove(); window.matrixCanvas = null; }
+window.matrixActive = false;
+
+if (window.pageSpinStyle) { window.pageSpinStyle.remove(); window.pageSpinStyle = null; }
+window.pageSpinActive = false;
+
+if (window.discoSmoothInt) { clearInterval(window.discoSmoothInt); window.discoSmoothInt = null; }
+window.discoSmoothActive = false;
+
+if (window.glitchInt) { clearInterval(window.glitchInt); window.glitchInt = null; }
+window.glitchActive = false;
+
+if (window.fullChaosLoop1) { clearInterval(window.fullChaosLoop1); window.fullChaosLoop1 = null; }
+if (window.fullChaosLoop2) { clearInterval(window.fullChaosLoop2); window.fullChaosLoop2 = null; }
+window.fullChaosActive = false;
+const chaosContainer = document.getElementById('chaosContainer');
+if (chaosContainer) chaosContainer.remove();
+
+if (window.imgGlitchInt) { clearInterval(window.imgGlitchInt); window.imgGlitchInt = null; }
+document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
+    e.style.position = '';
+    e.style.left = '';
+    e.style.top = '';
+});
+
+if (window.textCorruptStyle) { window.textCorruptStyle.remove(); window.textCorruptStyle = null; }
+if (window._bubbleCleanup) { window._bubbleCleanup(); window._bubbleCleanup = null; }
+window.bubbleActive = false;
+
+// Reset page transforms, colors, filters
+document.body.style.transform = '';
+document.body.style.backgroundColor = '';
+document.body.style.filter = '';
+document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
+    e.style.backgroundColor = '';
+    e.style.height = '';
+    e.style.transform = '';
+    e.style.transition = '';
+    e.style.color = '';
+    e.style.fontSize = '';
+    e.style.position = '';
+    e.style.left = '';
+    e.style.top = '';
+});
+ };
   document.body.appendChild(stopAllBtn);
 
   // ---------- GUI CREATION (Safe for multiple runs) ----------
