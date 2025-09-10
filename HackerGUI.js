@@ -47,7 +47,7 @@
   loading.innerText = 'Loading 0%';
   bootOverlay.appendChild(loading);
 
-  document.body.appendChild(overlay);
+  document.body.appendChild(bootOverlay);
 
   // ---------- Matrix rain ----------
   const ctx = canvas.getContext('2d');
