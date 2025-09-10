@@ -58,279 +58,97 @@
 
 // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
 function spawnGUIs() {
-    // -------------------- UTILITIES GUI --------------------
-    if (!window.util) {
-        window.util = document.createElement('div');
-        window.util.id = 'utilitiesGUI';
-        window.util.style.cssText = `
-            position:fixed;top:50px;left:50px;width:320px;
-            background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
-            padding:10px;border:2px solid #00ff00;border-radius:8px;
-            box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
-            user-select:none;cursor:move;
-        `;
-        window.util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities GUI</b></div>';
-        document.body.appendChild(window.util);
-    }
-
-    // -------------------- VFX GUI --------------------
-    if (!window.vfx) {
-        window.vfx = document.createElement('div');
-        window.vfx.id = 'vfxGUI';
-        window.vfx.style.cssText = `
-            position:fixed;top:50px;right:50px;width:320px;
-            background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
-            padding:10px;border:2px solid #00ff00;border-radius:8px;
-            box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
-            user-select:none;cursor:move;
-        `;
-        window.vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
-        document.body.appendChild(window.vfx);
-    }
-
-    // -------------------- ADD LOCK ICONS --------------------
-    if (!window.utilLock) window.utilLock = addLockIcon(window.util);
-    if (!window.vfxLock) window.vfxLock = addLockIcon(window.vfx);
-
-    // -------------------- MAKE DRAGGABLE --------------------
-    makeDraggable(window.util, window.utilLock);
-    makeDraggable(window.vfx, window.vfxLock);
-
-  
-// Global Chat for Utilities GUI
-(function() {
-    if (window.globalChatInitialized) return;
-    window.globalChatInitialized = true;
-
-    // --- Firebase Setup ---
-    if (!window.firebaseLoaded) {
-        window.firebaseLoaded = true;
-
-        const firebaseAppScript = document.createElement('script');
-        firebaseAppScript.src = "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
-        document.head.appendChild(firebaseAppScript);
-
-        const firebaseDbScript = document.createElement('script');
-        firebaseDbScript.src = "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js";
-        document.head.appendChild(firebaseDbScript);
-    }
-
-    const firebaseURL = "https://hacker-gui-global-chat-default-rtdb.firebaseio.com/";
-
-    // --- Create "Open Chat" button in Utilities GUI ---
-    addBtn('Util', 'Open Chat', () => {
-        let chatContainer = document.getElementById('globalChatContainer');
-        if (chatContainer) {
-            chatContainer.style.display = 'flex';
-            return;
+    // -------------------- HELPER FUNCTIONS --------------------
+    function addBtn(container, name, on, off) {
+        const b = document.createElement('button');
+        b.innerText = name;
+        b.style.cssText = 'width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+        b.onclick = on;
+        container.appendChild(b);
+        if(off) {
+            if(!window.activeUtilities) window.activeUtilities = {};
+            window.activeUtilities[name] = { on, off };
         }
+    }
 
-        // --- Chat Container ---
-        chatContainer = document.createElement('div');
-        chatContainer.id = 'globalChatContainer';
-        chatContainer.style.position = 'fixed';
-        chatContainer.style.bottom = '20px';
-        chatContainer.style.right = '20px';
-        chatContainer.style.width = '300px';
-        chatContainer.style.height = '400px';
-        chatContainer.style.backgroundColor = 'rgba(0,0,0,0.9)';
-        chatContainer.style.color = 'white';
-        chatContainer.style.border = '2px solid #00ff00';
-        chatContainer.style.borderRadius = '8px';
-        chatContainer.style.zIndex = 999999;
-        chatContainer.style.display = 'flex';
-        chatContainer.style.flexDirection = 'column';
-        chatContainer.style.resize = 'both';
-        chatContainer.style.overflow = 'hidden';
+    function addLockIcon(gui) {
+        const lock = document.createElement('div');
+        lock.innerText = '🔓';
+        lock.style.cssText = 'position:absolute;top:5px;right:5px;font-size:16px;cursor:pointer;user-select:none;';
+        lock.locked = false;
+        lock.onclick = () => {
+            lock.locked = !lock.locked;
+            lock.innerText = lock.locked ? '🔒' : '🔓';
+        };
+        gui.appendChild(lock);
+        return lock;
+    }
 
-        // --- Header with Close ---
-        const header = document.createElement('div');
-        header.style.backgroundColor = '#111';
-        header.style.padding = '5px';
-        header.style.cursor = 'move';
-        header.style.userSelect = 'none';
-        header.textContent = 'Global Chat';
-        chatContainer.appendChild(header);
-
-        const closeBtn = document.createElement('span');
-        closeBtn.textContent = '✖';
-        closeBtn.style.float = 'right';
-        closeBtn.style.cursor = 'pointer';
-        closeBtn.onclick = () => { chatContainer.style.display = 'none'; };
-        header.appendChild(closeBtn);
-
-        // --- Messages Area ---
-        const messages = document.createElement('div');
-        messages.style.flex = '1';
-        messages.style.padding = '5px';
-        messages.style.overflowY = 'auto';
-        messages.style.fontSize = '12px';
-        chatContainer.appendChild(messages);
-
-        // --- Input Area ---
-        const inputContainer = document.createElement('div');
-        inputContainer.style.display = 'flex';
-        chatContainer.appendChild(inputContainer);
-
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Type a message...';
-        input.style.flex = '1';
-        input.style.padding = '4px';
-        input.style.border = 'none';
-        input.style.outline = 'none';
-        input.style.borderTop = '1px solid #00ff00';
-        inputContainer.appendChild(input);
-
-        const sendBtn = document.createElement('button');
-        sendBtn.textContent = 'Send';
-        sendBtn.style.border = 'none';
-        sendBtn.style.backgroundColor = '#00ff00';
-        sendBtn.style.color = '#000';
-        sendBtn.style.cursor = 'pointer';
-        inputContainer.appendChild(sendBtn);
-
-        document.body.appendChild(chatContainer);
-
-        // --- Wait until Firebase is loaded ---
-        const waitFirebase = setInterval(() => {
-            if (window.firebase && window.firebase.database) {
-                clearInterval(waitFirebase);
-
-                const app = firebase.initializeApp({
-                    databaseURL: firebaseURL
-                });
-
-                const chatRef = firebase.database().ref('messages');
-
-                // --- Username stored in localStorage ---
-                let username = localStorage.getItem('globalChatUsername');
-                if (!username) {
-                    username = prompt("Enter your username:", "Anonymous") || "Anonymous";
-                    localStorage.setItem('globalChatUsername', username);
-                }
-
-                function addMessage(user, text) {
-                    const msg = document.createElement('div');
-                    msg.textContent = user + ': ' + text;
-                    messages.appendChild(msg);
-                    messages.scrollTop = messages.scrollHeight;
-                }
-
-                // Listen for new messages
-                chatRef.on('child_added', snapshot => {
-                    const data = snapshot.val();
-                    addMessage(data.username, data.text);
-                });
-
-                function sendMessage() {
-                    if (!input.value.trim()) return;
-                    chatRef.push({ username: username, text: input.value });
-                    input.value = '';
-                }
-
-                sendBtn.addEventListener('click', sendMessage);
-                input.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+    function makeDraggable(gui, lock) {
+        gui.style.position = 'fixed';
+        gui.onmousedown = function(e){
+            if(lock.locked) return;
+            let ox = e.clientX - gui.getBoundingClientRect().left,
+                oy = e.clientY - gui.getBoundingClientRect().top;
+            function move(e){
+                let x = e.clientX - ox;
+                let y = e.clientY - oy;
+                x = Math.max(0, Math.min(window.innerWidth - gui.offsetWidth, x));
+                y = Math.max(0, Math.min(window.innerHeight - gui.offsetHeight, y));
+                gui.style.left = x + 'px';
+                gui.style.top = y + 'px';
+                gui.style.right = 'auto';
+                gui.style.bottom = 'auto';
             }
-        }, 50);
+            function up(){
+                document.removeEventListener('mousemove', move);
+                document.removeEventListener('mouseup', up);
+            }
+            document.addEventListener('mousemove', move);
+            document.addEventListener('mouseup', up);
+        };
+    }
 
-        // --- Make draggable ---
-        let isDragging = false;
-        let offsetX, offsetY;
+    // -------------------- UTILITIES GUI --------------------
+    const util = document.createElement('div');
+    util.id = 'utilitiesGUI';
+    util.style.cssText = `
+      position:fixed;
+      top:50px; left:50px;
+      width:320px;
+      background:#1b1b1b;
+      color:#00ff00;
+      font-family:Consolas,monospace;
+      padding:10px;
+      border:2px solid #00ff00;
+      border-radius:8px;
+      box-shadow:0 0 15px rgba(0,255,0,0.5);
+      user-select:none;
+      cursor:move;
+      z-index:999999;
+    `;
+    util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities GUI</b></div>';
+    document.body.appendChild(util);
 
-        header.addEventListener('mousedown', e => {
-            isDragging = true;
-            offsetX = e.clientX - chatContainer.getBoundingClientRect().left;
-            offsetY = e.clientY - chatContainer.getBoundingClientRect().top;
-        });
+    const utilLock = addLockIcon(util);
+    makeDraggable(util, utilLock);
 
-        document.addEventListener('mousemove', e => {
-            if (!isDragging) return;
-            let left = e.clientX - offsetX;
-            let top = e.clientY - offsetY;
-
-            // Clamp within viewport
-            left = Math.max(0, Math.min(window.innerWidth - chatContainer.offsetWidth, left));
-            top = Math.max(0, Math.min(window.innerHeight - chatContainer.offsetHeight, top));
-
-            chatContainer.style.left = left + 'px';
-            chatContainer.style.top = top + 'px';
-        });
-
-        document.addEventListener('mouseup', () => { isDragging = false; });
-
-    });
-})();
-    
     // -------------------- VFX GUI --------------------
     const vfx = document.createElement('div');
-  vfx.id = 'vfxGUI';
-  vfx.style.cssText = `
-    position:fixed;top:50px;right:50px;width:320px;
-    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
-    user-select:none;cursor:move;
-  `;
-  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
-  document.body.appendChild(vfx);
+    vfx.id = 'vfxGUI';
+    vfx.style.cssText = `
+      position:fixed;top:50px;right:50px;width:320px;
+      background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+      padding:10px;border:2px solid #00ff00;border-radius:8px;
+      box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+      user-select:none;cursor:move;
+    `;
+    vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
+    document.body.appendChild(vfx);
 
-    // -------------------- BUTTON HELPER --------------------
-     function addBtn(container,name,on,off){
-  const b=document.createElement('button');
-  b.innerText=name;
-  b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
-  b.onclick=on;
-  container.appendChild(b);
-  }
+    const vfxLock = addLockIcon(vfx);
+    makeDraggable(vfx, vfxLock);
 
-    // -------------------- ADD LOCK ICON --------------------
-     function addLockIcon(gui){
-    const lock = document.createElement('div');
-    lock.innerText = '🔓';
-    lock.style.cssText = 'position:absolute;top:5px;right:5px;font-size:16px;cursor:pointer;user-select:none;';
-    lock.locked = false;
-    lock.onclick = () => {
-      lock.locked = !lock.locked;
-      lock.innerText = lock.locked ? '🔒' : '🔓';
-    };
-    gui.appendChild(lock);
-    return lock;
-  }
-  let utilLock = addLockIcon(util);
-  let vfxLock = addLockIcon(vfx);
-
-     // -------------------- DRAGGING --------------------
-function makeDraggable(g, lock){
-  g.style.position = 'fixed'; // ensures anchored to viewport
-  g.onmousedown = function(e){
-    if(lock.locked) return; // do nothing if locked
-    let ox = e.clientX - g.getBoundingClientRect().left,
-        oy = e.clientY - g.getBoundingClientRect().top;
-    function move(e){
-      let x = e.clientX - ox;
-      let y = e.clientY - oy;
-      x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
-      y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
-      g.style.left = x + 'px';
-      g.style.top = y + 'px';
-      g.style.right = 'auto';
-      g.style.bottom = 'auto';
-    }
-    function up(){
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseup', up);
-    }
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
-  };
-}
-
-// Attach to your GUIs after creating them and adding locks
-makeDraggable(util, utilLock);
-makeDraggable(vfx, vfxLock);
-
-    // -------------------- UTILITIES BUTTONS --------------------    
     // ---------- UTILITIES BUTTONS ----------
 (function(){
     const activeUtilities = {}; // Track ongoing effects
@@ -548,7 +366,7 @@ makeDraggable(vfx, vfxLock);
         util.appendChild(section);
     })();
 
-        // -------------------- VFX BUTTONS --------------------
+    // -------------------- VFX BUTTONS --------------------
 addBtn(vfx,'3D Page',()=>{
   if(!window.triScript){
     let s=document.createElement('script');
@@ -952,14 +770,12 @@ addBtn(vfx,'Stop All',()=>{
         vfx.appendChild(section);
     })();
 
-    // -------------------- SHIFT+H TO HIDE --------------------
+    // -------------------- SHIFT+H TO TOGGLE --------------------
     document.addEventListener('keydown', (e) => {
-    if (e.shiftKey && e.key.toLowerCase() === 'h') {
-      util.style.display = (util.style.display === 'none') ? 'block' : 'none';
-      vfx.style.display = (vfx.style.display === 'none') ? 'block' : 'none';
-    }
-  });
+        if(e.shiftKey && e.key.toLowerCase() === 'h'){
+            util.style.display = (util.style.display==='none') ? 'block' : 'none';
+            vfx.style.display = (vfx.style.display==='none') ? 'block' : 'none';
+        }
+    });
+}
 
-  } // end spawnGUIs
-
-})();
