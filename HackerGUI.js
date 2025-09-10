@@ -55,7 +55,8 @@
       },500);
     }
   },40);
-
+// ---------- MAIN FUNCTION TO SPAWN GUIs ----------
+  function spawnGUIs() {
   // -------------------- UTILITIES GUI --------------------
 
 // Dynamically load Firebase SDKs
