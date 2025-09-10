@@ -58,104 +58,31 @@ spawnGUIs();
 
 // ---------- MAIN FUNCTION TO SPAWN GUIs ----------
 function spawnGUIs() {
-    // -------------------- UTILITIES GUI --------------------
+// -------------------- UTILITIES GUI --------------------
 // =====================
-  // ---------- Utilities GUI ----------
-const util = document.createElement('div');
-util.id = 'utilitiesGUI';
-util.style.cssText = `
-    position:fixed;
-    top:50px;
-    left:50px;
-    width:320px;
-    background:#1b1b1b;
-    color:#00ff00;
-    font-family:Consolas,monospace;
-    padding:10px;
-    border:2px solid #00ff00;
-    border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);
-    z-index:999999;
-    user-select:none;
-    cursor:move;
-`;
-util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
-document.body.appendChild(util);
-
-// Create VFX GUI (you already have this)
-const vfx = document.createElement('div');
-vfx.id = 'vfxGUI';
-vfx.style.cssText = `
-    position:fixed;top:50px;right:50px;width:320px;
-    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
-    user-select:none;cursor:move;
-`;
-vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
-document.body.appendChild(vfx);
-  function addLockIcon(container) {
-    const lock = document.createElement('div');
-    lock.innerHTML = '🔒'; // or any icon
-    lock.style.cssText = `
-        position:absolute;
-        top:5px;
-        right:5px;
-        cursor:pointer;
-        user-select:none;
-    `;
-    container.appendChild(lock);
-    return lock;
-}
-
-function makeDraggable(el, lock) {
-    let isDragging = false;
-    let offsetX, offsetY;
-
-    el.addEventListener('mousedown', e => {
-        if (e.target === lock) return; // lock prevents dragging
-        isDragging = true;
-        offsetX = e.clientX - el.getBoundingClientRect().left;
-        offsetY = e.clientY - el.getBoundingClientRect().top;
-        el.style.cursor = 'grabbing';
-    });
-
-    document.addEventListener('mousemove', e => {
-        if (!isDragging) return;
-        el.style.left = e.clientX - offsetX + 'px';
-        el.style.top = e.clientY - offsetY + 'px';
-    });
-
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-        el.style.cursor = 'move';
-    });
-}
-    // Add lock icons
-let utilLock = addLockIcon(util);
-let vfxLock = addLockIcon(vfx);
-makeDraggable(util, utilLock);
-makeDraggable(vfx, vfxLock);
-
-
 // Global Chat for Utilities GUI
 // =====================
+(function(){
 (function() {
 if (window.globalChatInitialized) return;
 window.globalChatInitialized = true;
 
 const firebaseURL = "https://hacker-gui-global-chat-default-rtdb.firebaseio.com/";
-const activeUsernames = new Set();
+    const activeUsernames = new Set(); // Track active usernames
+    const activeUsernames = new Set();
 
 function initGlobalChat() {
 const utilContainer = document.getElementById('utilitiesGUI');
 if (!utilContainer) {
-// Retry after 100ms if Utilities GUI is not yet created
-setTimeout(initGlobalChat, 100);
+            console.warn("Utilities GUI not found, retrying...");
+            setTimeout(initGlobalChat, 100); // retry after 100ms
+            // Retry after 100ms if Utilities GUI is not yet created
+            setTimeout(initGlobalChat, 100);
 return;
 }
 
-// Add "Open Chat" button
+        // Create "Open Chat" button
+        // Add "Open Chat" button
 addBtn(utilContainer, 'Open Chat', () => {
 let chatContainer = document.getElementById('globalChatContainer');
 if (chatContainer) {
@@ -193,7 +120,8 @@ chatContainer.style.cssText = `
                overflow:hidden;
            `;
 
-// Header
+            // Chat header
+            // Header
 const header = document.createElement('div');
 header.style.cssText = `
                background-color:#111;
@@ -213,7 +141,8 @@ closeBtn.textContent = '✖';
 closeBtn.style.cssText = 'cursor:pointer;font-weight:bold;';
 closeBtn.onclick = () => {
 chatContainer.style.display = 'none';
-activeUsernames.delete(username); // release username
+                if (username) activeUsernames.delete(username);
+                activeUsernames.delete(username); // release username
 };
 header.appendChild(closeBtn);
 
@@ -281,14 +210,7 @@ if (e.key === 'Enter') sendMessage();
 });
 
 // Make draggable
-            let isDragging = false;
-          let topZIndex = 999999; // global variable at the top
-
-el.addEventListener('mousedown', () => {
-    topZIndex++;
-    el.style.zIndex = topZIndex;
-});
-          let isDragging = false;
+let isDragging = false;
 let offsetX, offsetY;
 header.addEventListener('mousedown', e => {
 isDragging = true;
@@ -304,7 +226,8 @@ document.addEventListener('mouseup', () => { isDragging = false; });
 });
 }
 
-// Initialize after DOM ready
+    // Initialize chat after DOM ready
+    // Initialize after DOM ready
 initGlobalChat();
 })();
 
