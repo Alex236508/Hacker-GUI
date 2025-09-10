@@ -82,7 +82,7 @@
     const firebaseURL = "https://hacker-gui-global-chat-default-rtdb.firebaseio.com/";
 
     // --- Create "Open Chat" button in Utilities GUI ---
-    addBtn('Utilities', 'Open Chat', () => {
+    addBtn('Util', 'Open Chat', () => {
         let chatContainer = document.getElementById('globalChatContainer');
         if (chatContainer) {
             chatContainer.style.display = 'flex';
