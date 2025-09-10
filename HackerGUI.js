@@ -522,7 +522,6 @@
     });
     section.appendChild(picker);
     vfx.appendChild(section);
-  })();
 
         }
 
