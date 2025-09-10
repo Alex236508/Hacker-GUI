@@ -198,24 +198,55 @@ makeDraggable(vfx, vfxLock);
         }
     });
 
-    // Web X-Ray
-    addBtn(util, 'Web X-Ray', () => {
-    if (!window.webXRayLoaded) {
-        let s = document.createElement('script');
-        s.src = 'https://x-ray-goggles.mouse.org/webxray.js';
-        s.onload = () => {
-            window.webXRayLoaded = true;
-        };
-        document.body.appendChild(s);
-        window.webXRayScript = s;
+    function startXRaySafe() {
+  if (window.webXrayUI) return; // already running
+
+  function init() {
+    // Ensure jQuery is loaded
+    if (!window.jQuery) {
+      const s = document.createElement('script');
+      s.src = 'https://code.jquery.com/jquery-3.6.4.min.js';
+      s.onload = init; // try again after load
+      document.head.appendChild(s);
+      return;
     }
-}, () => {
-    if (window.webXRayScript) {
-        window.webXRayScript.remove();
-        window.webXRayScript = null;
-        window.webXRayLoaded = false;
+
+    // Ensure Web X-Ray script loaded
+    if (!window.Localized || !jQuery.xRayUI) {
+      const s = document.createElement('script');
+      s.src = 'https://goggles.mozilla.org/webxray.js';
+      s.onload = init; // try again after load
+      document.head.appendChild(s);
+      return;
     }
-});
+
+    // Ensure body exists
+    if (!document.body) {
+      setTimeout(init, 50);
+      return;
+    }
+
+    try {
+      // Initialize X-Ray
+      const ui = jQuery.xRayUI({ eventSource: document });
+      window.webXrayUI = ui;
+      ui.start();
+
+      window.addEventListener('beforeunload', () => {
+        if (ui) ui.unload();
+      });
+    } catch(e) {
+      console.error('Web X-Ray initialization failed:', e);
+    }
+  }
+
+  if (document.readyState === 'complete') {
+    init();
+  } else {
+    window.addEventListener('load', init);
+  }
+}
+
 
     // DNS Lookup
     addBtn(util,'DNS Lookup',()=>{ 
