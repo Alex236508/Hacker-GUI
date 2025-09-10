@@ -483,11 +483,12 @@ addBtn(vfx,'Text Corruption',()=>{
 });
 
 addBtn(vfx,'Bubble Text',()=> {
+  // allow rerun
   if(window.bubbleActive) return;
   window.bubbleActive = true;
 
-  // Always create a fresh map for this run
-  window.originalTextMap = new Map();
+  // Fresh map for this run
+  const originalTextMap = new Map();
 
   const bubbleMap = {
     a:'ⓐ',b:'ⓑ',c:'ⓒ',d:'ⓓ',e:'ⓔ',f:'ⓕ',g:'ⓖ',h:'ⓗ',i:'ⓘ',j:'ⓙ',k:'ⓚ',l:'ⓛ',m:'ⓜ',n:'ⓝ',o:'ⓞ',p:'ⓟ',q:'ⓠ',r:'ⓡ',s:'ⓢ',t:'ⓣ',u:'ⓤ',v:'ⓥ',w:'ⓦ',x:'ⓧ',y:'ⓨ',z:'ⓩ',
@@ -507,24 +508,26 @@ addBtn(vfx,'Bubble Text',()=> {
       if(!txt || !txt.trim()) return;
       const parent = node.parentElement;
       if(parent && parent.closest && parent.closest('#vfxGUI,#utilitiesGUI')) return;
-      if(!window.originalTextMap.has(node)) window.originalTextMap.set(node, txt);
+      if(!originalTextMap.has(node)) originalTextMap.set(node, txt);
       node.nodeValue = txt.replace(/[a-zA-Z0-9]/g,ch=>bubbleMap[ch]||ch);
     }
   }
 
   transform(document.body);
 
-  // Define cleanup each time
-  window._bubbleCleanup = () => {
-    if(window.originalTextMap){
-      window.originalTextMap.forEach((orig, node)=>{ try{ node.nodeValue=orig; }catch(e){} });
-      window.originalTextMap = null;
-    }
+  // Cleanup function for Stop All
+  const cleanup = () => {
+    originalTextMap.forEach((orig, node)=>{ try{ node.nodeValue=orig; }catch(e){} });
     window.bubbleActive = false;
   };
 
+  // store globally so off button can call it
+  window._bubbleCleanup = cleanup;
+
   // Register Stop All support
   if(!window.stopAllVFX) window.stopAllVFX = [];
+  // remove old _bubbleCleanup references
+  window.stopAllVFX = window.stopAllVFX.filter(f => f !== window._bubbleCleanup);
   window.stopAllVFX.push(window._bubbleCleanup);
 
 },()=>{ // off-button
