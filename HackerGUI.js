@@ -123,20 +123,35 @@
   stopAllBtn.onclick=()=>{ stopAllIntervals(); /* Reset VFX, utilities etc here */ };
   document.body.appendChild(stopAllBtn);
 
-  // ---------- GUI CREATION ----------
+  // ---------- GUI CREATION & BOOTUP FIX ----------
 const utilGUI = document.createElement('div');
-utilGUI.style.cssText='position:fixed;top:100px;left:100px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
+utilGUI.id = 'utilitiesGUI';
+utilGUI.style.cssText = 'position:fixed;top:100px;left:100px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
 makeDraggable(utilGUI,'utilLock');
 document.body.appendChild(utilGUI);
 
 const vfxGUI = document.createElement('div');
-vfxGUI.style.cssText='position:fixed;top:100px;left:350px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
+vfxGUI.id = 'vfxGUI';
+vfxGUI.style.cssText = 'position:fixed;top:100px;left:350px;width:200px;background:#111;color:#0f0;z-index:999999;padding:5px;';
 makeDraggable(vfxGUI,'vfxLock');
 document.body.appendChild(vfxGUI);
 
-// Define util and vfx references
+// References for later use
 const util = utilGUI;
 const vfx = vfxGUI;
+
+// Unified addBtn function
+function addBtn(container, text, onClick, offClick) {
+    let btn = document.createElement('button');
+    btn.textContent = text;
+    btn.style.cssText = 'margin:2px;padding:4px;background:#0f0;color:#000;border:none;cursor:pointer;width:100%;';
+    btn.onclick = () => {
+        if(btn.active){ btn.active=false; offClick?.(); }
+        else{ btn.active=true; onClick?.(); }
+    };
+    container.appendChild(btn);
+    return btn;
+}
 
 // Function to show GUIs after bootup
 function spawnGUIs() {
@@ -144,12 +159,21 @@ function spawnGUIs() {
     vfxGUI.style.display = 'block';
 }
 
-// Replace your previous spawnGUIs() call in bootup:
+// Replace old spawnGUIs calls in bootup
 setTimeout(() => {
     overlay.remove();
     spawnGUIs();
 }, 2000);
 
+// Stop All button (bottom-left)
+const stopAllBtn = document.createElement('button');
+stopAllBtn.textContent='STOP ALL';
+stopAllBtn.style.cssText='position:fixed;bottom:10px;left:10px;padding:5px;background:red;color:#fff;z-index:100000;';
+stopAllBtn.onclick=()=>{ 
+    if(window.stopAllVFX) window.stopAllVFX.forEach(fn=>fn()); 
+    stopAllIntervals(); 
+};
+document.body.appendChild(stopAllBtn);
 
  // ---------- UTILITIES BUTTONS ----------
 (function(){
