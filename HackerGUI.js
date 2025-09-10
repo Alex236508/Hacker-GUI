@@ -111,25 +111,44 @@
             return btn;
         };
 
-        // ---------- GUI SPAWNER ----------
         window.spawnGUIs = function() {
-            // Utilities Panel
-            let util = document.getElementById('utilitiesGUI');
-            if (!util) {
-                util = createElement('div', {id:'utilitiesGUI', innerHTML:'<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>'}, document.body);
-                Object.assign(util.style, {
-                    position:'fixed', top:'50px', left:'50px', width:'320px',
-                    background:'#1b1b1b', color:'#00ff00', fontFamily:'Consolas, monospace',
-                    padding:'10px', border:'2px solid #00ff00', borderRadius:'8px',
-                    boxShadow:'0 0 15px rgba(0,255,0,0.5)', zIndex:999999, userSelect:'none', cursor:'move'
-                });
-                window.utilGUI = util;
+    // Utilities Panel
+    let util = document.getElementById('utilitiesGUI');
+    if (!util) {
+        util = createElement('div', {
+            id:'utilitiesGUI',
+            innerHTML:'<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>'
+        }, document.body);
 
-                // Add Utilities button
-                addBtn(util, 'Test Utility', () => alert('Utility Activated!'));
-                makeDraggable(util);
-            }
+        Object.assign(util.style, {
+            position:'fixed', top:'50px', left:'50px', width:'320px',
+            background:'#1b1b1b', color:'#00ff00', fontFamily:'Consolas, monospace',
+            padding:'10px', border:'2px solid #00ff00', borderRadius:'8px',
+            boxShadow:'0 0 15px rgba(0,255,0,0.5)', zIndex:999999, userSelect:'none', cursor:'move'
+        });
 
+        addBtn(util, 'Test Utility', () => alert('Utility Activated!'));
+        makeDraggable(util);
+    }
+
+    // ---------- VFX Panel ----------
+    let vfx = document.getElementById('vfxGUI');
+    if (!vfx) {
+        vfx = createElement('div', {
+            id:'vfxGUI',
+            innerHTML:'<div style="text-align:center;margin-bottom:8px;"><b>VFX</b></div>'
+        }, document.body);
+
+        Object.assign(vfx.style, {
+            position:'fixed', top:'50px', left:'400px', width:'320px',
+            background:'#1b1b1b', color:'#00ff00', fontFamily:'Consolas, monospace',
+            padding:'10px', border:'2px solid #00ff00', borderRadius:'8px',
+            boxShadow:'0 0 15px rgba(0,255,0,0.5)', zIndex:999999, userSelect:'none', cursor:'move'
+        });
+
+        makeDraggable(vfx);
+        window.vfxGUI = vfx;
+    }
             // ---------- FULL VFX BUTTONS BLOCK ----------
 (function(){
   if (!window.vfxGUI) return;               // require the vfx GUI to exist
