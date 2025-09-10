@@ -150,38 +150,7 @@
         window.vfxGUI = vfx;
     }
             // ---------- FULL VFX BUTTONS BLOCK ----------
-if (!window.vfxInitialized) {
-  window.vfxInitialized = true;
-
-  function createBtn(label, on, off){
-    const btn = document.createElement('button');
-    btn.textContent = label;
-    Object.assign(btn.style, {
-      display: 'block',
-      width: '100%',
-      margin: '4px 0',
-      padding: '6px',
-      background: '#111',
-      color: '#0f0',
-      border: '1px solid #0f0',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontFamily: 'Consolas, monospace'
-    });
-    btn._active = false;
-    btn.addEventListener('click', function(){
-      if (btn._active) { 
-        btn._active = false; 
-        if (typeof off === 'function') try{ off(); }catch(e){} 
-      } else { 
-        btn._active = true; 
-        if (typeof on === 'function') try{ on(); }catch(e){} 
-      }
-    });
-    return btn;
-  }
-
-  // Make sure stopAllVFX array exists
+// Make sure stopAllVFX array exists
   if (!window.stopAllVFX) window.stopAllVFX = [];
 
   // 3D Page
