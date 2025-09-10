@@ -46,7 +46,7 @@
     if(progress>=100){
       clearInterval(int);
       setTimeout(()=>{
-        loading.innerText='Welcome, hacker';
+        loading.innerText='Welcome Hacker';
         setTimeout(()=>{
           clearInterval(rain);
           overlay.remove();
@@ -134,13 +134,13 @@ function makeDraggable(g, lock){
   };
 }
 
-// Attach to your GUIs after creating them and adding locks
+
 makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
     
     // ---------- UTILITIES BUTTONS ----------
 (function(){
-    const activeUtilities = {}; // Track ongoing effects
+    const activeUtilities = {};
 
     // Helper to add a button
     function addBtn(container, name, on, off) {
@@ -161,10 +161,10 @@ makeDraggable(vfx, vfxLock);
         s.onload = () => {
             eruda.init();
             eruda.theme = 'Dark';
-            window.erudaInstance = eruda; // keep reference
+            window.erudaInstance = eruda; 
             window.erudaLoaded = true;
         };
-        window.erudaScript = s; // keep script reference for removal
+        window.erudaScript = s; 
     } else {
         window.erudaInstance.show();
     }
