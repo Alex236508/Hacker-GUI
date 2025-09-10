@@ -156,81 +156,104 @@ addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
-        authDomain: "hacker-gui-global-chat.firebaseapp.com",
-        databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
-        projectId: "hacker-gui-global-chat",
-        storageBucket: "hacker-gui-global-chat.firebasestorage.app",
-        messagingSenderId: "410978781234",
-        appId: "1:410978781234:web:ee08f15ee9be48970c542b",
-        measurementId: "G-SB0B1FLF29"
-    };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const username = prompt("Enter your username:") || "Anon";
-
-    const chat = document.createElement('div');
-    chat.style.cssText = `
-        position:fixed; bottom:50px; right:50px;
-        width:300px; height:400px;
-        background:rgba(0,0,0,0.85);
-        color:#0f0; font-family:monospace;
-        border:2px solid #0f0; border-radius:8px;
-        z-index:999999; display:flex; flex-direction:column;
-        user-select:none; cursor:move;
-    `;
-
-    const messagesDiv = document.createElement('div');
-    messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
-    chat.appendChild(messagesDiv);
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = 'Type a message...';
-    input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
-    chat.appendChild(input);
-
-    document.body.appendChild(chat);
-
-    // Make draggable
-    makeDraggable(chat, { locked:false });
-
-    // Firebase messaging
-    function addMessage(msg) {
-        const msgDiv = document.createElement('div');
-        msgDiv.textContent = msg;
-        messagesDiv.appendChild(msgDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    // ---------- Load Firebase Scripts ----------
+    function loadFirebase(callback) {
+        if (window.firebase) return callback();
+        const script1 = document.createElement('script');
+        script1.src = "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
+        script1.onload = () => {
+            const script2 = document.createElement('script');
+            script2.src = "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js";
+            script2.onload = callback;
+            document.body.appendChild(script2);
+        };
+        document.body.appendChild(script1);
     }
 
-    const listener = db.ref('messages').on('child_added', snapshot => {
-        const data = snapshot.val();
-        addMessage(data.user + ": " + data.text);
-    });
+    loadFirebase(() => {
+        // ---------- Firebase Setup ----------
+        const firebaseConfig = {
+            apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
+            authDomain: "hacker-gui-global-chat.firebaseapp.com",
+            databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
+            projectId: "hacker-gui-global-chat",
+            storageBucket: "hacker-gui-global-chat.firebasestorage.app",
+            messagingSenderId: "410978781234",
+            appId: "1:410978781234:web:ee08f15ee9be48970c542b",
+            measurementId: "G-SB0B1FLF29"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    input.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && input.value.trim()) {
-            db.ref('messages').push({ user: username, text: input.value.trim() });
-            input.value = '';
+        const username = prompt("Enter your username:") || "Anon";
+
+        // ---------- Create Chat Window ----------
+        const chat = document.createElement('div');
+        chat.style.cssText = `
+            position:fixed; bottom:50px; right:50px;
+            width:300px; height:400px;
+            background:rgba(0,0,0,0.85);
+            color:#0f0; font-family:monospace;
+            border:2px solid #0f0; border-radius:8px;
+            z-index:999999; display:flex; flex-direction:column;
+            user-select:none; cursor:move;
+        `;
+
+        const messagesDiv = document.createElement('div');
+        messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
+        chat.appendChild(messagesDiv);
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Type a message...';
+        input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
+        chat.appendChild(input);
+
+        document.body.appendChild(chat);
+
+        // ---------- Make Draggable ----------
+        makeDraggable(chat, { locked: false });
+
+        // ---------- Firebase Messaging ----------
+        function addMessage(msg) {
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = msg;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
+
+        const listener = db.ref('messages').on('child_added', snapshot => {
+            const data = snapshot.val();
+            addMessage(data.user + ": " + data.text);
+        });
+
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && input.value.trim()) {
+                const msg = input.value.trim();
+                db.ref('messages').push({ user: username, text: msg });
+                input.value = '';
+            }
+        });
+
+        // ---------- Stop Function for Stop All ----------
+        const cleanup = () => {
+            window.chatActive = false;
+            chat.remove();
+            db.ref('messages').off('child_added', listener);
+        };
+
+        if (!window.stopAllVFX) window.stopAllVFX = [];
+        window.stopAllVFX.push(cleanup);
     });
 
-    // Cleanup function for Stop All
-    const cleanup = () => {
-        window.chatActive = false;
-        chat.remove();
-        db.ref('messages').off('child_added', listener);
-    };
-
-    if (!window.stopAllVFX) window.stopAllVFX = [];
-    window.stopAllVFX.push(cleanup);
-
-}, () => { // off function
+}, () => { // Off function
     if (window.chatActive) {
-        window.stopAllVFX = window.stopAllVFX.filter(fn => fn !== cleanup);
-        cleanup();
+        // Run the stopAll cleanup for this chat
+        if (window.stopAllVFX) {
+            window.stopAllVFX.forEach(fn => { try { fn(); } catch(e){} });
+            window.stopAllVFX = [];
+        }
+        window.chatActive = false;
     }
 });
     
