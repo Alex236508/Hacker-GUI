@@ -88,10 +88,10 @@ container.appendChild(b);
 if(off) activeUtilities[name] = { on, off };
 }
 
-// -------------------- GLOBAL CHAT --------------------
-(function(){
-    if(window.globalChatActive) return;
-    window.globalChatActive = true;
+// ---------- Global Chat ----------
+(function() {
+    if (window.globalChatActive) return;
+    window.globalChatActive = false;
 
     // Firebase config
     const firebaseConfig = {
@@ -104,42 +104,44 @@ if(off) activeUtilities[name] = { on, off };
         appId: "1:410978781234:web:ee08f15ee9be48970c542b"
     };
 
-    // Load Firebase SDK
-    function loadFirebase(cb){
+    // Load Firebase compat scripts if not already loaded
+    function loadFirebase(cb) {
+        if (window.firebase && window.firebase.database) return cb();
         const s1 = document.createElement('script');
-        s1.src = "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
-        s1.onload = function(){
+        s1.src = "https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js";
+        s1.onload = function() {
             const s2 = document.createElement('script');
-            s2.src = "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js";
+            s2.src = "https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js";
             s2.onload = cb;
-            document.body.appendChild(s2);
+            document.head.appendChild(s2);
         };
-        document.body.appendChild(s1);
+        document.head.appendChild(s1);
     }
 
-    // Initialize chat after Firebase loaded
-    loadFirebase(initChat);
+    // Initialize chat
+    function initChat() {
+        if (window.globalChatActive) return;
+        window.globalChatActive = true;
 
-    function initChat(){
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const messagesRef = db.ref('global-chat'); // compat style
+        const messagesRef = db.ref('global-chat');
 
+        // Ask username
         const username = prompt("Enter your chat username:", "Anonymous") || "Anonymous";
 
         // Create chat UI
         const chatBox = document.createElement('div');
+        chatBox.id = 'globalChatContainer';
         chatBox.style.cssText = `
             position:fixed; bottom:10px; right:10px;
             width:300px; height:400px;
             background:rgba(0,0,0,0.85); color:white;
-            font-family:sans-serif; font-size:14px; padding:5px;
-            border-radius:8px; z-index:999999;
-            display:flex; flex-direction:column;
-            resize:both; overflow:hidden; cursor:move;
+            font-family:sans-serif; font-size:14px;
+            padding:5px; border-radius:8px; z-index:999999;
+            display:flex; flex-direction:column; resize:both; overflow:hidden;
         `;
 
-        // Header with close button
         const header = document.createElement('div');
         header.style.cssText = `
             display:flex; justify-content:space-between; align-items:center;
@@ -148,67 +150,63 @@ if(off) activeUtilities[name] = { on, off };
         const title = document.createElement('span'); title.innerText = 'Global Chat';
         const closeBtn = document.createElement('button'); closeBtn.innerText = '×';
         closeBtn.style.cssText = "background:none; border:none; color:white; font-size:16px; cursor:pointer;";
-        closeBtn.onclick = function(){ chatBox.remove(); window.globalChatActive=false; };
+        closeBtn.onclick = () => { chatBox.remove(); window.globalChatActive = false; };
         header.appendChild(title); header.appendChild(closeBtn);
         chatBox.appendChild(header);
 
-        // Messages display
         const messagesDiv = document.createElement('div');
         messagesDiv.style.cssText = "flex:1; overflow:auto; margin:5px 0; padding-right:3px;";
         chatBox.appendChild(messagesDiv);
 
-        // Input & send button
         const inputDiv = document.createElement('div'); inputDiv.style.cssText = "display:flex;";
-        const input = document.createElement('input'); input.type = "text"; input.placeholder = "Type a message...";
-        input.style.cssText = "flex:1; margin-right:5px;";
-        const sendBtn = document.createElement('button'); sendBtn.innerText = "Send";
+        const input = document.createElement('input'); input.type="text"; input.placeholder="Type a message...";
+        input.style.cssText = "flex:1; margin-right:5px; padding:4px; border-radius:4px; border:none;";
+        const sendBtn = document.createElement('button'); sendBtn.innerText="Send";
         inputDiv.appendChild(input); inputDiv.appendChild(sendBtn);
         chatBox.appendChild(inputDiv);
 
         document.body.appendChild(chatBox);
 
-        // Draggable chat
-        header.onmousedown = function(e){
-            const ox = e.clientX - chatBox.offsetLeft, oy = e.clientY - chatBox.offsetTop;
-            function moveHandler(e){ 
-                chatBox.style.left = (e.clientX - ox)+'px'; 
-                chatBox.style.top = (e.clientY - oy)+'px'; 
-                chatBox.style.bottom='auto'; 
-                chatBox.style.right='auto';
-            }
-            function upHandler(){ 
-                document.removeEventListener('mousemove',moveHandler); 
-                document.removeEventListener('mouseup',upHandler); 
-            }
+        // Drag support
+        header.onmousedown = function(e) {
+            const ox = e.clientX - chatBox.offsetLeft;
+            const oy = e.clientY - chatBox.offsetTop;
+            function moveHandler(e){ chatBox.style.left=(e.clientX-ox)+'px'; chatBox.style.top=(e.clientY-oy)+'px'; chatBox.style.bottom='auto'; chatBox.style.right='auto'; }
+            function upHandler(){ document.removeEventListener('mousemove',moveHandler); document.removeEventListener('mouseup',upHandler); }
             document.addEventListener('mousemove', moveHandler);
             document.addEventListener('mouseup', upHandler);
         };
 
         // Send message
-        function sendMessage(){ 
-            const text = input.value.trim(); 
-            if(!text) return; 
-            messagesRef.push({username, message: text, timestamp: Date.now()});
+        function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+            messagesRef.push({ user: username, text: text, time: Date.now() });
             input.value = '';
         }
         sendBtn.onclick = sendMessage;
-        input.addEventListener('keydown', e => { if(e.key==='Enter') sendMessage(); });
+        input.addEventListener('keydown', e => { if (e.key==='Enter') sendMessage(); });
 
         // Listen for messages
         messagesRef.limitToLast(50).on('child_added', snap => {
-            const data = snap.val();
+            const msg = snap.val();
             const msgDiv = document.createElement('div');
-            msgDiv.textContent = `${data.username}: ${data.message}`;
+            msgDiv.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
             messagesDiv.appendChild(msgDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
-
-        // Stop function
-        window.globalChatOff = () => {
-            window.globalChatActive = false;
-            chatBox.remove();
-        };
     }
+
+    // Add button to utilities GUI
+    addBtn(utilGUI, 'Global Chat', initChat, () => {
+        const chatEl = document.getElementById('globalChatContainer');
+        if (chatEl) chatEl.remove();
+        window.globalChatActive = false;
+    });
+
+    // Load Firebase and initialize
+    loadFirebase(initChat);
+
 })();
     
 // Developer Console (Eruda)
