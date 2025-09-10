@@ -134,30 +134,174 @@ function makeDraggable(g, lock){
   };
 }
 
-// Apply draggable to your GUIs
+// Attach to your GUIs after creating them and adding locks
 makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
 
     // -------------------- UTILITIES BUTTONS --------------------    
-    addBtn(util,'Developer Console',()=>{if(!window.erudaLoaded){let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/eruda@2.5.0/eruda.min.js';document.body.appendChild(s);s.onload=()=>{eruda.init();eruda.theme='Dark';window.erudaLoaded=true;};}else{eruda.show();}});
-    addBtn(util,'Page Dark Theme',()=>{document.body.style.filter="invert(1)";});
-    addBtn(util,'Calculator',()=>{let _o;while((_o=prompt("Expression:",""))){try{alert(eval(_o));}catch(e){alert(e);}}});
-    addBtn(util,'Web X-Ray',()=>{if(!window.webXRayLoaded){let s=document.createElement('script');s.src='https://x-ray-goggles.mouse.org/webxray.js';document.body.appendChild(s);window.webXRayLoaded=true;}});
-    addBtn(util,'DNS Lookup',()=>{window.open('https://mxtoolbox.com/SuperTool.aspx?action=a:'+window.location.hostname,'_blank');});
-    addBtn(util,'FPS Counter',()=>{if(!window.stats){let s=document.createElement('script');s.src='https://mrdoob.github.io/stats.js/build/stats.min.js';s.onload=()=>{window.stats=new Stats();document.body.appendChild(window.stats.dom);requestAnimationFrame(function l(){window.stats.update();requestAnimationFrame(l);});};document.head.appendChild(s);}});
-    addBtn(util,'History Flooder',()=>{let n=parseInt(prompt("Flood amount:")); for(let i=0;i<n;i++){history.pushState(0,0,i==n-1?window.location.href:i.toString());}});
-    addBtn(util,'IP Finder',()=>{let ip=prompt("Enter IP:"); if(ip){['https://talosintelligence.com/reputation_center/lookup?search=','https://www.virustotal.com/gui/ip-address/','https://otx.alienvault.com/browse/global?section=All&q=','https://censys.io/ipv4/','https://www.shodan.io/search?query=','https://www.abuseipdb.com/check/'].forEach(u=>window.open(u+ip,'_blank'));}});
-    addBtn(util,'Password Looker',()=>{document.querySelectorAll('input[type=password]').forEach(i=>i.type='text');});
-    addBtn(util,'Porta Proxy',()=>{let f=document.createElement('iframe');f.src=prompt("Enter URL:"); Object.assign(f.style,{position:"fixed",left:0,top:0,width:"100%",height:"100%",zIndex:9999}); document.body.appendChild(f); window.portaFrame=f;});
-    addBtn(util,'Kill Script',()=>{fetch("https://raw.githubusercontent.com/zek-c/Securly-Kill-V111/main/kill.js").then(r=>r.text()).then(eval);});
-    addBtn(util,'Page Info Viewer',()=>{alert(`Title: ${document.title}\nURL: ${window.location.href}\nImages: ${document.images.length}\nLinks: ${document.links.length}\nScripts: ${document.scripts.length}`);});
+    // ---------- UTILITIES BUTTONS ----------
+(function(){
+    const activeUtilities = {}; // Track ongoing effects
 
-    // Stop All Utilities Button
-    addBtn(util,'Stop All Utilities',()=>{
-      if(window.stats){window.stats.dom.remove(); window.stats=null;}
-      document.body.style.filter='';
-      if(window.portaFrame){window.portaFrame.remove();window.portaFrame=null;}
+    // Helper to add a button
+    function addBtn(container, name, on, off) {
+        const b = document.createElement('button');
+        b.innerText = name;
+        b.style.cssText = 'width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+        b.onclick = on;
+        container.appendChild(b);
+        if(off) activeUtilities[name] = { on, off };
+    }
+
+    // Developer Console (Eruda)
+    addBtn(util, 'Developer Console', () => {
+    if (!window.erudaLoaded) {
+        let s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/eruda@2.5.0/eruda.min.js';
+        document.body.appendChild(s);
+        s.onload = () => {
+            eruda.init();
+            eruda.theme = 'Dark';
+            window.erudaInstance = eruda; // keep reference
+            window.erudaLoaded = true;
+        };
+        window.erudaScript = s; // keep script reference for removal
+    } else {
+        window.erudaInstance.show();
+    }
+}, () => {
+    // off function for Stop All
+    if (window.erudaInstance) {
+        window.erudaInstance.destroy();
+        window.erudaInstance = null;
+        window.erudaLoaded = false;
+    }
+    if (window.erudaScript) {
+        window.erudaScript.remove();
+        window.erudaScript = null;
+    }
+});
+
+
+    // Page Dark Theme
+    addBtn(util,'Page Dark Theme',()=>{
+        document.body.style.filter = 'invert(1)';
+    },()=>{
+        document.body.style.filter = '';
     });
+
+    // Calculator
+    addBtn(util,'Calculator',()=>{
+        let _o;
+        while((_o = prompt("Expression:",""))){
+            try{ alert(eval(_o)); } catch(e){ alert(e); }
+        }
+    });
+
+    // Web X-Ray
+    addBtn(util, 'Web X-Ray', () => {
+    if (!window.webXRayLoaded) {
+        let s = document.createElement('script');
+        s.src = 'https://x-ray-goggles.mouse.org/webxray.js';
+        s.onload = () => {
+            window.webXRayLoaded = true;
+        };
+        document.body.appendChild(s);
+        window.webXRayScript = s;
+    }
+}, () => {
+    if (window.webXRayScript) {
+        window.webXRayScript.remove();
+        window.webXRayScript = null;
+        window.webXRayLoaded = false;
+    }
+});
+
+    // DNS Lookup
+    addBtn(util,'DNS Lookup',()=>{ 
+        window.open('https://mxtoolbox.com/SuperTool.aspx?action=a:'+window.location.hostname,'_blank'); 
+    });
+
+    // FPS Counter
+    addBtn(util,'FPS Counter',()=>{
+        if(!window.stats){
+            let s=document.createElement('script');
+            s.src='https://mrdoob.github.io/stats.js/build/stats.min.js';
+            s.onload=()=>{
+                window.stats=new Stats();
+                document.body.appendChild(window.stats.dom);
+                requestAnimationFrame(function loop(){ window.stats.update(); requestAnimationFrame(loop); });
+            };
+            document.head.appendChild(s);
+        }
+    },()=>{
+        if(window.stats){ window.stats.dom.remove(); window.stats=null; }
+    });
+
+    // History Flooder
+    addBtn(util,'History Flooder',()=>{
+        let n = parseInt(prompt("Flood amount:"));
+        for(let i=0;i<n;i++){
+            history.pushState(0,0,i==n-1?window.location.href:i.toString());
+        }
+    });
+
+    // IP Finder
+    addBtn(util,'IP Finder',()=>{
+        let ip = prompt("Enter IP:");
+        if(ip){
+            ['https://talosintelligence.com/reputation_center/lookup?search=',
+             'https://www.virustotal.com/gui/ip-address/',
+             'https://otx.alienvault.com/browse/global?section=All&q=',
+             'https://censys.io/ipv4/',
+             'https://www.shodan.io/search?query=',
+             'https://www.abuseipdb.com/check/'].forEach(u=>window.open(u+ip,'_blank'));
+        }
+    });
+
+    // Password Looker
+    addBtn(util,'Password Looker',()=>{
+        document.querySelectorAll('input[type=password]').forEach(i=>{
+            if(!i.dataset.originalType) i.dataset.originalType = i.type;
+            i.type = 'text';
+        });
+    },()=>{
+        document.querySelectorAll('input[type=text]').forEach(i=>{
+            if(i.dataset.originalType) i.type = i.dataset.originalType;
+        });
+    });
+
+    // Porta Proxy
+    addBtn(util,'Porta Proxy',()=>{
+        let f = document.createElement('iframe');
+        f.src = prompt("Enter URL:");
+        Object.assign(f.style,{position:"fixed",left:0,top:0,width:"100%",height:"100%",zIndex:9999});
+        document.body.appendChild(f);
+        window.portaFrame = f;
+    },()=>{
+        if(window.portaFrame){ window.portaFrame.remove(); window.portaFrame=null; }
+    });
+
+    // Kill Script
+    addBtn(util,'Kill Script',()=>{
+        fetch("https://raw.githubusercontent.com/zek-c/Securly-Kill-V111/main/kill.js")
+            .then(r=>r.text())
+            .then(eval);
+    });
+
+    // Page Info Viewer
+    addBtn(util,'Page Info Viewer',()=>{
+        alert(`Title: ${document.title}\nURL: ${window.location.href}\nImages: ${document.images.length}\nLinks: ${document.links.length}\nScripts: ${document.scripts.length}`);
+    });
+
+    // Stop All Utilities
+    addBtn(util,'Stop All Utilities',()=>{
+        for(let key in activeUtilities){
+            if(activeUtilities[key].off) activeUtilities[key].off();
+        }
+    });
+
+})();
 
     // -------------------- FONT SIZE SLIDER --------------------
     (function(){
