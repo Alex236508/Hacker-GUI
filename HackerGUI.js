@@ -55,109 +55,73 @@
       },500);
     }
   },40);
-
-
-  // ---------- NAMESPACE ----------
-  window.hackerGUI = {
-    intervals: [],
-    locks: {},
-    scripts: {}
-  };
-
-
-  function makeDraggable(el, lockName) {
-    let pos1=0,pos2=0,pos3=0,pos4=0;
-    const lock = document.createElement('div');
-    lock.style.cssText='position:absolute;top:0;right:0;width:16px;height:16px;background:red;cursor:pointer;z-index:9999';
-    lock.textContent='🔒';
-    lock.onclick=()=>{ window.hackerGUI.locks[lockName] = !window.hackerGUI.locks[lockName]; }
-    el.appendChild(lock);
-    el.onmousedown=dragMouseDown;
-
-    function dragMouseDown(e) {
-      if(window.hackerGUI.locks[lockName]) return;
-      e=e||window.event;
-      e.preventDefault();
-      pos3=e.clientX; pos4=e.clientY;
-      document.onmouseup=closeDragElement;
-      document.onmousemove=elementDrag;
+  
+    // ---------- UTILITY ----------
+    function createElement(tag, props = {}, parent = null) {
+        const el = document.createElement(tag);
+        Object.assign(el, props);
+        if (parent) parent.appendChild(el);
+        return el;
     }
-    function elementDrag(e) {
-      e=e||window.event;
-      e.preventDefault();
-      pos1=pos3-e.clientX; pos2=pos4-e.clientY;
-      pos3=e.clientX; pos4=e.clientY;
-      el.style.top=(el.offsetTop-pos2)+'px';
-      el.style.left=(el.offsetLeft-pos1)+'px';
+
+    function addBtn(container, label, onClick) {
+        if (!container) {
+            console.error("Container not found:", container);
+            return;
+        }
+        const btn = createElement("button", { textContent: label, className: "hacker-btn" }, container);
+        btn.addEventListener("click", onClick);
+        return btn;
     }
-    function closeDragElement(){ document.onmouseup=null; document.onmousemove=null; }
-  }
 
-  function startInterval(fn, interval=100) {
-    const id = setInterval(fn, interval);
-    window.hackerGUI.intervals.push(id);
-    return id;
-  }
+    // ---------- STYLES ----------
+    const style = document.createElement("style");
+    style.textContent = `
+        .hacker-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: black;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #0f0;
+            font-family: monospace;
+        }
+        .hacker-panel {
+            background: #111;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 5px;
+            min-width: 300px;
+        }
+        .hacker-btn {
+            margin: 3px;
+            padding: 5px 10px;
+            background: #0f0;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    `;
+    document.head.appendChild(style);
 
-  function stopAllIntervals() {
-    window.hackerGUI.intervals.forEach(i=>clearInterval(i));
-    window.hackerGUI.intervals=[];
-  }
+    // ---------- OVERLAY & PANELS ----------
+    const overlay = createElement("div", { className: "hacker-overlay" }, document.body);
 
-  // ---------- STOP ALL BUTTON ----------
-  const stopAllBtn = document.createElement('button');
-  stopAllBtn.textContent='STOP ALL';
-  stopAllBtn.style.cssText='position:fixed;bottom:10px;left:10px;padding:5px;background:red;color:#fff;z-index:100000;';
-  stopAllBtn.onclick=()=>{ stopAllIntervals(); // Stop all VFX
-if (window.matrixInt) { clearInterval(window.matrixInt); window.matrixInt = null; }
-if (window.matrixCanvas) { window.matrixCanvas.remove(); window.matrixCanvas = null; }
-window.matrixActive = false;
+    const mainPanel = createElement("div", { className: "hacker-panel" }, overlay);
+    mainPanel.innerHTML = "<strong>Main Control Panel</strong>";
 
-if (window.pageSpinStyle) { window.pageSpinStyle.remove(); window.pageSpinStyle = null; }
-window.pageSpinActive = false;
+    const secondaryPanel = createElement("div", { className: "hacker-panel" }, overlay);
+    secondaryPanel.innerHTML = "<strong>Secondary Panel</strong>";
 
-if (window.discoSmoothInt) { clearInterval(window.discoSmoothInt); window.discoSmoothInt = null; }
-window.discoSmoothActive = false;
-
-if (window.glitchInt) { clearInterval(window.glitchInt); window.glitchInt = null; }
-window.glitchActive = false;
-
-if (window.fullChaosLoop1) { clearInterval(window.fullChaosLoop1); window.fullChaosLoop1 = null; }
-if (window.fullChaosLoop2) { clearInterval(window.fullChaosLoop2); window.fullChaosLoop2 = null; }
-window.fullChaosActive = false;
-const chaosContainer = document.getElementById('chaosContainer');
-if (chaosContainer) chaosContainer.remove();
-
-if (window.imgGlitchInt) { clearInterval(window.imgGlitchInt); window.imgGlitchInt = null; }
-document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
-    e.style.position = '';
-    e.style.left = '';
-    e.style.top = '';
-});
-
-if (window.textCorruptStyle) { window.textCorruptStyle.remove(); window.textCorruptStyle = null; }
-if (window._bubbleCleanup) { window._bubbleCleanup(); window._bubbleCleanup = null; }
-window.bubbleActive = false;
-
-// Reset page transforms, colors, filters
-document.body.style.transform = '';
-document.body.style.backgroundColor = '';
-document.body.style.filter = '';
-document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
-    e.style.backgroundColor = '';
-    e.style.height = '';
-    e.style.transform = '';
-    e.style.transition = '';
-    e.style.color = '';
-    e.style.fontSize = '';
-    e.style.position = '';
-    e.style.left = '';
-    e.style.top = '';
-});
- };
-  document.body.appendChild(stopAllBtn);
-
- // ---------- UTILITIES GUI ----------
+    // ---------- GUI SPAWNER ----------
+    function spawnGUIs() {
+        // ---------- UTILITIES GUI ----------
 let util = document.getElementById('utilitiesGUI');
 if (!util) {
     util = document.createElement('div');
@@ -1160,8 +1124,59 @@ document.querySelectorAll('body *:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(
 section.appendChild(picker);
 vfx.appendChild(section);
 })();
-    
-  // ---------- KEYBOARD SHORTCUT ----------
+      // ---------- STOP ALL BUTTON ----------
+  const stopAllBtn = document.createElement('button');
+  stopAllBtn.textContent='STOP ALL';
+  stopAllBtn.style.cssText='position:fixed;bottom:10px;left:10px;padding:5px;background:red;color:#fff;z-index:100000;';
+  stopAllBtn.onclick=()=>{ stopAllIntervals(); // Stop all VFX
+if (window.matrixInt) { clearInterval(window.matrixInt); window.matrixInt = null; }
+if (window.matrixCanvas) { window.matrixCanvas.remove(); window.matrixCanvas = null; }
+window.matrixActive = false;
+
+if (window.pageSpinStyle) { window.pageSpinStyle.remove(); window.pageSpinStyle = null; }
+window.pageSpinActive = false;
+
+if (window.discoSmoothInt) { clearInterval(window.discoSmoothInt); window.discoSmoothInt = null; }
+window.discoSmoothActive = false;
+
+if (window.glitchInt) { clearInterval(window.glitchInt); window.glitchInt = null; }
+window.glitchActive = false;
+
+if (window.fullChaosLoop1) { clearInterval(window.fullChaosLoop1); window.fullChaosLoop1 = null; }
+if (window.fullChaosLoop2) { clearInterval(window.fullChaosLoop2); window.fullChaosLoop2 = null; }
+window.fullChaosActive = false;
+const chaosContainer = document.getElementById('chaosContainer');
+if (chaosContainer) chaosContainer.remove();
+
+if (window.imgGlitchInt) { clearInterval(window.imgGlitchInt); window.imgGlitchInt = null; }
+document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
+    e.style.position = '';
+    e.style.left = '';
+    e.style.top = '';
+});
+
+if (window.textCorruptStyle) { window.textCorruptStyle.remove(); window.textCorruptStyle = null; }
+if (window._bubbleCleanup) { window._bubbleCleanup(); window._bubbleCleanup = null; }
+window.bubbleActive = false;
+
+// Reset page transforms, colors, filters
+document.body.style.transform = '';
+document.body.style.backgroundColor = '';
+document.body.style.filter = '';
+document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
+    e.style.backgroundColor = '';
+    e.style.height = '';
+    e.style.transform = '';
+    e.style.transition = '';
+    e.style.color = '';
+    e.style.fontSize = '';
+    e.style.position = '';
+    e.style.left = '';
+    e.style.top = '';
+});
+ };
+  document.body.appendChild(stopAllBtn);
+// ---------- KEYBOARD SHORTCUT ----------
   document.addEventListener('keydown', e=>{
     if(e.shiftKey && e.key.toLowerCase()==='h'){
       utilGUI.style.display = (utilGUI.style.display==='none')?'block':'none';
