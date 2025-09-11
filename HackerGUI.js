@@ -288,7 +288,9 @@ resizeHandle.style.cssText = `
 chat.appendChild(resizeHandle);
 
 resizeHandle.addEventListener('mousedown', e => {
+    e.stopPropagation(); // <-- stop drag from triggering
     e.preventDefault();
+
     const startWidth = chat.offsetWidth;
     const startHeight = chat.offsetHeight;
     const startX = e.clientX;
