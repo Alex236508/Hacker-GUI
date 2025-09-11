@@ -153,7 +153,6 @@ makeDraggable(vfx, vfxLock);
     }
 
     // ---------- Global Chat (Firebase) ----------
-// -------------------- GLOBAL CHAT --------------------
 addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
@@ -217,35 +216,39 @@ addBtn(util, 'Global Chat', () => {
         `;
         document.body.appendChild(chat);
 
-        // ---------- Rainbow Neon Pulse Border ----------
-const glowBorder = document.createElement('div');
-glowBorder.style.cssText = `
-    position:absolute; top:0; left:0; width:100%; height:100%;
-    border:2px solid #0f0;
-    border-radius:8px;
-    pointer-events:none;
-    box-sizing:border-box;
-    z-index:10000001;
-`;
-chat.appendChild(glowBorder);
+        // Rainbow Neon "Breathing" Border for Chat Box
+const chatBox = document.getElementById('globalChatContainer');
+if(chatBox){
+    // Remove any existing rainbow style first
+    const oldStyle = document.getElementById('rainbowNeonPulse');
+    if(oldStyle) oldStyle.remove();
 
-const colors = ['#ff00ff','#00ffff','#ff0000','#00ff00','#ffff00','#ff9900'];
-let step = 0;
-window.chatGlowInt = setInterval(() => {
-    const t = (Math.sin(step) + 1) / 2; // t goes smoothly 0→1→0
-    const c1 = colors[Math.floor(step) % colors.length];
-    const c2 = colors[(Math.floor(step)+1) % colors.length];
-
-    // Linear interpolation between two colors
-    function lerpColor(a, b, t){
-        const cA = a.match(/\w\w/g).map(x => parseInt(x,16));
-        const cB = b.match(/\w\w/g).map(x => parseInt(x,16));
-        return '#' + cA.map((v,i) => Math.round(v*(1-t)+cB[i]*t).toString(16).padStart(2,'0')).join('');
-    }
-
-    glowBorder.style.borderColor = lerpColor(c1.slice(1), c2.slice(1), t);
-    step += 0.05;
-}, 30);
+    // Create a new style element for the effect
+    let style = document.createElement('style');
+    style.id = 'rainbowNeonPulse';
+    style.innerHTML = `
+        @keyframes rainbowBorder {
+            0%   { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
+            25%  { border-image-source: linear-gradient(90deg, orange, yellow, green, blue, indigo, violet, red); }
+            50%  { border-image-source: linear-gradient(90deg, yellow, green, blue, indigo, violet, red, orange); }
+            75%  { border-image-source: linear-gradient(90deg, green, blue, indigo, violet, red, orange, yellow); }
+            100% { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
+        }
+        @keyframes borderPulse {
+            0%, 100% { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; border-width: 2px; }
+            50%      { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; border-width: 6px; }
+        }
+        #globalChatContainer {
+            border-style: solid !important;
+            border-width: 2px !important;
+            border-image-slice: 1 !important;
+            border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+            animation: rainbowBorder 4s linear infinite, borderPulse 2s ease-in-out infinite;
+            color: #0f0; /* keeps text readable */
+        }
+    `;
+    document.head.appendChild(style);
+}
 
         // ---------- Close Button ----------
         const closeBtn = document.createElement('div');
