@@ -111,9 +111,9 @@
 
      // -------------------- DRAGGING --------------------
 function makeDraggable(g, lock){
-  g.style.position = 'fixed'; // ensures anchored to viewport
+  g.style.position = 'fixed'; 
   g.onmousedown = function(e){
-    if(lock.locked) return; // do nothing if locked
+    if(lock.locked) return; 
     let ox = e.clientX - g.getBoundingClientRect().left,
         oy = e.clientY - g.getBoundingClientRect().top;
     function move(e){
@@ -210,14 +210,14 @@ addBtn(util, 'Global Chat', () => {
         chat.style.cssText = `
             position:fixed; bottom:50px; right:50px;
             width:300px; height:400px;
-            background:rgba(0,0,0,0.85);
+            background:rgba(0,0,0,0.90);
             color:#0f0; font-family:monospace;
             border-radius:8px; z-index:10000000; display:flex; flex-direction:column;
             user-select:none; overflow:hidden;
         `;
         document.body.appendChild(chat);
 
-        // Rainbow Pulsing Glow Border (independent of text color)
+        // Rainbow Pulsing Glow Border
 const chatBox = document.getElementById('globalChatContainer');
 if(chatBox){
     const oldStyle = document.getElementById('rainbowGlowStyle');
