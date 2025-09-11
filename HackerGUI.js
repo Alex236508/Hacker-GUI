@@ -216,15 +216,15 @@ addBtn(util, 'Global Chat', () => {
         `;
         document.body.appendChild(chat);
 
-        // Moving Rainbow Neon Border (Smooth Disco Style)
+        // Moving Rainbow Neon Border with Pulsing Glow
 const chatBox = document.getElementById('globalChatContainer');
 if(chatBox){
-    // Remove old rainbow style
+    // Remove old rainbow style if exists
     const oldStyle = document.getElementById('rainbowNeonFlow');
     if(oldStyle) oldStyle.remove();
 
     // Create new style
-    let style = document.createElement('style');
+    const style = document.createElement('style');
     style.id = 'rainbowNeonFlow';
     style.innerHTML = `
         #globalChatContainer {
@@ -233,7 +233,8 @@ if(chatBox){
             border: 4px solid;
             padding: 2px;
             background-clip: padding-box;
-            animation: rainbowFlow 5s linear infinite;
+            animation: rainbowFlow 5s linear infinite, glowPulse 2.5s ease-in-out infinite alternate;
+            border-image-slice: 1;
         }
 
         @keyframes rainbowFlow {
@@ -244,9 +245,10 @@ if(chatBox){
             100% { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
         }
 
-        #globalChatContainer {
-            border-image-slice: 1;
-            box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+        @keyframes glowPulse {
+            0%   { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
+            50%  { box-shadow: 0 0 25px currentColor, 0 0 50px currentColor; }
+            100% { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
         }
     `;
     document.head.appendChild(style);
