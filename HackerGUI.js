@@ -153,7 +153,6 @@ makeDraggable(vfx, vfxLock);
     }
 
     // ---------- Global Chat (Firebase) ----------
-    // ---------- GLOBAL CHAT BUTTON ----------
 addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
@@ -190,25 +189,23 @@ addBtn(util, 'Global Chat', () => {
         const db = firebase.database();
 
         // ---------- Unique Username ----------
+        let username, lookupKey;
         async function getUsername() {
-            let name;
-            while (!name) {
-                name = prompt("Enter your username for chat:") || "Anonymous";
-                const key = name.toLowerCase(); // lowercase for uniqueness
-                const snapshot = await db.ref('users/' + key).get();
+            while (!username) {
+                let name = prompt("Enter your username for chat:") || "Anonymous";
+                lookupKey = name.toLowerCase(); // case-insensitive uniqueness
+                const snapshot = await db.ref('users/' + lookupKey).get();
                 if (snapshot.exists()) {
                     alert("Username already taken! Pick another one.");
-                    name = null;
                 } else {
-                    db.ref('users/' + key).set(true); // reserve username
-                    return name;
+                    username = name;
+                    await db.ref('users/' + lookupKey).set(true); // reserve username
                 }
             }
+            return username;
         }
 
-        getUsername().then(username => {
-            const lookupKey = username.toLowerCase();
-
+        getUsername().then(() => {
             // ---------- Chat Window ----------
             const chat = document.createElement('div');
             chat.style.cssText = `
@@ -219,8 +216,20 @@ addBtn(util, 'Global Chat', () => {
                 border:2px solid #0f0; border-radius:8px;
                 z-index:10000000; display:flex; flex-direction:column;
                 user-select:none;
+                animation: glowPulse 2s infinite;
             `;
             document.body.appendChild(chat);
+
+            // ---------- Glowing border animation ----------
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes glowPulse {
+                    0% { box-shadow: 0 0 5px #0f0; }
+                    50% { box-shadow: 0 0 15px #0f0; }
+                    100% { box-shadow: 0 0 5px #0f0; }
+                }
+            `;
+            document.head.appendChild(style);
 
             // ---------- Draggable ----------
             function makeDraggable(g, lock) {
@@ -257,9 +266,7 @@ addBtn(util, 'Global Chat', () => {
                 font-weight:bold; font-size:16px; z-index:10000001;
             `;
             closeBtn.onclick = () => {
-                chat.remove();
-                db.ref('users/' + lookupKey).remove(); // free username
-                window.chatActive = false;
+                cleanup();
             };
             chat.appendChild(closeBtn);
 
@@ -295,10 +302,27 @@ addBtn(util, 'Global Chat', () => {
                     input.value = '';
                 }
             });
+
+            // ---------- Cleanup ----------
+            const cleanup = async () => {
+                chat.remove();
+                await db.ref('users/' + lookupKey).remove(); // free username
+                window.chatActive = false;
+            };
+
+            // ---------- Cleanup on page close/refresh ----------
+            const unloadHandler = async () => {
+                if (lookupKey) {
+                    await db.ref('users/' + lookupKey).remove();
+                }
+            };
+            window.addEventListener('beforeunload', unloadHandler);
+            window.addEventListener('unload', unloadHandler);
+
         });
     }
 }, () => {
-    // Off function not used; user manually closes
+    // Off function not used
 });
     
     // Developer Console (Eruda)
