@@ -216,25 +216,25 @@ addBtn(util, 'Global Chat', () => {
         `;
         document.body.appendChild(chat);
 
-        // Rainbow Neon "Breathing" Border for Chat Box
+        // Smooth Rainbow Neon Pulsing Border for Chat Box
 const chatBox = document.getElementById('globalChatContainer');
 if(chatBox){
-    // Remove any existing rainbow style first
-    const oldStyle = document.getElementById('rainbowNeonPulse');
+    // Remove old rainbow style
+    const oldStyle = document.getElementById('rainbowNeonSmooth');
     if(oldStyle) oldStyle.remove();
 
-    // Create a new style element for the effect
+    // Create new style
     let style = document.createElement('style');
-    style.id = 'rainbowNeonPulse';
+    style.id = 'rainbowNeonSmooth';
     style.innerHTML = `
-        @keyframes rainbowBorder {
-            0%   { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
-            25%  { border-image-source: linear-gradient(90deg, orange, yellow, green, blue, indigo, violet, red); }
-            50%  { border-image-source: linear-gradient(90deg, yellow, green, blue, indigo, violet, red, orange); }
-            75%  { border-image-source: linear-gradient(90deg, green, blue, indigo, violet, red, orange, yellow); }
-            100% { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
+        @keyframes rainbowBorderMove {
+            0%   { border-image-source: linear-gradient(0deg, red, orange, yellow, green, blue, indigo, violet); }
+            25%  { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
+            50%  { border-image-source: linear-gradient(180deg, red, orange, yellow, green, blue, indigo, violet); }
+            75%  { border-image-source: linear-gradient(270deg, red, orange, yellow, green, blue, indigo, violet); }
+            100% { border-image-source: linear-gradient(360deg, red, orange, yellow, green, blue, indigo, violet); }
         }
-        @keyframes borderPulse {
+        @keyframes borderGlowPulse {
             0%, 100% { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; border-width: 2px; }
             50%      { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; border-width: 6px; }
         }
@@ -242,8 +242,8 @@ if(chatBox){
             border-style: solid !important;
             border-width: 2px !important;
             border-image-slice: 1 !important;
-            border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
-            animation: rainbowBorder 4s linear infinite, borderPulse 2s ease-in-out infinite;
+            border-image-source: linear-gradient(0deg, red, orange, yellow, green, blue, indigo, violet);
+            animation: rainbowBorderMove 8s linear infinite, borderGlowPulse 2s ease-in-out infinite;
             color: #0f0; /* keeps text readable */
         }
     `;
