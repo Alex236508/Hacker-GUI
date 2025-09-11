@@ -216,10 +216,9 @@ addBtn(util, 'Global Chat', () => {
         `;
         document.body.appendChild(chat);
 
-        // Rainbow Pulsing Glow Border
+        // Rainbow Pulsing Glow Border (independent of text color)
 const chatBox = document.getElementById('globalChatContainer');
 if(chatBox){
-    // Remove old rainbow style if exists
     const oldStyle = document.getElementById('rainbowGlowStyle');
     if(oldStyle) oldStyle.remove();
 
@@ -246,11 +245,13 @@ if(chatBox){
         }
 
         @keyframes rainbowGlow {
-            0%   { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
-            25%  { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
-            50%  { box-shadow: 0 0 30px currentColor, 0 0 60px currentColor; }
-            75%  { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
-            100% { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
+            0%   { box-shadow: 0 0 10px red, 0 0 20px red; }
+            16%  { box-shadow: 0 0 15px orange, 0 0 30px orange; }
+            33%  { box-shadow: 0 0 20px yellow, 0 0 40px yellow; }
+            50%  { box-shadow: 0 0 25px green, 0 0 50px green; }
+            66%  { box-shadow: 0 0 30px blue, 0 0 60px blue; }
+            83%  { box-shadow: 0 0 25px purple, 0 0 50px purple; }
+            100% { box-shadow: 0 0 10px red, 0 0 20px red; }
         }
     `;
     document.head.appendChild(style);
