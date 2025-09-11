@@ -216,16 +216,15 @@ addBtn(util, 'Global Chat', () => {
         `;
         document.body.appendChild(chat);
 
-        // Moving Rainbow Neon Border with Pulsing Glow
+        // Rainbow Pulsing Glow Border
 const chatBox = document.getElementById('globalChatContainer');
 if(chatBox){
     // Remove old rainbow style if exists
-    const oldStyle = document.getElementById('rainbowNeonFlow');
+    const oldStyle = document.getElementById('rainbowGlowStyle');
     if(oldStyle) oldStyle.remove();
 
-    // Create new style
     const style = document.createElement('style');
-    style.id = 'rainbowNeonFlow';
+    style.id = 'rainbowGlowStyle';
     style.innerHTML = `
         #globalChatContainer {
             position: relative;
@@ -233,26 +232,30 @@ if(chatBox){
             border: 4px solid;
             padding: 2px;
             background-clip: padding-box;
-            animation: rainbowFlow 5s linear infinite, glowPulse 2.5s ease-in-out infinite alternate;
+            animation: rainbowBorder 6s linear infinite, rainbowGlow 6s ease-in-out infinite alternate;
             border-image-slice: 1;
         }
 
-        @keyframes rainbowFlow {
-            0%   { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
-            25%  { border-image-source: linear-gradient(90deg, orange, yellow, green, blue, indigo, violet, red); }
-            50%  { border-image-source: linear-gradient(90deg, yellow, green, blue, indigo, violet, red, orange); }
-            75%  { border-image-source: linear-gradient(90deg, green, blue, indigo, violet, red, orange, yellow); }
-            100% { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet); }
+        @keyframes rainbowBorder {
+            0%   { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, purple); }
+            20%  { border-image-source: linear-gradient(90deg, orange, yellow, green, blue, purple, red); }
+            40%  { border-image-source: linear-gradient(90deg, yellow, green, blue, purple, red, orange); }
+            60%  { border-image-source: linear-gradient(90deg, green, blue, purple, red, orange, yellow); }
+            80%  { border-image-source: linear-gradient(90deg, blue, purple, red, orange, yellow, green); }
+            100% { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, purple); }
         }
 
-        @keyframes glowPulse {
+        @keyframes rainbowGlow {
             0%   { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
-            50%  { box-shadow: 0 0 25px currentColor, 0 0 50px currentColor; }
+            25%  { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
+            50%  { box-shadow: 0 0 30px currentColor, 0 0 60px currentColor; }
+            75%  { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
             100% { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
         }
     `;
     document.head.appendChild(style);
 }
+
 
         // ---------- Close Button ----------
         const closeBtn = document.createElement('div');
