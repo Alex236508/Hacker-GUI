@@ -195,7 +195,7 @@ makeDraggable(vfx, vfxLock);
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const username = prompt("Enter your username for chat:") || "Anon";
+        const username = prompt("Enter your username for chat:") || "Anonymous";
 
         // ---------- Create Chat Window ----------
         const chat = document.createElement('div');
