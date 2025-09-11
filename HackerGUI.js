@@ -820,10 +820,10 @@ addBtn(vfx, 'Full Chaos', () => {
     window.fullChaosActive = false;
   }
 });
-// stop all VFX
+// Stop All VFX (preserves chat)
 addBtn(vfx, 'Stop All', () => {
 
-    // ------------------ Call all VFX cleanup functions ------------------
+    // Call all registered VFX cleanup functions
     if (window.stopAllVFX) {
         window.stopAllVFX.forEach(fn => { 
             try { fn(); } catch(e) {} 
@@ -831,63 +831,38 @@ addBtn(vfx, 'Stop All', () => {
         window.stopAllVFX = [];
     }
 
-    // ------------------ Stop Bubble Text ------------------
-    if (window._bubbleCleanup) {
-        try { window._bubbleCleanup(); } catch(e) {}
-        window._bubbleCleanup = null;
-    }
-    window.bubbleActive = false;
+    // Reset VFX styles but ignore chat
+    document.querySelectorAll(
+        'body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *):not(#globalChatContainer):not(#globalChatContainer *)'
+    ).forEach(el => {
+        el.style.backgroundColor = '';
+        el.style.color = '';
+        el.style.transform = '';
+        el.style.transition = '';
+        el.style.fontSize = '';
+        el.style.position = '';
+        el.style.left = '';
+        el.style.top = '';
+        el.style.textShadow = '';
+    });
 
-    // ------------------ Stop Matrix Rain ------------------
-    if(window.matrixInt){ clearInterval(window.matrixInt); window.matrixInt=null; }
-    if(window.matrixCanvas){ window.matrixCanvas.remove(); window.matrixCanvas=null; }
-    window.matrixActive=false;
-
-    // ------------------ Stop Smooth Disco ------------------
-    if(window.discoSmoothInt){ clearInterval(window.discoSmoothInt); window.discoSmoothInt=null; }
-    window.discoSmoothActive=false;
-
-    // ------------------ Stop Glitch ------------------
-    if(window.glitchInt){ clearInterval(window.glitchInt); window.glitchInt=null; }
-    window.glitchActive=false;
-
-    // ------------------ Stop Full Chaos ------------------
-    if(window.fullChaosLoop1){ clearInterval(window.fullChaosLoop1); window.fullChaosLoop1=null; }
-    if(window.fullChaosLoop2){ clearInterval(window.fullChaosLoop2); window.fullChaosLoop2=null; }
-    const chaos = document.getElementById('chaosContainer');
-    if(chaos) chaos.remove();
-    window.fullChaosActive=false;
-
-    // ------------------ Stop Page Spin ------------------
+    // Remove global VFX styles
     if(window.pageSpinStyle){ window.pageSpinStyle.remove(); window.pageSpinStyle=null; }
-    window.pageSpinActive=false;
-
-    // ------------------ Stop Text Corruption ------------------
     if(window.textCorruptStyle){ window.textCorruptStyle.remove(); window.textCorruptStyle=null; }
 
-    // ------------------ Stop Image Glitch ------------------
-    if(window.imgGlitchInt){ clearInterval(window.imgGlitchInt); window.imgGlitchInt=null; 
-        document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
-            e.style.position=''; e.style.left=''; e.style.top='';
-        });
-    }
-
-    // ------------------ Reset page-wide inline styles ------------------
-    document.body.style.transform='';
-    document.body.style.backgroundColor='';
-    document.body.style.filter='';
-    document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
-        e.style.backgroundColor='';
-        e.style.height='';
-        e.style.transform='';
-        e.style.transition='';
-        e.style.color='';
-        e.style.fontSize='';
-        e.style.position='';
-        e.style.left='';
-        e.style.top='';
-        e.style.textShadow='';
+    // Stop VFX intervals
+    [window.matrixInt, window.discoSmoothInt, window.glitchInt, window.fullChaosLoop1, window.fullChaosLoop2, window.imgGlitchInt].forEach(i=>{
+        if(i){ clearInterval(i); i=null; }
     });
+
+    // Reset flags
+    window.matrixActive = false;
+    window.discoSmoothActive = false;
+    window.glitchActive = false;
+    window.fullChaosActive = false;
+    window.pageSpinActive = false;
+    window.bubbleActive = false;
+});
 
     // ------------------ Reset Utilities ------------------
     if(window.stats){ window.stats.dom.remove(); window.stats=null; }
