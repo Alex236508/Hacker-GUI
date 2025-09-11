@@ -152,6 +152,18 @@ makeDraggable(vfx, vfxLock);
         if(off) activeUtilities[name] = { on, off };
     }
     // Global Chat (Firebase)
+if (!window.firebase) {
+    const script = document.createElement('script');
+    script.src = "https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js";
+    script.onload = () => {
+        const dbScript = document.createElement('script');
+        dbScript.src = "https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js";
+        document.head.appendChild(dbScript);
+    };
+    document.head.appendChild(script);
+}
+
+
 addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
