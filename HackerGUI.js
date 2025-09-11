@@ -288,7 +288,7 @@ resizeHandle.style.cssText = `
 chat.appendChild(resizeHandle);
 
 resizeHandle.addEventListener('mousedown', e => {
-    e.stopPropagation(); // <-- stop drag from triggering
+    e.stopPropagation(); // stop drag
     e.preventDefault();
 
     const startWidth = chat.offsetWidth;
@@ -311,6 +311,38 @@ resizeHandle.addEventListener('mousedown', e => {
 });
 
 // ---------- Draggable ----------
+function makeDraggable(g, lock, ignore = []) {
+    g.style.position = 'fixed';
+    g.addEventListener('mousedown', e => {
+        if (lock.locked) return;
+        // Ignore if starting on resize handle or any ignored elements
+        if (ignore.some(el => el.contains(e.target))) return;
+
+        let ox = e.clientX - g.getBoundingClientRect().left;
+        let oy = e.clientY - g.getBoundingClientRect().top;
+
+        function move(e) {
+            let x = e.clientX - ox;
+            let y = e.clientY - oy;
+            x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
+            y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
+            g.style.left = x + 'px';
+            g.style.top = y + 'px';
+            g.style.right = 'auto';
+            g.style.bottom = 'auto';
+        }
+
+        function up() {
+            document.removeEventListener('mousemove', move);
+            document.removeEventListener('mouseup', up);
+        }
+
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', up);
+    });
+}
+
+
 makeDraggable(chat, { locked: false }, [resizeHandle]);
 
 
