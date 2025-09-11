@@ -324,39 +324,70 @@ function getColor(username) {
     return userColors[username];
 }
 
-// Rainbow glow animation CSS
-const rainbowGlowStyle = document.createElement('style');
-rainbowGlowStyle.innerHTML = `
+<style>
+/* Rainbow glow animation */
 @keyframes rainbowGlow {
-  0% { text-shadow: 0 0 5px red, 0 0 10px orange, 0 0 15px yellow; }
-  20% { text-shadow: 0 0 5px orange, 0 0 10px yellow, 0 0 15px green; }
-  40% { text-shadow: 0 0 5px yellow, 0 0 10px green, 0 0 15px blue; }
-  60% { text-shadow: 0 0 5px green, 0 0 10px blue, 0 0 15px purple; }
-  80% { text-shadow: 0 0 5px blue, 0 0 10px purple, 0 0 15px red; }
-  100% { text-shadow: 0 0 5px purple, 0 0 10px red, 0 0 15px orange; }
+  0% { text-shadow: 0 0 5px red, 0 0 10px red; }
+  16% { text-shadow: 0 0 5px orange, 0 0 10px orange; }
+  33% { text-shadow: 0 0 5px yellow, 0 0 10px yellow; }
+  50% { text-shadow: 0 0 5px green, 0 0 10px green; }
+  66% { text-shadow: 0 0 5px blue, 0 0 10px blue; }
+  83% { text-shadow: 0 0 5px purple, 0 0 10px purple; }
+  100% { text-shadow: 0 0 5px red, 0 0 10px red; }
 }
+
 .rainbowGlow {
   animation: rainbowGlow 3s linear infinite;
 }
-`;
-document.head.appendChild(rainbowGlowStyle);
+</style>
 
-// Add message to chat with glowing rainbow for username
+<script>
+// Store unique base colors per user
+const userColors = {};
+function getColor(user) {
+    if (!userColors[user]) {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) color += letters[Math.floor(Math.random() * 16)];
+        userColors[user] = color;
+    }
+    return userColors[user];
+}
+
+// Replace your existing addMessage function with this
 function addMessage(msg) {
     const msgDiv = document.createElement('div');
-    const [user, ...text] = msg.split(':');
-    const usernameSpan = document.createElement('span');
-    usernameSpan.textContent = user.trim() + ":";
-    usernameSpan.style.color = getColor(user.trim()); // Base color
-    usernameSpan.classList.add('rainbowGlow'); // Add rainbow glow animation
-    usernameSpan.style.fontWeight = 'bold';
 
-    msgDiv.appendChild(usernameSpan);
-    msgDiv.appendChild(document.createTextNode(' ' + text.join(':').trim()));
+    // Split "username: message"
+    const splitIndex = msg.indexOf(':');
+    if (splitIndex !== -1) {
+        const username = msg.slice(0, splitIndex);
+        const text = msg.slice(splitIndex + 1);
+
+        // Create username span
+        const userSpan = document.createElement('span');
+        userSpan.textContent = username + ':';
+        userSpan.style.color = getColor(username); // unique base color
+        userSpan.classList.add('rainbowGlow');
+
+        // Create message span
+        const textSpan = document.createElement('span');
+        textSpan.textContent = text;
+        textSpan.style.marginLeft = '5px';
+        textSpan.style.color = '#0f0'; // optional, base message color
+        textSpan.classList.add('rainbowGlow');
+
+        msgDiv.appendChild(userSpan);
+        msgDiv.appendChild(textSpan);
+    } else {
+        // fallback
+        msgDiv.textContent = msg;
+    }
 
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
+</script>
 
 
         // ---------- Cleanup ----------
