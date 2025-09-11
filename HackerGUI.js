@@ -1,3 +1,4 @@
+//https://console.firebase.google.com/project/hacker-gui-global-chat/database/hacker-gui-global-chat-default-rtdb/data/~2F
 (function(){
   if(window.hackerLoaded) return;
   window.hackerLoaded = true;
