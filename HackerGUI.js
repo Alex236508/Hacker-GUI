@@ -137,7 +137,7 @@ function makeDraggable(g, lock){
 
 makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
-    
+
     // ---------- UTILITIES BUTTONS ----------
 (function(){
     const activeUtilities = {};
@@ -344,7 +344,7 @@ if(chatBox){
         window.addEventListener('beforeunload', cleanupChat);
     }
 });
-    
+
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
     if (!window.erudaLoaded) {
@@ -812,7 +812,7 @@ addBtn(vfx, 'Full Chaos', () => {
       window.fullChaosActive = false;
     });
   } else {
-    
+
     clearInterval(window.fullChaosLoop1);
     clearInterval(window.fullChaosLoop2);
     let c = document.getElementById('chaosContainer');
