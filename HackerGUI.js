@@ -181,29 +181,25 @@ addBtn(util, 'Global Chat', async () => {
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ---------- Unique Username ----------
+    // ---------- Unique Username (Always Ask) ----------
     async function getUsername() {
-        let savedName = localStorage.getItem('globalChatUsername');
         let name;
         while (!name) {
-            name = savedName || prompt("Enter your username for chat:") || "Anon";
+            name = prompt("Enter your username for chat:") || "Anon";
 
             const lookupKey = name.toLowerCase();
             const snapshot = await db.ref('users/' + lookupKey).get();
             if (snapshot.exists()) {
                 alert("Username already taken! Pick another one.");
-                savedName = null;
                 name = null;
             } else {
                 db.ref('users/' + lookupKey).set(true); // reserve lowercase
-                localStorage.setItem('globalChatUsername', name); // keep original case
-                return name; // display with original case
+                return { name, lookupKey }; // keep original case for display
             }
         }
     }
 
-    const username = await getUsername();
-    const lookupKey = username.toLowerCase();
+    const { name: username, lookupKey } = await getUsername();
 
     // ---------- Create Chat Window ----------
     const chat = document.createElement('div');
