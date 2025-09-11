@@ -204,26 +204,31 @@ addBtn(util, 'Global Chat', () => {
         `;
         document.body.appendChild(chat);
 
-        // ---------- Neon Gradient Border ----------
-        const neonStyle = document.createElement('style');
-        neonStyle.innerHTML = `
-            #globalChatContainer::before {
-                content: "";
-                position: absolute;
-                top: -4px; left: -4px; bottom: -4px; right: -4px;
-                background: linear-gradient(270deg, red, orange, yellow, green, blue, purple, red);
-                background-size: 1400% 1400%;
-                border-radius: 12px;
-                z-index: -1;
-                animation: neonGradient 6s linear infinite;
-            }
-            @keyframes neonGradient {
-                0% { background-position: 0% 50%; }
-                50% { background-position: 100% 50%; }
-                100% { background-position: 0% 50%; }
-            }
-        `;
-        document.head.appendChild(neonStyle);
+        // ---------- Neon Gradient Border + Glow Pulse ----------
+const neonStyle = document.createElement('style');
+neonStyle.innerHTML = `
+    #globalChatContainer::before {
+        content: "";
+        position: absolute;
+        top: -4px; left: -4px; bottom: -4px; right: -4px;
+        background: linear-gradient(270deg, red, orange, yellow, green, blue, purple, red);
+        background-size: 1400% 1400%;
+        border-radius: 12px;
+        z-index: -1;
+        animation: neonGradient 6s linear infinite, neonPulse 2s ease-in-out infinite;
+        filter: brightness(1.5);
+    }
+    @keyframes neonGradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    @keyframes neonPulse {
+        0%, 100% { filter: brightness(1.2); }
+        50% { filter: brightness(2); }
+    }
+`;
+document.head.appendChild(neonStyle);
 
         // ---------- Close Button ----------
         const closeBtn = document.createElement('div');
