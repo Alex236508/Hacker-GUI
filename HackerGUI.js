@@ -152,45 +152,46 @@ makeDraggable(vfx, vfxLock);
         if(off) activeUtilities[name] = { on, off };
     }
     // Global Chat (Firebase)
-    // Global Chat
 addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
 
-    // ---------- Firebase Setup ----------
-    const firebaseConfig = {
-        apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
-        authDomain: "hacker-gui-global-chat.firebaseapp.com",
-        databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
-        projectId: "hacker-gui-global-chat",
-        storageBucket: "hacker-gui-global-chat.firebasestorage.app",
-        messagingSenderId: "410978781234",
-        appId: "1:410978781234:web:ee08f15ee9be48970c542b",
-        measurementId: "G-SB0B1FLF29"
+    // Load Firebase if needed
+    const loadFirebase = () => {
+        if (!window.firebase) {
+            const s = document.createElement('script');
+            s.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+            s.onload = () => {
+                const dbScript = document.createElement('script');
+                dbScript.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
+                dbScript.onload = initChat;
+                document.body.appendChild(dbScript);
+            };
+            document.body.appendChild(s);
+        } else initChat();
     };
 
-    // Load Firebase if not already loaded
-    if (!window.firebase) {
-        const s = document.createElement('script');
-        s.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
-        s.onload = () => {
-            const dbScript = document.createElement('script');
-            dbScript.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
-            dbScript.onload = initChat;
-            document.body.appendChild(dbScript);
-        };
-        document.body.appendChild(s);
-    } else {
-        initChat();
-    }
+    loadFirebase();
 
     function initChat() {
+        const firebaseConfig = {
+            apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
+            authDomain: "hacker-gui-global-chat.firebaseapp.com",
+            databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
+            projectId: "hacker-gui-global-chat",
+            storageBucket: "hacker-gui-global-chat.firebasestorage.app",
+            messagingSenderId: "410978781234",
+            appId: "1:410978781234:web:ee08f15ee9be48970c542b",
+            measurementId: "G-SB0B1FLF29"
+        };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const username = prompt("Enter your username for chat (use real name🙏)") || "Anon";
+
+        const username = prompt("Enter your username for chat:") || "Anon";
 
         // ---------- Chat Window ----------
         const chat = document.createElement('div');
+        chat.id = 'globalChatContainer'; // <-- unique ID
         chat.style.cssText = `
             position:fixed; bottom:50px; right:50px;
             width:300px; height:400px;
@@ -209,22 +210,26 @@ addBtn(util, 'Global Chat', () => {
                 50% { box-shadow: 0 0 15px #0f0; }
                 100% { box-shadow: 0 0 5px #0f0; }
             }
-            .glowPulse { animation: glowPulse 2s infinite; }
+            #globalChatContainer.glowPulse { animation: glowPulse 2s infinite; }
         `;
         document.head.appendChild(style);
         chat.classList.add('glowPulse');
 
-        // Close button
+        // ---------- Close Button ----------
         const closeBtn = document.createElement('div');
         closeBtn.innerText = '✖';
-        closeBtn.style.cssText = 'position:absolute; top:5px; right:5px; cursor:pointer; font-weight:bold;';
+        closeBtn.style.cssText = `
+            position:absolute; top:5px; right:5px; cursor:pointer; font-weight:bold; font-size:16px; z-index:10000001;
+        `;
         closeBtn.onclick = () => { chat.remove(); window.chatActive = false; };
         chat.appendChild(closeBtn);
 
+        // ---------- Messages ----------
         const messagesDiv = document.createElement('div');
         messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
         chat.appendChild(messagesDiv);
 
+        // ---------- Input ----------
         const input = document.createElement('input');
         input.type = 'text';
         input.placeholder = 'Type a message...';
@@ -233,10 +238,10 @@ addBtn(util, 'Global Chat', () => {
 
         document.body.appendChild(chat);
 
-        // Draggable
+        // ---------- Draggable ----------
         makeDraggable(chat, { locked: false });
 
-        // Firebase messaging
+        // ---------- Firebase Messaging ----------
         function addMessage(msg) {
             const msgDiv = document.createElement('div');
             msgDiv.textContent = msg;
@@ -257,16 +262,12 @@ addBtn(util, 'Global Chat', () => {
             }
         });
 
-        // Store cleanup but do NOT push to stopAllVFX
-        window._globalChatCleanup = () => {
-            db.ref('messages').off('child_added', listener);
-            chat.remove();
-            window.chatActive = false;
-        };
+        // ---------- Prevent VFX interference ----------
+        chat.classList.add('ignoreVFX'); // Your VFX scripts can skip elements with this class
     }
 
 }, () => {
-  
+    // Off function not used; user manually closes
 });
 
     
