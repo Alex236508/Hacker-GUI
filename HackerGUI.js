@@ -217,21 +217,32 @@ addBtn(util, 'Global Chat', () => {
             `;
             document.body.appendChild(chat);
 
-            // ---------- Smooth Rainbow Glow ----------
-const style = document.createElement('style');
-style.innerHTML = `
-    @keyframes smoothRainbow {
-        0% { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
-        16.6% { border-color: #ff7f00; box-shadow: 0 0 10px #ff7f00; }
-        33.3% { border-color: #ffff00; box-shadow: 0 0 10px #ffff00; }
-        50% { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
-        66.6% { border-color: #0000ff; box-shadow: 0 0 10px #0000ff; }
-        83.3% { border-color: #8b00ff; box-shadow: 0 0 10px #8b00ff; }
-        100% { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
-    }
+            // ---------- Glowing Neon Border ----------
+const glowStyle = document.createElement('style');
+glowStyle.innerHTML = `
+@keyframes neonGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+#globalChatContainer {
+  border: 4px solid;
+  border-radius: 8px;
+  padding: 2px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 10000000;
+  /* Gradient border and glow */
+  border-image-slice: 1;
+  border-width: 4px;
+  border-image-source: linear-gradient(270deg, red, orange, yellow, green, blue, purple, red);
+  animation: neonGradient 6s linear infinite;
+  box-shadow: 0 0 15px rgba(0,255,0,0.6), 0 0 20px rgba(0,255,0,0.4) inset;
+  border-image-repeat: stretch;
+}
 `;
-document.head.appendChild(style);
-chat.style.animation = 'smoothRainbow 4s linear infinite';
+document.head.appendChild(glowStyle);
+chat.id = 'globalChatContainer';
 
             // ---------- Draggable ----------
             function makeDraggable(g, lock) {
