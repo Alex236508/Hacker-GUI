@@ -310,13 +310,13 @@ if(chatBox){
 });
 
         // ---------- Draggable ----------
-        function makeDraggable(g, lock) {
+        function makeDraggable(g, lock, ignore = []) {
     g.style.position = 'fixed';
     g.onmousedown = function(e) {
         if (lock.locked) return;
 
-        // Ignore if the target is the resize handle
-        if (e.target === resizeHandle) return;
+        // Ignore if the target is in the ignore array
+        if (ignore.some(el => el.contains(e.target))) return;
 
         let ox = e.clientX - g.getBoundingClientRect().left,
             oy = e.clientY - g.getBoundingClientRect().top;
