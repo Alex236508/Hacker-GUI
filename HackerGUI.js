@@ -188,16 +188,28 @@ addBtn(util, 'Global Chat', () => {
         const username = prompt("Enter your username:") || "Anon";
 
         // ---------- Create Chat Window ----------
-        const chat = document.createElement('div');
-        chat.style.cssText = `
-            position:fixed; bottom:50px; right:50px;
-            width:300px; height:400px;
-            background:rgba(0,0,0,0.85);
-            color:#0f0; font-family:monospace;
-            border:2px solid #0f0; border-radius:8px;
-            z-index:999999; display:flex; flex-direction:column;
-            user-select:none; cursor:move;
-        `;
+const chat = document.createElement('div');
+chat.style.cssText = `
+    position:fixed; bottom:50px; right:50px;
+    width:300px; height:400px;
+    background:rgba(0,0,0,0.85);
+    color:#0f0; font-family:monospace;
+    border:2px solid #0f0; border-radius:8px;
+    z-index:999999; display:flex; flex-direction:column;
+    user-select:none; cursor:move;
+    box-shadow: 0 0 10px #0f0; /* initial glow */
+    animation: pulseGlow 2s infinite alternate;
+`;
+
+// Add the animation keyframes dynamically
+const style = document.createElement('style');
+style.innerHTML = `
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 5px #0f0; }
+  50% { box-shadow: 0 0 15px #0f0; }
+  100% { box-shadow: 0 0 5px #0f0; }
+}`;
+document.head.appendChild(style);
 
         const messagesDiv = document.createElement('div');
         messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
