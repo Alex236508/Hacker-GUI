@@ -151,32 +151,36 @@ makeDraggable(vfx, vfxLock);
         container.appendChild(b);
         if(off) activeUtilities[name] = { on, off };
     }
+    // Global Chat (FireBase)
     addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
 
     // ---------- Dynamically Load Firebase ----------
-    function loadFirebase(callback) {
-        if (window.firebase) return callback();
+    function loadFirebase() {
+        return new Promise((resolve, reject) => {
+            if (window.firebase) return resolve();
 
-        const scripts = [
-            "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
-            "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"
-        ];
+            const scripts = [
+                "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
+                "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"
+            ];
 
-        let loaded = 0;
-        scripts.forEach(src => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.onload = () => { 
-                loaded++; 
-                if (loaded === scripts.length) callback(); 
-            };
-            document.head.appendChild(s);
+            let loaded = 0;
+            scripts.forEach(src => {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = () => {
+                    loaded++;
+                    if (loaded === scripts.length) resolve();
+                };
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
         });
     }
 
-    loadFirebase(() => {
+    loadFirebase().then(() => {
         // ---------- Firebase Setup ----------
         const firebaseConfig = {
             apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
@@ -207,7 +211,6 @@ makeDraggable(vfx, vfxLock);
             animation: chatGlow 2s infinite alternate;
         `;
 
-        // Pulsing glow CSS
         const style = document.createElement('style');
         style.innerHTML = `
             @keyframes chatGlow {
@@ -229,10 +232,8 @@ makeDraggable(vfx, vfxLock);
 
         document.body.appendChild(chat);
 
-        // ---------- Make Draggable ----------
         makeDraggable(chat, { locked: false });
 
-        // ---------- Firebase Messaging ----------
         function addMessage(msg) {
             const msgDiv = document.createElement('div');
             msgDiv.textContent = msg;
@@ -253,7 +254,6 @@ makeDraggable(vfx, vfxLock);
             }
         });
 
-        // ---------- Stop Function for Stop All ----------
         const cleanup = () => {
             window.chatActive = false;
             chat.remove();
@@ -263,6 +263,9 @@ makeDraggable(vfx, vfxLock);
 
         if (!window.stopAllVFX) window.stopAllVFX = [];
         window.stopAllVFX.push(cleanup);
+    }).catch(err => {
+        console.error("Failed to load Firebase:", err);
+        window.chatActive = false;
     });
 }, () => { // off function
     if (window.chatActive) {
