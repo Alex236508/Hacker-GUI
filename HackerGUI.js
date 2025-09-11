@@ -311,26 +311,53 @@ if(chatBox){
         // ---------- Draggable ----------
         makeDraggable(chat, { locked: false });
 
-        // ---------- Firebase Messaging ----------
-        function addMessage(user, text) {
-            const msgDiv = document.createElement('div');
-            msgDiv.textContent = `${user}: ${text}`;
-            messagesDiv.appendChild(msgDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
+        // Assign a base color to each username
+const userColors = {};
+const baseColors = ['#FF0000','#FF7F00','#FFFF00','#00FF00','#0000FF','#8B00FF','#FF1493','#00CED1'];
 
-        db.ref('messages').on('child_added', snapshot => {
-            const data = snapshot.val();
-            if(data) addMessage(data.user, data.text);
-        });
+function getColor(username) {
+    if (!userColors[username]) {
+        let hash = 0;
+        for (let i = 0; i < username.length; i++) hash += username.charCodeAt(i);
+        userColors[username] = baseColors[hash % baseColors.length];
+    }
+    return userColors[username];
+}
 
-        input.addEventListener('keydown', e => {
-            if (e.key === 'Enter' && input.value.trim()) {
-                const msg = input.value.trim();
-                db.ref('messages').push({ user: username, text: msg });
-                input.value = '';
-            }
-        });
+// Rainbow glow animation CSS
+const rainbowGlowStyle = document.createElement('style');
+rainbowGlowStyle.innerHTML = `
+@keyframes rainbowGlow {
+  0% { text-shadow: 0 0 5px red, 0 0 10px orange, 0 0 15px yellow; }
+  20% { text-shadow: 0 0 5px orange, 0 0 10px yellow, 0 0 15px green; }
+  40% { text-shadow: 0 0 5px yellow, 0 0 10px green, 0 0 15px blue; }
+  60% { text-shadow: 0 0 5px green, 0 0 10px blue, 0 0 15px purple; }
+  80% { text-shadow: 0 0 5px blue, 0 0 10px purple, 0 0 15px red; }
+  100% { text-shadow: 0 0 5px purple, 0 0 10px red, 0 0 15px orange; }
+}
+.rainbowGlow {
+  animation: rainbowGlow 3s linear infinite;
+}
+`;
+document.head.appendChild(rainbowGlowStyle);
+
+// Add message to chat with glowing rainbow for username
+function addMessage(msg) {
+    const msgDiv = document.createElement('div');
+    const [user, ...text] = msg.split(':');
+    const usernameSpan = document.createElement('span');
+    usernameSpan.textContent = user.trim() + ":";
+    usernameSpan.style.color = getColor(user.trim()); // Base color
+    usernameSpan.classList.add('rainbowGlow'); // Add rainbow glow animation
+    usernameSpan.style.fontWeight = 'bold';
+
+    msgDiv.appendChild(usernameSpan);
+    msgDiv.appendChild(document.createTextNode(' ' + text.join(':').trim()));
+
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
 
         // ---------- Cleanup ----------
         function cleanupChat() {
