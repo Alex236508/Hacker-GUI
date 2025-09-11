@@ -192,7 +192,7 @@ addBtn(util, 'Global Chat', () => {
             let savedName = localStorage.getItem('globalChatUsername');
             let name;
             while (!name) {
-                name = savedName || prompt("Enter your username for chat:") || "Anon";
+                name = savedName || prompt("Enter your username for chat:") || "Anonymous";
                 const snapshot = await db.ref('users/' + name).get();
                 if (snapshot.exists()) {
                     alert("Username already taken! Pick another one.");
