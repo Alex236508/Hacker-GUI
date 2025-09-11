@@ -153,114 +153,153 @@ makeDraggable(vfx, vfxLock);
     }
 
     // ---------- Global Chat (Firebase) ----------
-    addBtn(util, 'Global Chat', () => {
-        if (window.chatActive) return;
-        window.chatActive = true;
+    // ---------- GLOBAL CHAT BUTTON ----------
+addBtn(util, 'Global Chat', () => {
+    if (window.chatActive) return;
+    window.chatActive = true;
 
-        const loadFirebase = () => {
-            if (!window.firebase) {
-                const s = document.createElement('script');
-                s.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
-                s.onload = () => {
-                    const dbScript = document.createElement('script');
-                    dbScript.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
-                    dbScript.onload = initChat;
-                    document.body.appendChild(dbScript);
-                };
-                document.body.appendChild(s);
-            } else initChat();
-        };
-
-        loadFirebase();
-
-        function initChat() {
-            const firebaseConfig = {
-                apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
-                authDomain: "hacker-gui-global-chat.firebaseapp.com",
-                databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
-                projectId: "hacker-gui-global-chat",
-                storageBucket: "hacker-gui-global-chat.firebasestorage.app",
-                messagingSenderId: "410978781234",
-                appId: "1:410978781234:web:ee08f15ee9be48970c542b",
-                measurementId: "G-SB0B1FLF29"
+    // Load Firebase if needed
+    const loadFirebase = () => {
+        if (!window.firebase) {
+            const s = document.createElement('script');
+            s.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+            s.onload = () => {
+                const dbScript = document.createElement('script');
+                dbScript.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
+                dbScript.onload = initChat;
+                document.body.appendChild(dbScript);
             };
-            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
+            document.body.appendChild(s);
+        } else initChat();
+    };
 
-            // ---------- Case-insensitive Username ----------
-            async function getUsername() {
-                let name;
-                while (!name) {
-                    let input = prompt("Enter your username for chat:") || "Anonymous";
-                    const lookupKey = input.toLowerCase();
-                    const snapshot = await db.ref('users/' + lookupKey).get();
-                    if (snapshot.exists()) {
-                        alert("Username already taken! Pick another one.");
-                    } else {
-                        db.ref('users/' + lookupKey).set(true); // reserve lowercase
-                        name = input; // preserve original case for display
-                    }
+    loadFirebase();
+
+    function initChat() {
+        const firebaseConfig = {
+            apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
+            authDomain: "hacker-gui-global-chat.firebaseapp.com",
+            databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
+            projectId: "hacker-gui-global-chat",
+            storageBucket: "hacker-gui-global-chat.firebasestorage.app",
+            messagingSenderId: "410978781234",
+            appId: "1:410978781234:web:ee08f15ee9be48970c542b",
+            measurementId: "G-SB0B1FLF29"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // ---------- Unique Username ----------
+        async function getUsername() {
+            let name;
+            while (!name) {
+                name = prompt("Enter your username for chat:") || "Anonymous";
+                const key = name.toLowerCase(); // lowercase for uniqueness
+                const snapshot = await db.ref('users/' + key).get();
+                if (snapshot.exists()) {
+                    alert("Username already taken! Pick another one.");
+                    name = null;
+                } else {
+                    db.ref('users/' + key).set(true); // reserve username
+                    return name;
                 }
-                return name;
+            }
+        }
+
+        getUsername().then(username => {
+            const lookupKey = username.toLowerCase();
+
+            // ---------- Chat Window ----------
+            const chat = document.createElement('div');
+            chat.style.cssText = `
+                position:fixed; bottom:50px; right:50px;
+                width:300px; height:400px;
+                background:rgba(0,0,0,0.85);
+                color:#0f0; font-family:monospace;
+                border:2px solid #0f0; border-radius:8px;
+                z-index:10000000; display:flex; flex-direction:column;
+                user-select:none;
+            `;
+            document.body.appendChild(chat);
+
+            // ---------- Draggable ----------
+            function makeDraggable(g, lock) {
+                g.style.position = 'fixed';
+                g.onmousedown = function (e) {
+                    if (lock.locked) return;
+                    let ox = e.clientX - g.getBoundingClientRect().left,
+                        oy = e.clientY - g.getBoundingClientRect().top;
+                    function move(e) {
+                        let x = e.clientX - ox;
+                        let y = e.clientY - oy;
+                        x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
+                        y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
+                        g.style.left = x + 'px';
+                        g.style.top = y + 'px';
+                        g.style.right = 'auto';
+                        g.style.bottom = 'auto';
+                    }
+                    function up() {
+                        document.removeEventListener('mousemove', move);
+                        document.removeEventListener('mouseup', up);
+                    }
+                    document.addEventListener('mousemove', move);
+                    document.addEventListener('mouseup', up);
+                };
+            }
+            makeDraggable(chat, { locked: false });
+
+            // ---------- Close Button ----------
+            const closeBtn = document.createElement('div');
+            closeBtn.innerText = '✖';
+            closeBtn.style.cssText = `
+                position:absolute; top:5px; right:5px; cursor:pointer;
+                font-weight:bold; font-size:16px; z-index:10000001;
+            `;
+            closeBtn.onclick = () => {
+                chat.remove();
+                db.ref('users/' + lookupKey).remove(); // free username
+                window.chatActive = false;
+            };
+            chat.appendChild(closeBtn);
+
+            // ---------- Messages ----------
+            const messagesDiv = document.createElement('div');
+            messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
+            chat.appendChild(messagesDiv);
+
+            // ---------- Input ----------
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Type a message...';
+            input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
+            chat.appendChild(input);
+
+            // ---------- Firebase Messaging ----------
+            function addMessage(msg) {
+                const msgDiv = document.createElement('div');
+                msgDiv.textContent = msg;
+                messagesDiv.appendChild(msgDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
 
-            getUsername().then(username => {
-                const lookupKey = username.toLowerCase();
-
-                // ---------- Create Chat Window ----------
-                const chat = document.createElement('div');
-                chat.style.cssText = `
-                    position:fixed; bottom:50px; right:50px;
-                    width:300px; height:400px; resize:both; overflow:hidden;
-                    background:rgba(0,0,0,0.85);
-                    color:#0f0; font-family:monospace;
-                    border:2px solid #0f0; border-radius:8px;
-                    z-index:10000000; display:flex; flex-direction:column;
-                `;
-
-                const messagesDiv = document.createElement('div');
-                messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
-                chat.appendChild(messagesDiv);
-
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.placeholder = 'Type a message...';
-                input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
-                chat.appendChild(input);
-
-                // Close button
-                const closeBtn = document.createElement('div');
-                closeBtn.innerText = '✖';
-                closeBtn.style.cssText = 'position:absolute; top:5px; right:5px; cursor:pointer;';
-                closeBtn.onclick = () => {
-                    db.ref('users/' + lookupKey).remove(); // free username
-                    chat.remove();
-                    window.chatActive = false;
-                };
-                chat.appendChild(closeBtn);
-
-                document.body.appendChild(chat);
-
-                // Firebase message listener
-                const listener = db.ref('messages').on('child_added', snapshot => {
-                    const data = snapshot.val();
-                    const msgDiv = document.createElement('div');
-                    msgDiv.textContent = data.user + ": " + data.text;
-                    messagesDiv.appendChild(msgDiv);
-                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                });
-
-                // Send messages
-                input.addEventListener('keydown', e => {
-                    if (e.key === 'Enter' && input.value.trim()) {
-                        const msg = input.value.trim();
-                        db.ref('messages').push({ user: username, text: msg });
-                        input.value = '';
-                    }
-                });
+            const listener = db.ref('messages').on('child_added', snapshot => {
+                const data = snapshot.val();
+                addMessage(data.user + ": " + data.text);
             });
-        }
-    });
+
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && input.value.trim()) {
+                    const msg = input.value.trim();
+                    db.ref('messages').push({ user: username, text: msg });
+                    input.value = '';
+                }
+            });
+        });
+    }
+}, () => {
+    // Off function not used; user manually closes
+});
     
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
