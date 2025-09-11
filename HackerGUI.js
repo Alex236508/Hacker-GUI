@@ -314,7 +314,9 @@ if(chatBox){
     g.style.position = 'fixed';
     g.onmousedown = function(e) {
         if (lock.locked) return;
-        if (e.target.classList.contains('resize-handle')) return; // ignore resize handle
+
+        // Ignore if the target is the resize handle
+        if (e.target === resizeHandle) return;
 
         let ox = e.clientX - g.getBoundingClientRect().left,
             oy = e.clientY - g.getBoundingClientRect().top;
@@ -323,7 +325,6 @@ if(chatBox){
             let x = e.clientX - ox;
             let y = e.clientY - oy;
 
-            // Clamp so the element stays inside the viewport
             x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
             y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
 
@@ -342,7 +343,6 @@ if(chatBox){
         document.addEventListener('mouseup', up);
     };
 }
-
 
         // ---------- Firebase Messaging ----------
         function addMessage(user, text) {
