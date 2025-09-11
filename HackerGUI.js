@@ -153,11 +153,12 @@ makeDraggable(vfx, vfxLock);
     }
 
     // ---------- Global Chat (Firebase) ----------
-// ---------- GLOBAL CHAT BUTTON ----------
+// Global Chat (Firebase)
 addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
 
+    // Load Firebase if needed
     const loadFirebase = () => {
         if (!window.firebase) {
             const s = document.createElement('script');
@@ -174,194 +175,149 @@ addBtn(util, 'Global Chat', () => {
 
     loadFirebase();
 
-    function initChat() {
-        const firebaseConfig = {
-            apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
-            authDomain: "hacker-gui-global-chat.firebaseapp.com",
-            databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
-            projectId: "hacker-gui-global-chat",
-            storageBucket: "hacker-gui-global-chat.firebasestorage.app",
-            messagingSenderId: "410978781234",
-            appId: "1:410978781234:web:ee08f15ee9be48970c542b",
-            measurementId: "G-SB0B1FLF29"
-        };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        let username, lookupKey;
-        async function getUsername() {
-            while (!username) {
-                let name = prompt("Enter your username for chat:") || "Anonymous";
-                lookupKey = name.toLowerCase();
-                const snapshot = await db.ref('users/' + lookupKey).get();
-                if (snapshot.exists()) alert("Username taken! Pick another.");
-                else {
-                    username = name;
-                    await db.ref('users/' + lookupKey).set(true);
-                }
+    async function getUsername() {
+        let name;
+        while (!name) {
+            name = prompt("Enter your username for chat:") || "Anonymous";
+            const snapshot = await firebase.database().ref('users/' + name).get();
+            if (snapshot.exists()) {
+                alert("Username already taken! Pick another one.");
+                name = null;
             }
-            return username;
+        }
+        firebase.database().ref('users/' + name).set(true); // mark as taken
+        return name;
+    }
+
+    getUsername().then(username => {
+        // ---------- Chat Window ----------
+        const chat = document.createElement('div');
+        chat.id = 'globalChatContainer';
+        chat.style.cssText = `
+            position:fixed; bottom:50px; right:50px;
+            width:300px; height:400px;
+            background:rgba(0,0,0,0.85);
+            color:#0f0; font-family:monospace;
+            border-radius:8px;
+            z-index:10000000; display:flex; flex-direction:column;
+            user-select:none; overflow:hidden;
+        `;
+        document.body.appendChild(chat);
+
+        // ---------- Neon Gradient Border ----------
+        const neonStyle = document.createElement('style');
+        neonStyle.innerHTML = `
+            #globalChatContainer::before {
+                content: "";
+                position: absolute;
+                top: -4px; left: -4px; bottom: -4px; right: -4px;
+                background: linear-gradient(270deg, red, orange, yellow, green, blue, purple, red);
+                background-size: 1400% 1400%;
+                border-radius: 12px;
+                z-index: -1;
+                animation: neonGradient 6s linear infinite;
+            }
+            @keyframes neonGradient {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+        `;
+        document.head.appendChild(neonStyle);
+
+        // ---------- Close Button ----------
+        const closeBtn = document.createElement('div');
+        closeBtn.innerText = '✖';
+        closeBtn.style.cssText = `
+            position:absolute; top:5px; right:5px; cursor:pointer;
+            font-weight:bold; font-size:16px; z-index:10000001;
+        `;
+        closeBtn.onclick = () => { removeChat(); };
+        chat.appendChild(closeBtn);
+
+        // ---------- Messages ----------
+        const messagesDiv = document.createElement('div');
+        messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
+        chat.appendChild(messagesDiv);
+
+        // ---------- Input ----------
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Type a message...';
+        input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
+        chat.appendChild(input);
+
+        // ---------- Resize Handle ----------
+        const resizeHandle = document.createElement('div');
+        resizeHandle.style.cssText = `
+            width:10px; height:10px; background:#0f0;
+            position:absolute; bottom:2px; right:2px; cursor:se-resize;
+        `;
+        chat.appendChild(resizeHandle);
+
+        resizeHandle.addEventListener('mousedown', e => {
+            e.preventDefault();
+            const startWidth = chat.offsetWidth;
+            const startHeight = chat.offsetHeight;
+            const startX = e.clientX;
+            const startY = e.clientY;
+
+            function onMouseMove(e) {
+                chat.style.width = startWidth + (e.clientX - startX) + 'px';
+                chat.style.height = startHeight + (e.clientY - startY) + 'px';
+            }
+
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+
+        // ---------- Draggable ----------
+        makeDraggable(chat, { locked: false });
+
+        // ---------- Firebase Messaging ----------
+        function addMessage(msg) {
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = msg;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        getUsername().then(() => {
-            const chat = document.createElement('div');
-            chat.style.cssText = `
-                position:fixed; bottom:50px; right:50px;
-                width:300px; height:400px;
-                background:rgba(0,0,0,0.85);
-                color:#0f0; font-family:monospace;
-                border:2px solid #0f0; border-radius:8px;
-                z-index:10000000; display:flex; flex-direction:column;
-                user-select:none;
-                box-sizing:border-box;
-            `;
-            document.body.appendChild(chat);
-
-            // ---------- Glowing Neon Border ----------
-const glowStyle = document.createElement('style');
-glowStyle.innerHTML = `
-@keyframes neonGradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-#globalChatContainer {
-  border: 4px solid;
-  border-radius: 8px;
-  padding: 2px;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 10000000;
-  /* Gradient border and glow */
-  border-image-slice: 1;
-  border-width: 4px;
-  border-image-source: linear-gradient(270deg, red, orange, yellow, green, blue, purple, red);
-  animation: neonGradient 6s linear infinite;
-  box-shadow: 0 0 15px rgba(0,255,0,0.6), 0 0 20px rgba(0,255,0,0.4) inset;
-  border-image-repeat: stretch;
-}
-`;
-document.head.appendChild(glowStyle);
-chat.id = 'globalChatContainer';
-
-            // ---------- Draggable ----------
-            function makeDraggable(g, lock) {
-                g.onmousedown = function (e) {
-                    if (lock.locked) return;
-                    if (e.target === resizeHandle) return; // prevent drag while resizing
-                    let ox = e.clientX - g.getBoundingClientRect().left,
-                        oy = e.clientY - g.getBoundingClientRect().top;
-                    function move(e) {
-                        let x = e.clientX - ox;
-                        let y = e.clientY - oy;
-                        x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
-                        y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
-                        g.style.left = x + 'px';
-                        g.style.top = y + 'px';
-                        g.style.right = 'auto';
-                        g.style.bottom = 'auto';
-                    }
-                    function up() {
-                        document.removeEventListener('mousemove', move);
-                        document.removeEventListener('mouseup', up);
-                    }
-                    document.addEventListener('mousemove', move);
-                    document.addEventListener('mouseup', up);
-                };
-            }
-
-            makeDraggable(chat, { locked: false });
-
-            // ---------- Close Button ----------
-            const closeBtn = document.createElement('div');
-            closeBtn.innerText = '✖';
-            closeBtn.style.cssText = `
-                position:absolute; top:5px; right:5px; cursor:pointer;
-                font-weight:bold; font-size:16px; z-index:10000001;
-            `;
-            chat.appendChild(closeBtn);
-
-            const messagesDiv = document.createElement('div');
-            messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
-            chat.appendChild(messagesDiv);
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.placeholder = 'Type a message...';
-            input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
-            chat.appendChild(input);
-
-            // ---------- Resize Handle ----------
-            const resizeHandle = document.createElement('div');
-            resizeHandle.style.cssText = `
-                width:12px; height:12px; background:#0f0;
-                position:absolute; bottom:2px; right:2px; cursor:se-resize;
-                z-index:10000002;
-            `;
-            chat.appendChild(resizeHandle);
-
-            let startX, startY, startW, startH;
-            resizeHandle.onmousedown = function (e) {
-                e.stopPropagation();
-                startX = e.clientX;
-                startY = e.clientY;
-                startW = chat.offsetWidth;
-                startH = chat.offsetHeight;
-
-                function resizeMove(e) {
-                    let newW = startW + (e.clientX - startX);
-                    let newH = startH + (e.clientY - startY);
-                    chat.style.width = Math.max(150, newW) + 'px';
-                    chat.style.height = Math.max(100, newH) + 'px';
-                }
-
-                function resizeUp() {
-                    document.removeEventListener('mousemove', resizeMove);
-                    document.removeEventListener('mouseup', resizeUp);
-                }
-
-                document.addEventListener('mousemove', resizeMove);
-                document.addEventListener('mouseup', resizeUp);
-            };
-
-            // ---------- Firebase Messaging ----------
-            function addMessage(msg) {
-                const msgDiv = document.createElement('div');
-                msgDiv.textContent = msg;
-                messagesDiv.appendChild(msgDiv);
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            }
-
-            const listener = db.ref('messages').on('child_added', snapshot => {
-                const data = snapshot.val();
-                addMessage(data.user + ": " + data.text);
-            });
-
-            input.addEventListener('keydown', e => {
-                if (e.key === 'Enter' && input.value.trim()) {
-                    const msg = input.value.trim();
-                    db.ref('messages').push({ user: username, text: msg });
-                    input.value = '';
-                }
-            });
-
-            // ---------- Cleanup ----------
-            const cleanup = async () => {
-                chat.remove();
-                await db.ref('users/' + lookupKey).remove();
-                window.chatActive = false;
-            };
-            closeBtn.onclick = cleanup;
-
-            // ---------- Cleanup on unload ----------
-            const unloadHandler = async () => {
-                if (lookupKey) await db.ref('users/' + lookupKey).remove();
-            };
-            window.addEventListener('beforeunload', unloadHandler);
-            window.addEventListener('unload', unloadHandler);
+        const db = firebase.database();
+        const listener = db.ref('messages').on('child_added', snapshot => {
+            const data = snapshot.val();
+            addMessage(data.user + ": " + data.text);
         });
-    }
-}, () => { });
+
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && input.value.trim()) {
+                const msg = input.value.trim();
+                db.ref('messages').push({ user: username, text: msg });
+                input.value = '';
+            }
+        });
+
+        // ---------- Remove Chat & Cleanup ----------
+        function removeChat() {
+            chat.remove();
+            db.ref('users/' + username).remove(); // free username
+            window.chatActive = false;
+        }
+
+        // ---------- Reset username on page unload ----------
+        const unloadHandler = () => {
+            db.ref('users/' + username).remove();
+        };
+        window.addEventListener('beforeunload', unloadHandler);
+        window.addEventListener('unload', unloadHandler);
+    });
+}, () => {
+    // Off function not used; manual close
+});
     
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
