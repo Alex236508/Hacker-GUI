@@ -187,89 +187,127 @@ addBtn(util, 'Global Chat', () => {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const username = prompt("Enter your username for chat (Use real name🙏)") || "anonymous";
-
-        // ---------- Chat Window ----------
-        const chat = document.createElement('div');
-        chat.id = 'globalChatContainer'; // <-- unique ID
-        chat.style.cssText = `
-            position:fixed; bottom:50px; right:50px;
-            width:300px; height:400px;
-            background:rgba(0,0,0,0.85);
-            color:#0f0; font-family:monospace;
-            border:2px solid #0f0; border-radius:8px;
-            z-index:10000000; display:flex; flex-direction:column;
-            pointer-events:auto; box-shadow:0 0 15px #0f0;
-        `;
-
-        // Glowing border animation
-        const style = document.createElement('style');
-        style.innerHTML = `
-            @keyframes glowPulse {
-                0% { box-shadow: 0 0 5px #0f0; }
-                50% { box-shadow: 0 0 15px #0f0; }
-                100% { box-shadow: 0 0 5px #0f0; }
+        // ---------- Unique Username ----------
+        async function getUsername() {
+            let savedName = localStorage.getItem('globalChatUsername');
+            let name;
+            while (!name) {
+                name = savedName || prompt("Enter your username for chat:") || "Anonymous";
+                const snapshot = await db.ref('users/' + name).get();
+                if (snapshot.exists()) {
+                    alert("Username already taken! Pick another one.");
+                    savedName = null;
+                    name = null;
+                }
             }
-            #globalChatContainer.glowPulse { animation: glowPulse 2s infinite; }
-        `;
-        document.head.appendChild(style);
-        chat.classList.add('glowPulse');
-
-        // ---------- Close Button ----------
-        const closeBtn = document.createElement('div');
-        closeBtn.innerText = '✖';
-        closeBtn.style.cssText = `
-            position:absolute; top:5px; right:5px; cursor:pointer; font-weight:bold; font-size:16px; z-index:10000001;
-        `;
-        closeBtn.onclick = () => { chat.remove(); window.chatActive = false; };
-        chat.appendChild(closeBtn);
-
-        // ---------- Messages ----------
-        const messagesDiv = document.createElement('div');
-        messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
-        chat.appendChild(messagesDiv);
-
-        // ---------- Input ----------
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Type a message...';
-        input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
-        chat.appendChild(input);
-
-        document.body.appendChild(chat);
-
-        // ---------- Draggable ----------
-        makeDraggable(chat, { locked: false });
-
-        // ---------- Firebase Messaging ----------
-        function addMessage(msg) {
-            const msgDiv = document.createElement('div');
-            msgDiv.textContent = msg;
-            messagesDiv.appendChild(msgDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            db.ref('users/' + name).set(true); // mark as taken
+            localStorage.setItem('globalChatUsername', name);
+            return name;
         }
 
-        const listener = db.ref('messages').on('child_added', snapshot => {
-            const data = snapshot.val();
-            addMessage(data.user + ": " + data.text);
-        });
+        getUsername().then(username => {
 
-        input.addEventListener('keydown', e => {
-            if (e.key === 'Enter' && input.value.trim()) {
-                const msg = input.value.trim();
-                db.ref('messages').push({ user: username, text: msg });
-                input.value = '';
+            // ---------- Chat Window ----------
+            const chat = document.createElement('div');
+            chat.id = 'globalChatContainer';
+            chat.style.cssText = `
+                position:fixed; bottom:50px; right:50px;
+                width:300px; height:400px;
+                background:rgba(0,0,0,0.85);
+                color:#0f0; font-family:monospace;
+                border:2px solid #0f0; border-radius:8px;
+                z-index:10000000; display:flex; flex-direction:column;
+                user-select:none;
+            `;
+            chat.classList.add('glowPulse', 'ignoreVFX');
+
+            // ---------- Close Button ----------
+            const closeBtn = document.createElement('div');
+            closeBtn.innerText = '✖';
+            closeBtn.style.cssText = `
+                position:absolute; top:5px; right:5px; cursor:pointer;
+                font-weight:bold; font-size:16px; z-index:10000001;
+            `;
+            closeBtn.onclick = () => {
+                chat.remove();
+                db.ref('users/' + username).remove(); // free username
+                window.chatActive = false;
+            };
+            chat.appendChild(closeBtn);
+
+            // ---------- Messages ----------
+            const messagesDiv = document.createElement('div');
+            messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
+            chat.appendChild(messagesDiv);
+
+            // ---------- Input ----------
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Type a message...';
+            input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
+            chat.appendChild(input);
+
+            // ---------- Resize Handle ----------
+            const resizeHandle = document.createElement('div');
+            resizeHandle.style.cssText = `
+                width:10px; height:10px; background:#0f0;
+                position:absolute; bottom:2px; right:2px; cursor:se-resize;
+            `;
+            chat.appendChild(resizeHandle);
+
+            resizeHandle.addEventListener('mousedown', e => {
+                e.preventDefault();
+                const startWidth = chat.offsetWidth;
+                const startHeight = chat.offsetHeight;
+                const startX = e.clientX;
+                const startY = e.clientY;
+
+                function onMouseMove(e) {
+                    chat.style.width = startWidth + (e.clientX - startX) + 'px';
+                    chat.style.height = startHeight + (e.clientY - startY) + 'px';
+                }
+
+                function onMouseUp() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                }
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            document.body.appendChild(chat);
+
+            // ---------- Draggable ----------
+            makeDraggable(chat, { locked: false });
+
+            // ---------- Firebase Messaging ----------
+            function addMessage(msg) {
+                const msgDiv = document.createElement('div');
+                msgDiv.textContent = msg;
+                messagesDiv.appendChild(msgDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
-        });
 
-        // ---------- Prevent VFX interference ----------
-        chat.classList.add('ignoreVFX'); // Your VFX scripts can skip elements with this class
+            const listener = db.ref('messages').on('child_added', snapshot => {
+                const data = snapshot.val();
+                addMessage(data.user + ": " + data.text);
+            });
+
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && input.value.trim()) {
+                    const msg = input.value.trim();
+                    db.ref('messages').push({ user: username, text: msg });
+                    input.value = '';
+                }
+            });
+
+        });
     }
 
 }, () => {
     // Off function not used; user manually closes
 });
-
     
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
