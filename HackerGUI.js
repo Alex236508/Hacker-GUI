@@ -1,3 +1,4 @@
+//https://console.firebase.google.com/project/hacker-gui-global-chat/database/hacker-gui-global-chat-default-rtdb/data/~2F
 (function(){
   if(window.hackerLoaded) return;
   window.hackerLoaded = true;
@@ -191,7 +192,7 @@ makeDraggable(vfx, vfxLock);
         async function getUsername() {
             let name;
             while (!name) {
-                name = prompt("Enter your username for chat:") || "Anon";
+                name = prompt("Enter your username for chat:") || "Anonymous";
                 const snapshot = await db.ref('users/' + name).get();
                 if (snapshot.exists()) {
                     alert("Username already taken! Pick another one.");
