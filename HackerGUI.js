@@ -186,7 +186,7 @@ addBtn(util, 'Global Chat', async () => {
         let savedName = localStorage.getItem('globalChatUsername');
         let name;
         while (!name) {
-            name = savedName || prompt("Enter your username for chat:") || "Anonymous";
+            name = savedName || prompt("Enter your username for chat:") || "Anon";
 
             const lookupKey = name.toLowerCase();
             const snapshot = await db.ref('users/' + lookupKey).get();
