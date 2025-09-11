@@ -280,36 +280,69 @@ if(chatBox){
         chat.appendChild(input);
 
         // ---------- Resizable ----------
-        const resizeHandle = document.createElement('div');
-        resizeHandle.style.cssText = `
-            width:10px; height:10px; background:#0f0;
-            position:absolute; bottom:2px; right:2px; cursor:se-resize; z-index:10000003;
-        `;
-        chat.appendChild(resizeHandle);
-
         resizeHandle.addEventListener('mousedown', e => {
-            e.preventDefault();
-            const startWidth = chat.offsetWidth;
-            const startHeight = chat.offsetHeight;
-            const startX = e.clientX;
-            const startY = e.clientY;
+    e.preventDefault();
 
-            function onMouseMove(e) {
-                chat.style.width = startWidth + (e.clientX - startX) + 'px';
-                chat.style.height = startHeight + (e.clientY - startY) + 'px';
-            }
+    const startWidth = chat.offsetWidth;
+    const startHeight = chat.offsetHeight;
+    const startX = e.clientX;
+    const startY = e.clientY;
 
-            function onMouseUp() {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            }
+    function onMouseMove(e) {
+        let newWidth = startWidth + (e.clientX - startX);
+        let newHeight = startHeight + (e.clientY - startY);
 
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-        });
+        // Clamp so it doesn’t get too small or go off-screen
+        newWidth = Math.max(200, Math.min(window.innerWidth - 20, newWidth));
+        newHeight = Math.max(200, Math.min(window.innerHeight - 20, newHeight));
+
+        chat.style.width = newWidth + 'px';
+        chat.style.height = newHeight + 'px';
+    }
+
+    function onMouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+});
 
         // ---------- Draggable ----------
-        makeDraggable(chat, { locked: false });
+        function makeDraggable(g, lock) {
+    g.style.position = 'fixed';
+    g.onmousedown = function(e) {
+        if (lock.locked) return;
+        if (e.target.classList.contains('resize-handle')) return; // ignore resize handle
+
+        let ox = e.clientX - g.getBoundingClientRect().left,
+            oy = e.clientY - g.getBoundingClientRect().top;
+
+        function move(e) {
+            let x = e.clientX - ox;
+            let y = e.clientY - oy;
+
+            // Clamp so the element stays inside the viewport
+            x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
+            y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
+
+            g.style.left = x + 'px';
+            g.style.top = y + 'px';
+            g.style.right = 'auto';
+            g.style.bottom = 'auto';
+        }
+
+        function up() {
+            document.removeEventListener('mousemove', move);
+            document.removeEventListener('mouseup', up);
+        }
+
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', up);
+    };
+}
+
 
         // ---------- Firebase Messaging ----------
         function addMessage(user, text) {
