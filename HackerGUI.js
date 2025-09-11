@@ -820,7 +820,8 @@ addBtn(vfx, 'Full Chaos', () => {
     window.fullChaosActive = false;
   }
 });
-// Stop All VFX (preserves chat)
+
+    // Stop All VFX (preserves chat)
 addBtn(vfx, 'Stop All', () => {
 
     // Call all registered VFX cleanup functions
@@ -847,15 +848,21 @@ addBtn(vfx, 'Stop All', () => {
     });
 
     // Remove global VFX styles
-    if(window.pageSpinStyle){ window.pageSpinStyle.remove(); window.pageSpinStyle=null; }
-    if(window.textCorruptStyle){ window.textCorruptStyle.remove(); window.textCorruptStyle=null; }
+    if (window.pageSpinStyle) { window.pageSpinStyle.remove(); window.pageSpinStyle = null; }
+    if (window.textCorruptStyle) { window.textCorruptStyle.remove(); window.textCorruptStyle = null; }
 
-    // Stop VFX intervals
-    [window.matrixInt, window.discoSmoothInt, window.glitchInt, window.fullChaosLoop1, window.fullChaosLoop2, window.imgGlitchInt].forEach(i=>{
-        if(i){ clearInterval(i); i=null; }
+    // Stop VFX intervals and reset flags
+    const vfxIntervals = [
+        'matrixInt', 'discoSmoothInt', 'glitchInt', 'fullChaosLoop1', 'fullChaosLoop2', 'imgGlitchInt'
+    ];
+    vfxIntervals.forEach(name => {
+        if (window[name]) {
+            clearInterval(window[name]);
+            window[name] = null;
+        }
     });
 
-    // Reset flags
+    // Reset VFX flags
     window.matrixActive = false;
     window.discoSmoothActive = false;
     window.glitchActive = false;
