@@ -151,53 +151,45 @@ makeDraggable(vfx, vfxLock);
         container.appendChild(b);
         if(off) activeUtilities[name] = { on, off };
     }
-    // Global Chat (FireBase)
-    addBtn(util, 'Global Chat', () => {
+    // Global Chat (Firebase)
+    // Global Chat
+addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
 
-    // ---------- Dynamically Load Firebase ----------
-    function loadFirebase() {
-        return new Promise((resolve, reject) => {
-            if (window.firebase) return resolve();
+    // ---------- Firebase Setup ----------
+    const firebaseConfig = {
+        apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
+        authDomain: "hacker-gui-global-chat.firebaseapp.com",
+        databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
+        projectId: "hacker-gui-global-chat",
+        storageBucket: "hacker-gui-global-chat.firebasestorage.app",
+        messagingSenderId: "410978781234",
+        appId: "1:410978781234:web:ee08f15ee9be48970c542b",
+        measurementId: "G-SB0B1FLF29"
+    };
 
-            const scripts = [
-                "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
-                "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"
-            ];
-
-            let loaded = 0;
-            scripts.forEach(src => {
-                const s = document.createElement('script');
-                s.src = src;
-                s.onload = () => {
-                    loaded++;
-                    if (loaded === scripts.length) resolve();
-                };
-                s.onerror = reject;
-                document.head.appendChild(s);
-            });
-        });
+    // Load Firebase if not already loaded
+    if (!window.firebase) {
+        const s = document.createElement('script');
+        s.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+        s.onload = () => {
+            const dbScript = document.createElement('script');
+            dbScript.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
+            dbScript.onload = initChat;
+            document.body.appendChild(dbScript);
+        };
+        document.body.appendChild(s);
+    } else {
+        initChat();
     }
 
-    loadFirebase().then(() => {
-        // ---------- Firebase Setup ----------
-        const firebaseConfig = {
-            apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
-            authDomain: "hacker-gui-global-chat.firebaseapp.com",
-            databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
-            projectId: "hacker-gui-global-chat",
-            storageBucket: "hacker-gui-global-chat.firebasestorage.app",
-            messagingSenderId: "410978781234",
-            appId: "1:410978781234:web:ee08f15ee9be48970c542b",
-            measurementId: "G-SB0B1FLF29"
-        };
+    function initChat() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const username = prompt("Enter your username for chat (use real name🙏)") || "Anon";
 
-        const username = prompt("Enter your username for chat:") || "Anon";
-
-        // ---------- Create Chat Window ----------
+        // ---------- Chat Window ----------
         const chat = document.createElement('div');
         chat.style.cssText = `
             position:fixed; bottom:50px; right:50px;
@@ -205,20 +197,29 @@ makeDraggable(vfx, vfxLock);
             background:rgba(0,0,0,0.85);
             color:#0f0; font-family:monospace;
             border:2px solid #0f0; border-radius:8px;
-            z-index:999999; display:flex; flex-direction:column;
-            user-select:none; cursor:move;
-            box-shadow: 0 0 8px #0f0, 0 0 16px #0f0;
-            animation: chatGlow 2s infinite alternate;
+            z-index:10000000; display:flex; flex-direction:column;
+            pointer-events:auto; box-shadow:0 0 15px #0f0;
         `;
 
+        // Glowing border animation
         const style = document.createElement('style');
         style.innerHTML = `
-            @keyframes chatGlow {
-                0% { box-shadow: 0 0 6px #0f0, 0 0 12px #0f0; }
-                100% { box-shadow: 0 0 12px #0f0, 0 0 24px #0f0; }
+            @keyframes glowPulse {
+                0% { box-shadow: 0 0 5px #0f0; }
+                50% { box-shadow: 0 0 15px #0f0; }
+                100% { box-shadow: 0 0 5px #0f0; }
             }
+            .glowPulse { animation: glowPulse 2s infinite; }
         `;
         document.head.appendChild(style);
+        chat.classList.add('glowPulse');
+
+        // Close button
+        const closeBtn = document.createElement('div');
+        closeBtn.innerText = '✖';
+        closeBtn.style.cssText = 'position:absolute; top:5px; right:5px; cursor:pointer; font-weight:bold;';
+        closeBtn.onclick = () => { chat.remove(); window.chatActive = false; };
+        chat.appendChild(closeBtn);
 
         const messagesDiv = document.createElement('div');
         messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
@@ -232,8 +233,10 @@ makeDraggable(vfx, vfxLock);
 
         document.body.appendChild(chat);
 
+        // Draggable
         makeDraggable(chat, { locked: false });
 
+        // Firebase messaging
         function addMessage(msg) {
             const msgDiv = document.createElement('div');
             msgDiv.textContent = msg;
@@ -254,28 +257,18 @@ makeDraggable(vfx, vfxLock);
             }
         });
 
-        const cleanup = () => {
-            window.chatActive = false;
-            chat.remove();
-            style.remove();
+        // Store cleanup but do NOT push to stopAllVFX
+        window._globalChatCleanup = () => {
             db.ref('messages').off('child_added', listener);
+            chat.remove();
+            window.chatActive = false;
         };
-
-        if (!window.stopAllVFX) window.stopAllVFX = [];
-        window.stopAllVFX.push(cleanup);
-    }).catch(err => {
-        console.error("Failed to load Firebase:", err);
-        window.chatActive = false;
-    });
-}, () => { // off function
-    if (window.chatActive) {
-        window.stopAllVFX = window.stopAllVFX.filter(fn => {
-            try { fn(); } catch (e) { }
-            return false;
-        });
-        window.chatActive = false;
     }
+
+}, () => {
+  
 });
+
     
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
