@@ -153,11 +153,11 @@ makeDraggable(vfx, vfxLock);
     }
 
     // ---------- Global Chat (Firebase) ----------
+// ---------- GLOBAL CHAT BUTTON ----------
 addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
 
-    // Load Firebase if needed
     const loadFirebase = () => {
         if (!window.firebase) {
             const s = document.createElement('script');
@@ -188,25 +188,22 @@ addBtn(util, 'Global Chat', () => {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // ---------- Unique Username ----------
         let username, lookupKey;
         async function getUsername() {
             while (!username) {
                 let name = prompt("Enter your username for chat:") || "Anonymous";
-                lookupKey = name.toLowerCase(); // case-insensitive uniqueness
+                lookupKey = name.toLowerCase();
                 const snapshot = await db.ref('users/' + lookupKey).get();
-                if (snapshot.exists()) {
-                    alert("Username already taken! Pick another one.");
-                } else {
+                if (snapshot.exists()) alert("Username taken! Pick another.");
+                else {
                     username = name;
-                    await db.ref('users/' + lookupKey).set(true); // reserve username
+                    await db.ref('users/' + lookupKey).set(true);
                 }
             }
             return username;
         }
 
         getUsername().then(() => {
-            // ---------- Chat Window ----------
             const chat = document.createElement('div');
             chat.style.cssText = `
                 position:fixed; bottom:50px; right:50px;
@@ -216,26 +213,31 @@ addBtn(util, 'Global Chat', () => {
                 border:2px solid #0f0; border-radius:8px;
                 z-index:10000000; display:flex; flex-direction:column;
                 user-select:none;
-                animation: glowPulse 2s infinite;
+                box-sizing:border-box;
             `;
             document.body.appendChild(chat);
 
-            // ---------- Glowing border animation ----------
-            const style = document.createElement('style');
-            style.innerHTML = `
-                @keyframes glowPulse {
-                    0% { box-shadow: 0 0 5px #0f0; }
-                    50% { box-shadow: 0 0 15px #0f0; }
-                    100% { box-shadow: 0 0 5px #0f0; }
-                }
-            `;
-            document.head.appendChild(style);
+            // ---------- Smooth Rainbow Glow ----------
+const style = document.createElement('style');
+style.innerHTML = `
+    @keyframes smoothRainbow {
+        0% { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
+        16.6% { border-color: #ff7f00; box-shadow: 0 0 10px #ff7f00; }
+        33.3% { border-color: #ffff00; box-shadow: 0 0 10px #ffff00; }
+        50% { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
+        66.6% { border-color: #0000ff; box-shadow: 0 0 10px #0000ff; }
+        83.3% { border-color: #8b00ff; box-shadow: 0 0 10px #8b00ff; }
+        100% { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
+    }
+`;
+document.head.appendChild(style);
+chat.style.animation = 'smoothRainbow 4s linear infinite';
 
             // ---------- Draggable ----------
             function makeDraggable(g, lock) {
-                g.style.position = 'fixed';
                 g.onmousedown = function (e) {
                     if (lock.locked) return;
+                    if (e.target === resizeHandle) return; // prevent drag while resizing
                     let ox = e.clientX - g.getBoundingClientRect().left,
                         oy = e.clientY - g.getBoundingClientRect().top;
                     function move(e) {
@@ -256,6 +258,7 @@ addBtn(util, 'Global Chat', () => {
                     document.addEventListener('mouseup', up);
                 };
             }
+
             makeDraggable(chat, { locked: false });
 
             // ---------- Close Button ----------
@@ -265,22 +268,50 @@ addBtn(util, 'Global Chat', () => {
                 position:absolute; top:5px; right:5px; cursor:pointer;
                 font-weight:bold; font-size:16px; z-index:10000001;
             `;
-            closeBtn.onclick = () => {
-                cleanup();
-            };
             chat.appendChild(closeBtn);
 
-            // ---------- Messages ----------
             const messagesDiv = document.createElement('div');
             messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
             chat.appendChild(messagesDiv);
 
-            // ---------- Input ----------
             const input = document.createElement('input');
             input.type = 'text';
             input.placeholder = 'Type a message...';
             input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
             chat.appendChild(input);
+
+            // ---------- Resize Handle ----------
+            const resizeHandle = document.createElement('div');
+            resizeHandle.style.cssText = `
+                width:12px; height:12px; background:#0f0;
+                position:absolute; bottom:2px; right:2px; cursor:se-resize;
+                z-index:10000002;
+            `;
+            chat.appendChild(resizeHandle);
+
+            let startX, startY, startW, startH;
+            resizeHandle.onmousedown = function (e) {
+                e.stopPropagation();
+                startX = e.clientX;
+                startY = e.clientY;
+                startW = chat.offsetWidth;
+                startH = chat.offsetHeight;
+
+                function resizeMove(e) {
+                    let newW = startW + (e.clientX - startX);
+                    let newH = startH + (e.clientY - startY);
+                    chat.style.width = Math.max(150, newW) + 'px';
+                    chat.style.height = Math.max(100, newH) + 'px';
+                }
+
+                function resizeUp() {
+                    document.removeEventListener('mousemove', resizeMove);
+                    document.removeEventListener('mouseup', resizeUp);
+                }
+
+                document.addEventListener('mousemove', resizeMove);
+                document.addEventListener('mouseup', resizeUp);
+            };
 
             // ---------- Firebase Messaging ----------
             function addMessage(msg) {
@@ -306,24 +337,20 @@ addBtn(util, 'Global Chat', () => {
             // ---------- Cleanup ----------
             const cleanup = async () => {
                 chat.remove();
-                await db.ref('users/' + lookupKey).remove(); // free username
+                await db.ref('users/' + lookupKey).remove();
                 window.chatActive = false;
             };
+            closeBtn.onclick = cleanup;
 
-            // ---------- Cleanup on page close/refresh ----------
+            // ---------- Cleanup on unload ----------
             const unloadHandler = async () => {
-                if (lookupKey) {
-                    await db.ref('users/' + lookupKey).remove();
-                }
+                if (lookupKey) await db.ref('users/' + lookupKey).remove();
             };
             window.addEventListener('beforeunload', unloadHandler);
             window.addEventListener('unload', unloadHandler);
-
         });
     }
-}, () => {
-    // Off function not used
-});
+}, () => { });
     
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
