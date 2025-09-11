@@ -311,84 +311,26 @@ if(chatBox){
         // ---------- Draggable ----------
         makeDraggable(chat, { locked: false });
 
-        // Assign a base color to each username
-const userColors = {};
-const baseColors = ['#FF0000','#FF7F00','#FFFF00','#00FF00','#0000FF','#8B00FF','#FF1493','#00CED1'];
+        // ---------- Firebase Messaging ----------
+        function addMessage(user, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = `${user}: ${text}`;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
 
-function getColor(username) {
-    if (!userColors[username]) {
-        let hash = 0;
-        for (let i = 0; i < username.length; i++) hash += username.charCodeAt(i);
-        userColors[username] = baseColors[hash % baseColors.length];
-    }
-    return userColors[username];
-}
+        db.ref('messages').on('child_added', snapshot => {
+            const data = snapshot.val();
+            if(data) addMessage(data.user, data.text);
+        });
 
-<style>
-/* Rainbow glow animation */
-@keyframes rainbowGlow {
-  0% { text-shadow: 0 0 5px red, 0 0 10px red; }
-  16% { text-shadow: 0 0 5px orange, 0 0 10px orange; }
-  33% { text-shadow: 0 0 5px yellow, 0 0 10px yellow; }
-  50% { text-shadow: 0 0 5px green, 0 0 10px green; }
-  66% { text-shadow: 0 0 5px blue, 0 0 10px blue; }
-  83% { text-shadow: 0 0 5px purple, 0 0 10px purple; }
-  100% { text-shadow: 0 0 5px red, 0 0 10px red; }
-}
-
-.rainbowGlow {
-  animation: rainbowGlow 3s linear infinite;
-}
-</style>
-
-<script>
-// Store unique base colors per user
-const userColors = {};
-function getColor(user) {
-    if (!userColors[user]) {
-        const letters = '0123456789ABCDEF';
-        let color = '#';
-        for (let i = 0; i < 6; i++) color += letters[Math.floor(Math.random() * 16)];
-        userColors[user] = color;
-    }
-    return userColors[user];
-}
-
-// Replace your existing addMessage function with this
-function addMessage(msg) {
-    const msgDiv = document.createElement('div');
-
-    // Split "username: message"
-    const splitIndex = msg.indexOf(':');
-    if (splitIndex !== -1) {
-        const username = msg.slice(0, splitIndex);
-        const text = msg.slice(splitIndex + 1);
-
-        // Create username span
-        const userSpan = document.createElement('span');
-        userSpan.textContent = username + ':';
-        userSpan.style.color = getColor(username); // unique base color
-        userSpan.classList.add('rainbowGlow');
-
-        // Create message span
-        const textSpan = document.createElement('span');
-        textSpan.textContent = text;
-        textSpan.style.marginLeft = '5px';
-        textSpan.style.color = '#0f0'; // optional, base message color
-        textSpan.classList.add('rainbowGlow');
-
-        msgDiv.appendChild(userSpan);
-        msgDiv.appendChild(textSpan);
-    } else {
-        // fallback
-        msgDiv.textContent = msg;
-    }
-
-    messagesDiv.appendChild(msgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-</script>
-
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && input.value.trim()) {
+                const msg = input.value.trim();
+                db.ref('messages').push({ user: username, text: msg });
+                input.value = '';
+            }
+        });
 
         // ---------- Cleanup ----------
         function cleanupChat() {
