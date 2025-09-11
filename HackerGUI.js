@@ -151,102 +151,119 @@ makeDraggable(vfx, vfxLock);
         container.appendChild(b);
         if(off) activeUtilities[name] = { on, off };
     }
-    // Global chat
-addBtn(util, 'Global Chat', () => {
+    addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
 
-    // ---------- Firebase Setup ----------
-    const firebaseConfig = {
-        apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
-        authDomain: "hacker-gui-global-chat.firebaseapp.com",
-        databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
-        projectId: "hacker-gui-global-chat",
-        storageBucket: "hacker-gui-global-chat.firebasestorage.app",
-        messagingSenderId: "410978781234",
-        appId: "1:410978781234:web:ee08f15ee9be48970c542b",
-        measurementId: "G-SB0B1FLF29"
-    };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    // ---------- Dynamically Load Firebase ----------
+    function loadFirebase(callback) {
+        if (window.firebase) return callback();
 
-    const username = prompt("Enter your username for chat:") || "Anon";
+        const scripts = [
+            "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
+            "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"
+        ];
 
-    // ---------- Create Chat Window ----------
-    const chat = document.createElement('div');
-    chat.style.cssText = `
-        position:fixed; bottom:50px; right:50px;
-        width:300px; height:400px;
-        background:rgba(0,0,0,0.85);
-        color:#0f0; font-family:monospace;
-        border:2px solid #0f0; border-radius:8px;
-        z-index:999999; display:flex; flex-direction:column;
-        user-select:none; cursor:move;
-        box-shadow: 0 0 10px #0f0;
-        animation: pulseGlow 2s infinite alternate;
-    `;
-
-    // ---------- Create Messages Div ----------
-    const messagesDiv = document.createElement('div');
-    messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
-    chat.appendChild(messagesDiv);
-
-    // ---------- Create Input ----------
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = 'Type a message...';
-    input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
-    chat.appendChild(input);
-
-    document.body.appendChild(chat);
-
-    // ---------- Add Pulse Glow Keyframes ----------
-    const style = document.createElement('style');
-    style.id = 'chatPulseGlow';
-    style.innerHTML = `
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 5px #0f0; }
-            50% { box-shadow: 0 0 15px #0f0; }
-            100% { box-shadow: 0 0 5px #0f0; }
-        }
-    `;
-    document.head.appendChild(style);
-
-    // ---------- Make Draggable ----------
-    makeDraggable(chat, { locked: false });
-
-    // ---------- Firebase Messaging ----------
-    function addMessage(msg) {
-        const msgDiv = document.createElement('div');
-        msgDiv.textContent = msg;
-        messagesDiv.appendChild(msgDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        let loaded = 0;
+        scripts.forEach(src => {
+            const s = document.createElement('script');
+            s.src = src;
+            s.onload = () => { 
+                loaded++; 
+                if (loaded === scripts.length) callback(); 
+            };
+            document.head.appendChild(s);
+        });
     }
 
-    const listener = db.ref('messages').on('child_added', snapshot => {
-        const data = snapshot.val();
-        addMessage(data.user + ": " + data.text);
-    });
+    loadFirebase(() => {
+        // ---------- Firebase Setup ----------
+        const firebaseConfig = {
+            apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
+            authDomain: "hacker-gui-global-chat.firebaseapp.com",
+            databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
+            projectId: "hacker-gui-global-chat",
+            storageBucket: "hacker-gui-global-chat.firebasestorage.app",
+            messagingSenderId: "410978781234",
+            appId: "1:410978781234:web:ee08f15ee9be48970c542b",
+            measurementId: "G-SB0B1FLF29"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    input.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && input.value.trim()) {
-            const msg = input.value.trim();
-            db.ref('messages').push({ user: username, text: msg });
-            input.value = '';
+        const username = prompt("Enter your username for chat:") || "Anon";
+
+        // ---------- Create Chat Window ----------
+        const chat = document.createElement('div');
+        chat.style.cssText = `
+            position:fixed; bottom:50px; right:50px;
+            width:300px; height:400px;
+            background:rgba(0,0,0,0.85);
+            color:#0f0; font-family:monospace;
+            border:2px solid #0f0; border-radius:8px;
+            z-index:999999; display:flex; flex-direction:column;
+            user-select:none; cursor:move;
+            box-shadow: 0 0 8px #0f0, 0 0 16px #0f0;
+            animation: chatGlow 2s infinite alternate;
+        `;
+
+        // Pulsing glow CSS
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes chatGlow {
+                0% { box-shadow: 0 0 6px #0f0, 0 0 12px #0f0; }
+                100% { box-shadow: 0 0 12px #0f0, 0 0 24px #0f0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        const messagesDiv = document.createElement('div');
+        messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
+        chat.appendChild(messagesDiv);
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Type a message...';
+        input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
+        chat.appendChild(input);
+
+        document.body.appendChild(chat);
+
+        // ---------- Make Draggable ----------
+        makeDraggable(chat, { locked: false });
+
+        // ---------- Firebase Messaging ----------
+        function addMessage(msg) {
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = msg;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
+
+        const listener = db.ref('messages').on('child_added', snapshot => {
+            const data = snapshot.val();
+            addMessage(data.user + ": " + data.text);
+        });
+
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && input.value.trim()) {
+                const msg = input.value.trim();
+                db.ref('messages').push({ user: username, text: msg });
+                input.value = '';
+            }
+        });
+
+        // ---------- Stop Function for Stop All ----------
+        const cleanup = () => {
+            window.chatActive = false;
+            chat.remove();
+            style.remove();
+            db.ref('messages').off('child_added', listener);
+        };
+
+        if (!window.stopAllVFX) window.stopAllVFX = [];
+        window.stopAllVFX.push(cleanup);
     });
-
-    // ---------- Stop Function for Stop All ----------
-    const cleanup = () => {
-        window.chatActive = false;
-        chat.remove();
-        if (style) style.remove();
-        db.ref('messages').off('child_added', listener);
-    };
-
-    if (!window.stopAllVFX) window.stopAllVFX = [];
-    window.stopAllVFX.push(cleanup);
-
 }, () => { // off function
     if (window.chatActive) {
         window.stopAllVFX = window.stopAllVFX.filter(fn => {
