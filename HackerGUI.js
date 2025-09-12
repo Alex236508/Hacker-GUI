@@ -174,20 +174,33 @@ addBtn(util, 'Global Chat', () => {
     loadFirebase();
 
     async function getUsername(db) {
+    // Check if a username already exists in this browser
+    let storedName = localStorage.getItem('chatUsername');
+    if (storedName) {
+        const snapshot = await db.ref('users/' + storedName).get();
+        if (snapshot.exists()) return storedName; // still valid
+    }
+
     let name;
     while (!name) {
         name = prompt("Enter your username for chat:");
         if (!name) return null; // user pressed Cancel or left blank
-        const snapshot = await db.ref('users').get(); // get all users
+
+        // Fetch all active usernames
+        const snapshot = await db.ref('users').get();
         const existingUsers = snapshot.exists() ? Object.keys(snapshot.val()) : [];
-        // Case-insensitive check
         if (existingUsers.some(u => u.toLowerCase() === name.toLowerCase())) {
             alert("Username already taken! Pick another one.");
             name = null;
             continue;
         }
-        // Save the username as typed
-        db.ref('users/' + name).set(true);
+
+        // Save username in Firebase and localStorage
+        const userRef = db.ref('users/' + name);
+        await userRef.set(true);
+        // Remove username from Firebase if user closes tab
+        userRef.onDisconnect().remove();
+        localStorage.setItem('chatUsername', name);
     }
     return name;
 }
@@ -378,16 +391,13 @@ makeDraggable(chat, { locked: false }, [resizeHandle]);
 
         // ---------- Cleanup ----------
         function cleanupChat() {
-            clearInterval(window.chatGlowInt);
-            if(username) db.ref('users/' + username).remove();
-            chat.remove();
-            window.chatActive = false;
-        }
+    clearInterval(window.chatGlowInt);
+    if (username) db.ref('users/' + username).remove(); 
+    localStorage.removeItem('chatUsername');           
+    chat.remove();
+    window.chatActive = false;
+}
 
-        closeBtn.onclick = cleanupChat;
-        window.addEventListener('beforeunload', cleanupChat);
-    }
-});
 
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
