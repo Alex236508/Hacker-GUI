@@ -153,7 +153,8 @@ makeDraggable(vfx, vfxLock);
     }
 
     // ---------- Global Chat (Firebase) ----------
-addBtn(util, 'Global Chat', () => {
+function initChatLogic(db, username, uid) {
+  addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
 
@@ -174,32 +175,30 @@ addBtn(util, 'Global Chat', () => {
     loadFirebase();
 
     async function getUsername(db) {
-    // Check if a username is already saved for this browser
-    let saved = localStorage.getItem("chatUsername");
-    if (saved) {
-        return saved; // re-use existing username
-    }
+        // Check if a username is already saved for this browser
+        let saved = localStorage.getItem("chatUsername");
+        if (saved) return saved; // reuse existing username
 
-    let name;
-    while (!name) {
-        name = prompt("Enter your username for chat:");
-        if (!name) return null; // cancel -> stop chat
-        const snapshot = await db.ref('users').get(); 
-        const existingUsers = snapshot.exists() ? Object.keys(snapshot.val()) : [];
+        let name;
+        while (!name) {
+            name = prompt("Enter your username for chat:");
+            if (!name) return null; // cancel -> stop chat
+            const snapshot = await db.ref('users').get();
+            const existingUsers = snapshot.exists() ? Object.keys(snapshot.val()) : [];
 
-        if (existingUsers.some(u => u.toLowerCase() === name.toLowerCase())) {
-            alert("Username already taken! Pick another one.");
-            name = null;
-            continue;
+            // Case-sensitive check
+            if (existingUsers.some(u => u === name)) {
+                alert("Username already taken! Pick another one.");
+                name = null;
+                continue;
+            }
+
+            // Save username to DB + localStorage
+            db.ref('users/' + name).set(true);
+            localStorage.setItem("chatUsername", name);
         }
-
-        // Save username to DB + localStorage
-        db.ref('users/' + name).set(true);
-        localStorage.setItem("chatUsername", name);
+        return name;
     }
-    return name;
-}
-
 
     async function initChat() {
         const firebaseConfig = {
@@ -216,6 +215,7 @@ addBtn(util, 'Global Chat', () => {
         const db = firebase.database();
 
         const username = await getUsername(db);
+        if (!username) return; // user cancelled -> stop chat
 
         // ---------- Chat Window ----------
         const chat = document.createElement('div');
@@ -230,47 +230,42 @@ addBtn(util, 'Global Chat', () => {
         `;
         document.body.appendChild(chat);
 
-        // Rainbow Pulsing Glow Border
-const chatBox = document.getElementById('globalChatContainer');
-if(chatBox){
-    const oldStyle = document.getElementById('rainbowGlowStyle');
-    if(oldStyle) oldStyle.remove();
+        // ---------- Rainbow Pulsing Glow Border ----------
+        const oldStyle = document.getElementById('rainbowGlowStyle');
+        if(oldStyle) oldStyle.remove();
+        const style = document.createElement('style');
+        style.id = 'rainbowGlowStyle';
+        style.innerHTML = `
+            #globalChatContainer {
+                position: relative;
+                border-radius: 8px;
+                border: 4px solid;
+                padding: 2px;
+                background-clip: padding-box;
+                animation: rainbowBorder 6s linear infinite, rainbowGlow 6s ease-in-out infinite alternate;
+                border-image-slice: 1;
+            }
 
-    const style = document.createElement('style');
-    style.id = 'rainbowGlowStyle';
-    style.innerHTML = `
-        #globalChatContainer {
-            position: relative;
-            border-radius: 8px;
-            border: 4px solid;
-            padding: 2px;
-            background-clip: padding-box;
-            animation: rainbowBorder 6s linear infinite, rainbowGlow 6s ease-in-out infinite alternate;
-            border-image-slice: 1;
-        }
+            @keyframes rainbowBorder {
+                0%   { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, purple); }
+                20%  { border-image-source: linear-gradient(90deg, orange, yellow, green, blue, purple, red); }
+                40%  { border-image-source: linear-gradient(90deg, yellow, green, blue, purple, red, orange); }
+                60%  { border-image-source: linear-gradient(90deg, green, blue, purple, red, orange, yellow); }
+                80%  { border-image-source: linear-gradient(90deg, blue, purple, red, orange, yellow, green); }
+                100% { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, purple); }
+            }
 
-        @keyframes rainbowBorder {
-            0%   { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, purple); }
-            20%  { border-image-source: linear-gradient(90deg, orange, yellow, green, blue, purple, red); }
-            40%  { border-image-source: linear-gradient(90deg, yellow, green, blue, purple, red, orange); }
-            60%  { border-image-source: linear-gradient(90deg, green, blue, purple, red, orange, yellow); }
-            80%  { border-image-source: linear-gradient(90deg, blue, purple, red, orange, yellow, green); }
-            100% { border-image-source: linear-gradient(90deg, red, orange, yellow, green, blue, purple); }
-        }
-
-        @keyframes rainbowGlow {
-            0%   { box-shadow: 0 0 10px red, 0 0 20px red; }
-            16%  { box-shadow: 0 0 15px orange, 0 0 30px orange; }
-            33%  { box-shadow: 0 0 20px yellow, 0 0 40px yellow; }
-            50%  { box-shadow: 0 0 25px green, 0 0 50px green; }
-            66%  { box-shadow: 0 0 30px blue, 0 0 60px blue; }
-            83%  { box-shadow: 0 0 25px purple, 0 0 50px purple; }
-            100% { box-shadow: 0 0 10px red, 0 0 20px red; }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
+            @keyframes rainbowGlow {
+                0%   { box-shadow: 0 0 10px red, 0 0 20px red; }
+                16%  { box-shadow: 0 0 15px orange, 0 0 30px orange; }
+                33%  { box-shadow: 0 0 20px yellow, 0 0 40px yellow; }
+                50%  { box-shadow: 0 0 25px green, 0 0 50px green; }
+                66%  { box-shadow: 0 0 30px blue, 0 0 60px blue; }
+                83%  { box-shadow: 0 0 25px purple, 0 0 50px purple; }
+                100% { box-shadow: 0 0 10px red, 0 0 20px red; }
+            }
+        `;
+        document.head.appendChild(style);
 
         // ---------- Close Button ----------
         const closeBtn = document.createElement('div');
@@ -294,118 +289,99 @@ if(chatBox){
         chat.appendChild(input);
 
         // ---------- Resizable ----------
-const resizeHandle = document.createElement('div');
-resizeHandle.style.cssText = `
-    width:10px; height:10px; background:#0f0;
-    position:absolute; bottom:2px; right:2px; cursor:se-resize; z-index:10000003;
-`;
-chat.appendChild(resizeHandle);
+        const resizeHandle = document.createElement('div');
+        resizeHandle.style.cssText = `
+            width:10px; height:10px; background:#0f0;
+            position:absolute; bottom:2px; right:2px; cursor:se-resize; z-index:10000003;
+        `;
+        chat.appendChild(resizeHandle);
 
-resizeHandle.addEventListener('mousedown', e => {
-    e.stopPropagation(); // stop drag
-    e.preventDefault();
+        resizeHandle.addEventListener('mousedown', e => {
+            e.stopPropagation();
+            e.preventDefault();
 
-    const startWidth = chat.offsetWidth;
-    const startHeight = chat.offsetHeight;
-    const startX = e.clientX;
-    const startY = e.clientY;
+            const startWidth = chat.offsetWidth;
+            const startHeight = chat.offsetHeight;
+            const startX = e.clientX;
+            const startY = e.clientY;
 
-    function onMouseMove(e) {
-        chat.style.width = startWidth + (e.clientX - startX) + 'px';
-        chat.style.height = startHeight + (e.clientY - startY) + 'px';
-    }
+            function onMouseMove(e) {
+                chat.style.width = startWidth + (e.clientX - startX) + 'px';
+                chat.style.height = startHeight + (e.clientY - startY) + 'px';
+            }
 
-    function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-    }
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-});
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
 
-// ---------- Draggable ----------
-function makeDraggable(g, lock, ignore = []) {
-    g.style.position = 'fixed';
-    g.addEventListener('mousedown', e => {
-        if (lock.locked) return;
-        // Ignore if starting on resize handle or any ignored elements
-        if (ignore.some(el => el.contains(e.target))) return;
+        // ---------- Draggable ----------
+        function makeDraggable(g, lock, ignore = []) {
+            g.style.position = 'fixed';
+            g.addEventListener('mousedown', e => {
+                if (lock.locked) return;
+                if (ignore.some(el => el.contains(e.target))) return;
 
-        let ox = e.clientX - g.getBoundingClientRect().left;
-        let oy = e.clientY - g.getBoundingClientRect().top;
+                let ox = e.clientX - g.getBoundingClientRect().left;
+                let oy = e.clientY - g.getBoundingClientRect().top;
 
-        function move(e) {
-            let x = e.clientX - ox;
-            let y = e.clientY - oy;
-            x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
-            y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
-            g.style.left = x + 'px';
-            g.style.top = y + 'px';
-            g.style.right = 'auto';
-            g.style.bottom = 'auto';
+                function move(e) {
+                    let x = e.clientX - ox;
+                    let y = e.clientY - oy;
+                    x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
+                    y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
+                    g.style.left = x + 'px';
+                    g.style.top = y + 'px';
+                    g.style.right = 'auto';
+                    g.style.bottom = 'auto';
+                }
+
+                function up() {
+                    document.removeEventListener('mousemove', move);
+                    document.removeEventListener('mouseup', up);
+                }
+
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', up);
+            });
         }
 
-        function up() {
-            document.removeEventListener('mousemove', move);
-            document.removeEventListener('mouseup', up);
-        }
-
-        document.addEventListener('mousemove', move);
-        document.addEventListener('mouseup', up);
-    });
-}
-
-// Use the drag function, ignoring the resize handle
-makeDraggable(chat, { locked: false }, [resizeHandle]);
+        makeDraggable(chat, { locked: false }, [resizeHandle]);
 
         // ---------- Firebase Messaging ----------
-function getUserColor(user, currentUser) {
-    if (user.toLowerCase() === currentUser.toLowerCase()) {
-        return "#00ff00"; // bright green for your own messages
-    }
+        function getUserColor(user, currentUser) {
+            if (user === currentUser) return "#00ff00";
+            const colors = ["#00ffff","#ffff00","#ff00ff","#ff4500","#1e90ff","#adff2f","#ff1493","#7fff00"];
+            let hash = 0;
+            for (let i = 0; i < user.length; i++) hash = user.charCodeAt(i) + ((hash << 5) - hash);
+            return colors[Math.abs(hash) % colors.length];
+        }
 
-    const colors = [
-        "#00ffff", // cyan
-        "#ffff00", // yellow
-        "#ff00ff", // magenta
-        "#ff4500", // orange-red
-        "#1e90ff", // dodger blue
-        "#adff2f", // green-yellow
-        "#ff1493", // deep pink
-        "#7fff00", // chartreuse
-    ];
+        function addMessage(user, text, currentUser) {
+            const color = getUserColor(user, currentUser);
+            const msgDiv = document.createElement('div');
+            msgDiv.style.color = color;
+            msgDiv.textContent = `${user}: ${text}`;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
 
-    let hash = 0;
-    for (let i = 0; i < user.length; i++) {
-        hash = user.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-}
+        db.ref('messages').on('child_added', snapshot => {
+            const data = snapshot.val();
+            if (data) addMessage(data.user, data.text, username);
+        });
 
-function addMessage(user, text, currentUser) {
-    const color = getUserColor(user, currentUser);
-    const msgDiv = document.createElement('div');
-    msgDiv.style.color = color; // apply color to whole message
-    msgDiv.textContent = `${user}: ${text}`;
-    messagesDiv.appendChild(msgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-// Listen for new messages from Firebase
-db.ref('messages').on('child_added', snapshot => {
-    const data = snapshot.val();
-    if (data) addMessage(data.user, data.text, username); // pass current username
-});
-
-// Handle sending messages
-input.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && input.value.trim()) {
-        const msg = input.value.trim();
-        db.ref('messages').push({ user: username, text: msg });
-        input.value = '';
-    }
-});
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && input.value.trim()) {
+                const msg = input.value.trim();
+                db.ref('messages').push({ user: username, text: msg });
+                input.value = '';
+            }
+        });
 
         // ---------- Cleanup ----------
         function cleanupChat() {
@@ -418,7 +394,8 @@ input.addEventListener('keydown', e => {
         closeBtn.onclick = cleanupChat;
         window.addEventListener('beforeunload', cleanupChat);
     }
-});
+  });
+}
 
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
