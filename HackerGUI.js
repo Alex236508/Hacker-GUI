@@ -174,18 +174,23 @@ addBtn(util, 'Global Chat', () => {
     loadFirebase();
 
     async function getUsername(db) {
-        let name;
-        while (!name) {
-            name = prompt("Enter your username for chat:") || "Anonymous";
-            const snapshot = await db.ref('users/' + name).get();
-            if (snapshot.exists()) {
-                alert("Username already taken! Pick another one.");
-                name = null;
-            }
+    let name;
+    while (!name) {
+        name = prompt("Enter your username for chat:");
+        if (!name) return null; 
+        const snapshot = await db.ref('users').get(); 
+        const existingUsers = snapshot.exists() ? Object.keys(snapshot.val()) : [];
+        
+        if (existingUsers.some(u => u.toLowerCase() === name.toLowerCase())) {
+            alert("Username already taken! Pick another one.");
+            name = null;
+            continue;
         }
+        
         db.ref('users/' + name).set(true);
-        return name;
     }
+    return name;
+}
 
     async function initChat() {
         const firebaseConfig = {
@@ -202,6 +207,11 @@ addBtn(util, 'Global Chat', () => {
         const db = firebase.database();
 
         const username = await getUsername(db);
+if (!username) {
+    window.chatActive = false;
+    return;
+}
+
 
         // ---------- Chat Window ----------
         const chat = document.createElement('div');
