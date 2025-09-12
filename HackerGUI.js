@@ -391,7 +391,7 @@ function addMessage(user, text, currentUser) {
     msgDiv.style.color = color;
 
     msgDiv.innerHTML = `
-        <span style="color: gray; opacity: 0.6; margin-right: 6px;">${timeString}</span>
+        <span style="color: gray; opacity: 0.6; margin-right: 3px;">${timeString}</span>
         <span>${user}:</span> ${text}
     `;
 
