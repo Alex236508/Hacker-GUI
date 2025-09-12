@@ -385,17 +385,28 @@ function getUserColor(user, currentUser) {
 function addMessage(user, text, currentUser) {
     const color = getUserColor(user, currentUser);
 
-    
+    // Format the timestamp (hh:mm AM/PM)
     const now = new Date();
     const timeString = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
     const msgDiv = document.createElement('div');
     msgDiv.style.color = color;
 
-    msgDiv.innerHTML = `
-        <span style="color: gray; opacity: 0.6; margin-right: 6px;">${timeString}</span>
-        <span>${user}:</span> ${text}
-      `;
+    // Create the timestamp span
+    const timestampSpan = document.createElement('span');
+    timestampSpan.textContent = timeString;
+    timestampSpan.style.color = '#888';       // faded gray
+    timestampSpan.style.opacity = '0.6';      // more faded
+    timestampSpan.style.marginRight = '6px';
+    timestampSpan.style.fontSize = '0.8em';   // smaller than normal text
+
+    // Build the rest of the message
+    const userText = document.createElement('span');
+    userText.textContent = `${user}: ${text}`;
+
+    // Put them together
+    msgDiv.appendChild(timestampSpan);
+    msgDiv.appendChild(userText);
 
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
