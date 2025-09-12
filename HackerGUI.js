@@ -370,8 +370,10 @@ function getUserColor(user, currentUser) {
 }
 
 function addMessage(user, text, currentUser) {
+    const color = getUserColor(user, currentUser);
     const msgDiv = document.createElement('div');
-    msgDiv.innerHTML = `<span style="color:${getUserColor(user, currentUser)}">${user}</span>: ${text}`;
+    msgDiv.style.color = color; // apply color to whole message
+    msgDiv.textContent = `${user}: ${text}`;
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
