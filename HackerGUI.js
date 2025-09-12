@@ -367,9 +367,12 @@ function getUserColor(user, currentUser) {
         "#ff00ff", // magenta
         "#ff4500", // orange-red
         "#1e90ff", // dodger blue
-        "#adff2f", // green-yellow
+        "FF0000", // Red
         "#ff1493", // deep pink
         "#7fff00", // chartreuse
+        "#FF5F1F", // safety orange
+        "7FFFD4", // aquamarine
+        "8B0000", // blood red
     ];
 
     let hash = 0;
@@ -382,7 +385,7 @@ function getUserColor(user, currentUser) {
 function addMessage(user, text, currentUser) {
     const color = getUserColor(user, currentUser);
 
-    // Format the timestamp (hh:mm AM/PM)
+    
     const now = new Date();
     const timeString = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
@@ -392,21 +395,20 @@ function addMessage(user, text, currentUser) {
     msgDiv.innerHTML = `
         <span style="color: gray; opacity: 0.6; margin-right: 6px;">${timeString}</span>
         <span>${user}:</span> ${text}
-        timestampSpan.style.fontSize = '0.75em';
-    `;
+      `;
 
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
 
-// Listen for new messages from Firebase
+
 db.ref('messages').on('child_added', snapshot => {
     const data = snapshot.val();
     if (data) addMessage(data.user, data.text, username); // pass current username
 });
 
-// Handle sending messages
+
 input.addEventListener('keydown', e => {
     if (e.key === 'Enter' && input.value.trim()) {
         const msg = input.value.trim();
