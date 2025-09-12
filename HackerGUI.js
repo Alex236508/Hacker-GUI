@@ -382,12 +382,23 @@ function getUserColor(user, currentUser) {
 
 function addMessage(user, text, currentUser) {
     const color = getUserColor(user, currentUser);
+
+    // Format the timestamp (hh:mm AM/PM)
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
     const msgDiv = document.createElement('div');
-    msgDiv.style.color = color; // apply color to whole message
-    msgDiv.textContent = `${user}: ${text}`;
+    msgDiv.style.color = color;
+
+    msgDiv.innerHTML = `
+        <span style="color: gray; opacity: 0.6; margin-right: 6px;">${timeString}</span>
+        <span>${user}:</span> ${text}
+    `;
+
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
+
 
 // Listen for new messages from Firebase
 db.ref('messages').on('child_added', snapshot => {
