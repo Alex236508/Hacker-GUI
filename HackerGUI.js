@@ -205,6 +205,7 @@ addBtn(util, 'Global Chat', () => {
     return name;
 }
 
+
     async function initChat() {
         const firebaseConfig = {
             apiKey: "AIzaSyDlmPq4bMKdOFHMdfevEa3ctd4-3WQ4u7k",
@@ -392,8 +393,8 @@ makeDraggable(chat, { locked: false }, [resizeHandle]);
         // ---------- Cleanup ----------
         function cleanupChat() {
     clearInterval(window.chatGlowInt);
-    if (username) db.ref('users/' + username).remove(); 
-    localStorage.removeItem('chatUsername');           
+    if (username) db.ref('users/' + username).remove(); // remove from Firebase
+    localStorage.removeItem('chatUsername');           // remove localStorage
     chat.remove();
     window.chatActive = false;
 }
