@@ -346,25 +346,52 @@ function makeDraggable(g, lock, ignore = []) {
 makeDraggable(chat, { locked: false }, [resizeHandle]);
 
         // ---------- Firebase Messaging ----------
-        function addMessage(user, text) {
-            const msgDiv = document.createElement('div');
-            msgDiv.textContent = `${user}: ${text}`;
-            messagesDiv.appendChild(msgDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
+function getUserColor(user, currentUser) {
+    if (user.toLowerCase() === currentUser.toLowerCase()) {
+        return "#00ff00"; // bright green for your own messages
+    }
 
-        db.ref('messages').on('child_added', snapshot => {
-            const data = snapshot.val();
-            if(data) addMessage(data.user, data.text);
-        });
+    const colors = [
+        "#00ffff", // cyan
+        "#ffff00", // yellow
+        "#ff00ff", // magenta
+        "#ff4500", // orange-red
+        "#1e90ff", // dodger blue
+        "#adff2f", // green-yellow
+        "#ff1493", // deep pink
+        "#7fff00", // chartreuse
+    ];
 
-        input.addEventListener('keydown', e => {
-            if (e.key === 'Enter' && input.value.trim()) {
-                const msg = input.value.trim();
-                db.ref('messages').push({ user: username, text: msg });
-                input.value = '';
-            }
-        });
+    let hash = 0;
+    for (let i = 0; i < user.length; i++) {
+        hash = user.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+}
+
+function addMessage(user, text, currentUser) {
+    const color = getUserColor(user, currentUser);
+    const msgDiv = document.createElement('div');
+    msgDiv.style.color = color; // apply color to whole message
+    msgDiv.textContent = `${user}: ${text}`;
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Listen for new messages from Firebase
+db.ref('messages').on('child_added', snapshot => {
+    const data = snapshot.val();
+    if (data) addMessage(data.user, data.text, username); // pass current username
+});
+
+// Handle sending messages
+input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && input.value.trim()) {
+        const msg = input.value.trim();
+        db.ref('messages').push({ user: username, text: msg });
+        input.value = '';
+    }
+});
 
         // ---------- Cleanup ----------
         function cleanupChat() {
