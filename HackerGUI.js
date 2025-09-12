@@ -110,9 +110,9 @@
 
      // -------------------- DRAGGING --------------------
 function makeDraggable(g, lock){
-  g.style.position = 'fixed'; 
+  g.style.position = 'fixed'; // ensures anchored to viewport
   g.onmousedown = function(e){
-    if(lock.locked) return; 
+    if(lock.locked) return; // do nothing if locked
     let ox = e.clientX - g.getBoundingClientRect().left,
         oy = e.clientY - g.getBoundingClientRect().top;
     function move(e){
@@ -174,37 +174,18 @@ addBtn(util, 'Global Chat', () => {
     loadFirebase();
 
     async function getUsername(db) {
-    // Check if a username already exists in this browser
-    let storedName = localStorage.getItem('chatUsername');
-    if (storedName) {
-        const snapshot = await db.ref('users/' + storedName).get();
-        if (snapshot.exists()) return storedName; // still valid
-    }
-
-    let name;
-    while (!name) {
-        name = prompt("Enter your username for chat:");
-        if (!name) return null; // user pressed Cancel or left blank
-
-        // Fetch all active usernames
-        const snapshot = await db.ref('users').get();
-        const existingUsers = snapshot.exists() ? Object.keys(snapshot.val()) : [];
-        if (existingUsers.some(u => u.toLowerCase() === name.toLowerCase())) {
-            alert("Username already taken! Pick another one.");
-            name = null;
-            continue;
+        let name;
+        while (!name) {
+            name = prompt("Enter your username for chat:") || "Anonymous";
+            const snapshot = await db.ref('users/' + name).get();
+            if (snapshot.exists()) {
+                alert("Username already taken! Pick another one.");
+                name = null;
+            }
         }
-
-        // Save username in Firebase and localStorage
-        const userRef = db.ref('users/' + name);
-        await userRef.set(true);
-        // Remove username from Firebase if user closes tab
-        userRef.onDisconnect().remove();
-        localStorage.setItem('chatUsername', name);
+        db.ref('users/' + name).set(true);
+        return name;
     }
-    return name;
-}
-
 
     async function initChat() {
         const firebaseConfig = {
@@ -221,10 +202,6 @@ addBtn(util, 'Global Chat', () => {
         const db = firebase.database();
 
         const username = await getUsername(db);
-if (!username) {
-    window.chatActive = false;
-    return;
-}
 
         // ---------- Chat Window ----------
         const chat = document.createElement('div');
@@ -232,14 +209,14 @@ if (!username) {
         chat.style.cssText = `
             position:fixed; bottom:50px; right:50px;
             width:300px; height:400px;
-            background:rgba(0,0,0,0.90);
+            background:rgba(0,0,0,0.85);
             color:#0f0; font-family:monospace;
             border-radius:8px; z-index:10000000; display:flex; flex-direction:column;
             user-select:none; overflow:hidden;
         `;
         document.body.appendChild(chat);
 
-        // Rainbow Pulsing Glow Border
+        // Rainbow Pulsing Glow Border (independent of text color)
 const chatBox = document.getElementById('globalChatContainer');
 if(chatBox){
     const oldStyle = document.getElementById('rainbowGlowStyle');
@@ -303,71 +280,36 @@ if(chatBox){
         chat.appendChild(input);
 
         // ---------- Resizable ----------
-const resizeHandle = document.createElement('div');
-resizeHandle.style.cssText = `
-    width:10px; height:10px; background:#0f0;
-    position:absolute; bottom:2px; right:2px; cursor:se-resize; z-index:10000003;
-`;
-chat.appendChild(resizeHandle);
+        const resizeHandle = document.createElement('div');
+        resizeHandle.style.cssText = `
+            width:10px; height:10px; background:#0f0;
+            position:absolute; bottom:2px; right:2px; cursor:se-resize; z-index:10000003;
+        `;
+        chat.appendChild(resizeHandle);
 
-resizeHandle.addEventListener('mousedown', e => {
-    e.stopPropagation(); // stop drag
-    e.preventDefault();
+        resizeHandle.addEventListener('mousedown', e => {
+            e.preventDefault();
+            const startWidth = chat.offsetWidth;
+            const startHeight = chat.offsetHeight;
+            const startX = e.clientX;
+            const startY = e.clientY;
 
-    const startWidth = chat.offsetWidth;
-    const startHeight = chat.offsetHeight;
-    const startX = e.clientX;
-    const startY = e.clientY;
+            function onMouseMove(e) {
+                chat.style.width = startWidth + (e.clientX - startX) + 'px';
+                chat.style.height = startHeight + (e.clientY - startY) + 'px';
+            }
 
-    function onMouseMove(e) {
-        chat.style.width = startWidth + (e.clientX - startX) + 'px';
-        chat.style.height = startHeight + (e.clientY - startY) + 'px';
-    }
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
 
-    function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-    }
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-});
-
-// ---------- Draggable ----------
-function makeDraggable(g, lock, ignore = []) {
-    g.style.position = 'fixed';
-    g.addEventListener('mousedown', e => {
-        if (lock.locked) return;
-        // Ignore if starting on resize handle or any ignored elements
-        if (ignore.some(el => el.contains(e.target))) return;
-
-        let ox = e.clientX - g.getBoundingClientRect().left;
-        let oy = e.clientY - g.getBoundingClientRect().top;
-
-        function move(e) {
-            let x = e.clientX - ox;
-            let y = e.clientY - oy;
-            x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
-            y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
-            g.style.left = x + 'px';
-            g.style.top = y + 'px';
-            g.style.right = 'auto';
-            g.style.bottom = 'auto';
-        }
-
-        function up() {
-            document.removeEventListener('mousemove', move);
-            document.removeEventListener('mouseup', up);
-        }
-
-        document.addEventListener('mousemove', move);
-        document.addEventListener('mouseup', up);
-    });
-}
-
-
-makeDraggable(chat, { locked: false }, [resizeHandle]);
-
+        // ---------- Draggable ----------
+        makeDraggable(chat, { locked: false });
 
         // ---------- Firebase Messaging ----------
         function addMessage(user, text) {
@@ -392,13 +334,16 @@ makeDraggable(chat, { locked: false }, [resizeHandle]);
 
         // ---------- Cleanup ----------
         function cleanupChat() {
-    clearInterval(window.chatGlowInt);
-    if (username) db.ref('users/' + username).remove(); // remove from Firebase
-    localStorage.removeItem('chatUsername');           // remove localStorage
-    chat.remove();
-    window.chatActive = false;
-}
+            clearInterval(window.chatGlowInt);
+            if(username) db.ref('users/' + username).remove();
+            chat.remove();
+            window.chatActive = false;
+        }
 
+        closeBtn.onclick = cleanupChat;
+        window.addEventListener('beforeunload', cleanupChat);
+    }
+});
 
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
