@@ -174,18 +174,22 @@ addBtn(util, 'Global Chat', () => {
     loadFirebase();
 
     async function getUsername(db) {
-        let name;
-        while (!name) {
-            name = prompt("Enter your username for chat:") || "Anonymous";
-            const snapshot = await db.ref('users/' + name).get();
-            if (snapshot.exists()) {
-                alert("Username already taken! Pick another one.");
-                name = null;
-            }
+    let name;
+    while (!name) {
+        name = prompt("Enter your username for chat:") || "Anonymous";
+        const snapshot = await db.ref('users').get(); // get all users
+        const existingUsers = snapshot.exists() ? Object.keys(snapshot.val()) : [];
+        // Check if lowercase version exists
+        if (existingUsers.some(u => u.toLowerCase() === name.toLowerCase())) {
+            alert("Username already taken! Pick another one.");
+            name = null;
+            continue;
         }
+        // Save username using exact casing the user typed
         db.ref('users/' + name).set(true);
-        return name;
     }
+    return name;
+}
 
     async function initChat() {
         const firebaseConfig = {
