@@ -346,7 +346,6 @@ function makeDraggable(g, lock, ignore = []) {
 makeDraggable(chat, { locked: false }, [resizeHandle]);
 
         // ---------- Firebase Messaging ----------
-        // Pick a color for each username (your own = neon green)
 function getUserColor(user, currentUser) {
     if (user === currentUser) {
         return "#00ff00"; // bright green for your own messages
@@ -370,9 +369,9 @@ function getUserColor(user, currentUser) {
     return colors[Math.abs(hash) % colors.length];
 }
 
-function addMessage(user, text) {
+function addMessage(user, text, currentUser) {
     const msgDiv = document.createElement('div');
-    msgDiv.innerHTML = `<span style="color:${getUserColor(user, username)}">${user}</span>: ${text}`;
+    msgDiv.innerHTML = `<span style="color:${getUserColor(user, currentUser)}">${user}</span>: ${text}`;
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
@@ -380,7 +379,7 @@ function addMessage(user, text) {
 // Listen for new messages from Firebase
 db.ref('messages').on('child_added', snapshot => {
     const data = snapshot.val();
-    if (data) addMessage(data.user, data.text);
+    if (data) addMessage(data.user, data.text, username); // pass current username
 });
 
 // Handle sending messages
