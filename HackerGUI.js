@@ -347,7 +347,7 @@ makeDraggable(chat, { locked: false }, [resizeHandle]);
 
         // ---------- Firebase Messaging ----------
 function getUserColor(user, currentUser) {
-    if (user === currentUser) {
+    if (user.toLowerCase() === currentUser.toLowerCase()) {
         return "#00ff00"; // bright green for your own messages
     }
 
