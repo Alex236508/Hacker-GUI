@@ -178,16 +178,16 @@ addBtn(util, 'Global Chat', () => {
     let name;
     while (!name) {
         name = prompt("Enter your username for chat:");
-        if (!name) return null; 
-        const snapshot = await db.ref('users').get(); 
+        if (!name) return null; // user pressed Cancel or left blank
+        const snapshot = await db.ref('users').get(); // get all users
         const existingUsers = snapshot.exists() ? Object.keys(snapshot.val()) : [];
-        
+        // Case-insensitive check
         if (existingUsers.some(u => u.toLowerCase() === name.toLowerCase())) {
             alert("Username already taken! Pick another one.");
             name = null;
             continue;
         }
-        
+        // Save the username as typed
         db.ref('users/' + name).set(true);
     }
     return name;
@@ -209,8 +209,8 @@ addBtn(util, 'Global Chat', () => {
 
         const username = await getUsername(db);
 if (!username) {
-    window.chatActive = false;
-    return;
+    window.chatActive = false; // stop chat initialization
+    return; // exit, no chat created
 }
 
 
