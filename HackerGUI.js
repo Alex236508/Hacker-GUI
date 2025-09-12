@@ -153,12 +153,12 @@ makeDraggable(vfx, vfxLock);
     }
 
     // ---------- Global Chat (Firebase) ----------
-function initChatLogic(db, username, uid) {
-  addBtn(util, 'Global Chat', () => {
+addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
-
-    const loadFirebase = () => {
+  
+  function initChatLogic(db, username, uid) {
+  const loadFirebase = () => {
         if (!window.firebase) {
             const s1 = document.createElement('script');
             s1.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
