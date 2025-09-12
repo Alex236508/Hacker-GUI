@@ -416,6 +416,17 @@ input.addEventListener('keydown', e => {
         window.addEventListener('beforeunload', cleanupChat);
     }
 });
+  // Keyboard shortcut: Shift + B to toggle chat visibility
+document.addEventListener('keydown', e => {
+    if (e.shiftKey && e.key.toLowerCase() === 'b') {
+        if (chat.style.display === 'none') {
+            chat.style.display = 'block';
+        } else {
+            chat.style.display = 'none';
+        }
+    }
+});
+
 
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
