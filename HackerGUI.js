@@ -474,16 +474,15 @@ input.addEventListener('keydown', e => {
         window.addEventListener('beforeunload', cleanupChat);
     }
 });
-  // Keyboard shortcut: Shift + B to toggle chat visibility
+  // ---------- Keyboard shortcut: Shift + B to toggle chat visibility ----------
 document.addEventListener('keydown', e => {
     if (e.shiftKey && e.key.toLowerCase() === 'b') {
-        if (chat.style.display === 'none') {
-            chat.style.display = 'block';
-        } else {
-            chat.style.display = 'none';
-        }
+        const chat = document.getElementById('globalChatContainer');
+        if (!chat) return; // chat not loaded yet
+        chat.style.display = (chat.style.display === 'none') ? 'flex' : 'none';
     }
 });
+
 
 
     // Developer Console (Eruda)
