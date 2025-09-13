@@ -474,14 +474,24 @@ input.addEventListener('keydown', e => {
         window.addEventListener('beforeunload', cleanupChat);
     }
 });
-  // ---------- Keyboard shortcut: Shift + B to toggle chat visibility ----------
+  
+  // Keyboard shortcut: Shift + B to toggle chat visibility
 document.addEventListener('keydown', e => {
+    const target = e.target;
+    const isTyping = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
+    if (isTyping) return; // ignore shortcut when typing
+
     if (e.shiftKey && e.key.toLowerCase() === 'b') {
         const chat = document.getElementById('globalChatContainer');
-        if (!chat) return; // chat not loaded yet
-        chat.style.display = (chat.style.display === 'none') ? 'flex' : 'none';
+        if (!chat) return;
+
+        chat.style.display = chat.style.display === 'none' ? 'flex' : 'none';
     }
 });
+// ---------- Make Chat Immune to All VFX ----------
+window.immuneChats = window.immuneChats || [];
+window.immuneChats.push(document.getElementById('globalChatContainer'));
 
 
 
