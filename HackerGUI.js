@@ -367,12 +367,12 @@ function getUserColor(user, currentUser) {
         "#ff00ff", // magenta
         "#ff4500", // orange-red
         "#1e90ff", // dodger blue
-        "FF0000", // Red
+        "#FF0000", // Red
         "#ff1493", // deep pink
         "#7fff00", // chartreuse
         "#FF5F1F", // safety orange
-        "7FFFD4", // aquamarine
-        "8B0000", // blood red
+        "#7FFFD4", // aquamarine
+        "#8B0000", // blood red
     ];
 
     let hash = 0;
