@@ -807,15 +807,20 @@ addBtn(vfx,'Smooth Disco',()=>{
 });
 
 // Text Corruption
-addBtn(vfx, 'Text Corruption', () => {
+addBtn(vfx,'Text Corruption', () => {
     const chatEl = document.getElementById('globalChatContainer');
-    if (window.textCorruptStyle) return;
+    const isImmune = el => el === chatEl || chatEl.contains(el);
 
+    // Prevent multiple instances
+    if (window.textCorruptActive) return;
+    window.textCorruptActive = true;
+
+    // Create the style element
     const style = document.createElement('style');
     style.id = 'textCorruptStyle';
     style.innerHTML = `
         body { background:black !important; }
-        body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *):not(#globalChatContainer):not(#globalChatContainer *) {
+        body *:not(#globalChatContainer):not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *) {
             color: green !important;
             font-family: Courier New, monospace !important;
         }
@@ -823,20 +828,40 @@ addBtn(vfx, 'Text Corruption', () => {
             font-size: 16px !important;
             text-shadow: 1px 1px #FF0000 !important;
         }
-        #vfxGUI,#utilitiesGUI,#globalChatContainer { animation:none !important; }
+        #vfxGUI,#utilitiesGUI{animation:none !important;}
     `;
     document.head.appendChild(style);
     window.textCorruptStyle = style;
 
+    // Cleanup function
+    const cleanup = () => {
+        if(style) style.remove();
+        window.textCorruptStyle = null;
+        window.textCorruptActive = false;
+    };
+    window._textCorruptCleanup = cleanup;
+
+    // Register cleanup for stop-all
+    if(!window.stopAllVFX) window.stopAllVFX = [];
+    window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
+    window.stopAllVFX.push(cleanup);
+
 }, () => {
-    if (window.textCorruptStyle) { window.textCorruptStyle.remove(); window.textCorruptStyle = null; }
+    // Off-button just calls cleanup
+    if(window._textCorruptCleanup) window._textCorruptCleanup();
 });
 
 
     // Bubble Text
 addBtn(vfx, 'Bubble Text', () => {
     const chatEl = document.getElementById('globalChatContainer');
-    const isImmune = el => el === chatEl || (chatEl && chatEl.contains(el));
+const vfxGUI = document.getElementById('vfxGUI');
+const utilGUI = document.getElementById('utilitiesGUI');
+
+const isImmune = el =>
+    el === chatEl || (chatEl && chatEl.contains(el)) ||
+    el === vfxGUI || (vfxGUI && vfxGUI.contains(el)) ||
+    el === utilGUI || (utilGUI && utilGUI.contains(el));
 
     if (window.bubbleActive) return;
     window.bubbleActive = true;
@@ -868,6 +893,15 @@ addBtn(vfx, 'Bubble Text', () => {
     transform(document.body);
 
     const cleanup = () => {
+    if (style) { style.remove(); }
+    window.textCorruptStyle = null;
+};
+
+window._textCorruptCleanup = cleanup;
+if (!window.stopAllVFX) window.stopAllVFX = [];
+window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
+window.stopAllVFX.push(cleanup);
+ = () => {
         originalTextMap.forEach((orig, node) => { try { node.nodeValue = orig; } catch(e){} });
         window.bubbleActive = false;
     };
