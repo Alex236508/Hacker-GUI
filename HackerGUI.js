@@ -806,17 +806,19 @@ addBtn(vfx,'Smooth Disco',()=>{
     document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>e.style.backgroundColor='');
 });
 
-// Text Corruption (Chat-immune)
-addBtn(vfx,'Text Corruption',()=>{
+// ---------- Text Corruption (Chat-immune) ----------
+addBtn(vfx, 'Text Corruption', () => {
+    if(window.textCorruptActive) return;
+    window.textCorruptActive = true;
+
     const chatEl = document.getElementById('globalChatContainer');
-    const isImmune = el => el === chatEl || chatEl.contains(el);
 
-    if(window._textCorruptCleanup) return;
-
-    const s = document.createElement('style'); 
-    s.id = 'textCorruptStyle'; 
-    s.innerHTML = `
-        body *:not(#globalChatContainer):not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *) {
+    // Create the style element
+    const styleEl = document.createElement('style');
+    styleEl.id = 'textCorruptStyle';
+    styleEl.innerHTML = `
+        body { background: black !important; }
+        body *:not(#globalChatContainer):not(#globalChatContainer *):not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *) {
             color: green !important;
             font-family: Courier New, monospace !important;
         }
@@ -824,21 +826,25 @@ addBtn(vfx,'Text Corruption',()=>{
             font-size: 16px !important;
             text-shadow: 1px 1px #FF0000 !important;
         }
+        #vfxGUI,#utilitiesGUI{animation:none !important;}
     `;
-    document.head.appendChild(s);
+    document.head.appendChild(styleEl);
 
+    // Cleanup function
     const cleanup = () => {
-        if(s) s.remove();
-        window._textCorruptCleanup = null;
+        if(styleEl) styleEl.remove();
+        window.textCorruptActive = false;
     };
 
     window._textCorruptCleanup = cleanup;
 
-    if (!window.stopAllVFX) window.stopAllVFX = [];
+    // Add to Stop All VFX cleanup
+    if(!window.stopAllVFX) window.stopAllVFX = [];
     window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
     window.stopAllVFX.push(cleanup);
 
-},()=>{
+}, () => {
+    // Off-button just calls cleanup
     if(window._textCorruptCleanup) window._textCorruptCleanup();
 });
 
@@ -979,83 +985,81 @@ addBtn(vfx, 'Full Chaos', () => {
   }
 });
 
-    // Stop All VFX (Chat-immune)
+    // ---------- Stop All VFX (Chat-immune) ----------
 addBtn(vfx, 'Stop All', () => {
     const chatEl = document.getElementById('globalChatContainer');
 
-    // Call all registered VFX cleanup functions
+    // Function to check if an element is the chat or inside it
+    const isImmune = el => chatEl && (el === chatEl || chatEl.contains(el));
+
+    // ------------------ Call all VFX cleanup functions ------------------
     if (window.stopAllVFX) {
         window.stopAllVFX.forEach(fn => { 
-            try { fn(); } catch(e){} 
+            try { fn(); } catch(e) {} 
         });
         window.stopAllVFX = [];
     }
 
-    // Bubble text cleanup
-    if(window._bubbleCleanup) try { window._bubbleCleanup(); } catch(e){}
+    // ------------------ Stop Bubble Text ------------------
+    if (window._bubbleCleanup) window._bubbleCleanup();
     window.bubbleActive = false;
 
-    // Text corruption cleanup
-    if(window._textCorruptCleanup) try { window._textCorruptCleanup(); } catch(e){}
-
-    // Matrix Rain
+    // ------------------ Stop Matrix Rain ------------------
     if(window.matrixInt){ clearInterval(window.matrixInt); window.matrixInt=null; }
-    if(window.matrixCanvas){ window.matrixCanvas.remove(); window.matrixCanvas=null; }
+    if(window.matrixCanvas && !isImmune(window.matrixCanvas)){ window.matrixCanvas.remove(); window.matrixCanvas=null; }
     window.matrixActive=false;
 
-    // Smooth Disco
+    // ------------------ Stop Smooth Disco ------------------
     if(window.discoSmoothInt){ clearInterval(window.discoSmoothInt); window.discoSmoothInt=null; }
     window.discoSmoothActive=false;
 
-    // Glitch
+    // ------------------ Stop Glitch ------------------
     if(window.glitchInt){ clearInterval(window.glitchInt); window.glitchInt=null; }
     window.glitchActive=false;
 
-    // Full Chaos
+    // ------------------ Stop Full Chaos ------------------
     if(window.fullChaosLoop1){ clearInterval(window.fullChaosLoop1); window.fullChaosLoop1=null; }
     if(window.fullChaosLoop2){ clearInterval(window.fullChaosLoop2); window.fullChaosLoop2=null; }
     const chaos = document.getElementById('chaosContainer');
-    if(chaos && (!chatEl || !chatEl.contains(chaos))) chaos.remove();
+    if(chaos && !isImmune(chaos)) chaos.remove();
     window.fullChaosActive=false;
 
-    // Page Spin
-    if(window.pageSpinStyle){ window.pageSpinStyle.remove(); window.pageSpinStyle=null; }
+    // ------------------ Stop Page Spin ------------------
+    if(window.pageSpinStyle && !isImmune(window.pageSpinStyle)){ window.pageSpinStyle.remove(); window.pageSpinStyle=null; }
     window.pageSpinActive=false;
 
-    // Image Glitch
+    // ------------------ Stop Text Corruption ------------------
+    if(window._textCorruptCleanup) window._textCorruptCleanup();
+
+    // ------------------ Stop Image Glitch ------------------
     if(window.imgGlitchInt){ clearInterval(window.imgGlitchInt); window.imgGlitchInt=null; 
         document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
-            if(!chatEl || !chatEl.contains(e)){
-                e.style.position=''; e.style.left=''; e.style.top='';
-            }
+            if(!isImmune(e)){ e.style.position=''; e.style.left=''; e.style.top=''; }
         });
     }
 
-    // Reset page-wide styles (skip chat)
+    // ------------------ Reset page-wide inline styles (skip chat) ------------------
     document.body.style.transform='';
     document.body.style.backgroundColor='';
     document.body.style.filter='';
-    document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
-        if(!chatEl || !chatEl.contains(e)){
-            e.style.backgroundColor='';
-            e.style.height='';
-            e.style.transform='';
-            e.style.transition='';
-            e.style.color='';
-            e.style.fontSize='';
-            e.style.position='';
-            e.style.left='';
-            e.style.top='';
-            e.style.textShadow='';
-        }
+    document.querySelectorAll('body *:not(#globalChatContainer):not(#globalChatContainer *):not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
+        e.style.backgroundColor='';
+        e.style.height='';
+        e.style.transform='';
+        e.style.transition='';
+        e.style.color='';
+        e.style.fontSize='';
+        e.style.position='';
+        e.style.left='';
+        e.style.top='';
+        e.style.textShadow='';
     });
-});
-
 
     // ------------------ Reset Utilities ------------------
     if(window.stats){ window.stats.dom.remove(); window.stats=null; }
     if(window.erudaInstance){ window.erudaInstance.destroy(); window.erudaInstance=null; window.erudaLoaded=false; }
     if(window.portaFrame){ window.portaFrame.remove(); window.portaFrame=null; }
+
 });
 
 
