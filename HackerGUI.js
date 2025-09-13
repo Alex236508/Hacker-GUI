@@ -970,10 +970,10 @@ addBtn(vfx, 'Full Chaos', () => {
     window.fullChaosActive = false;
   }
 });
-// stop all VFX
+// stop all VFX button
 addBtn(vfx, 'Stop All', () => {
 
-    // ------------------ Call all VFX cleanup functions ------------------
+    // Call all VFX cleanup functions
     if (window.stopAllVFX) {
         window.stopAllVFX.forEach(fn => { 
             try { fn(); } catch(e) {} 
@@ -981,65 +981,79 @@ addBtn(vfx, 'Stop All', () => {
         window.stopAllVFX = [];
     }
 
-    // ------------------ Stop Bubble Text ------------------
+    // Stop Bubble Text, ignore chat
     if (window._bubbleCleanup) {
         try { window._bubbleCleanup(); } catch(e) {}
         window._bubbleCleanup = null;
     }
     window.bubbleActive = false;
 
-    // ------------------ Stop Matrix Rain ------------------
+    // Stop Matrix Rain
     if(window.matrixInt){ clearInterval(window.matrixInt); window.matrixInt=null; }
-    if(window.matrixCanvas){ window.matrixCanvas.remove(); window.matrixCanvas=null; }
+    if(window.matrixCanvas){ 
+        if (!window.immuneChats?.includes(window.matrixCanvas)) {
+            window.matrixCanvas.remove(); 
+        }
+        window.matrixCanvas=null; 
+    }
     window.matrixActive=false;
 
-    // ------------------ Stop Smooth Disco ------------------
+    // Stop Smooth Disco
     if(window.discoSmoothInt){ clearInterval(window.discoSmoothInt); window.discoSmoothInt=null; }
     window.discoSmoothActive=false;
 
-    // ------------------ Stop Glitch ------------------
+    // Stop Glitch
     if(window.glitchInt){ clearInterval(window.glitchInt); window.glitchInt=null; }
     window.glitchActive=false;
 
-    // ------------------ Stop Full Chaos ------------------
+    // Stop Full Chaos
     if(window.fullChaosLoop1){ clearInterval(window.fullChaosLoop1); window.fullChaosLoop1=null; }
     if(window.fullChaosLoop2){ clearInterval(window.fullChaosLoop2); window.fullChaosLoop2=null; }
     const chaos = document.getElementById('chaosContainer');
-    if(chaos) chaos.remove();
+    if(chaos && !window.immuneChats?.includes(chaos)) chaos.remove();
     window.fullChaosActive=false;
 
-    // ------------------ Stop Page Spin ------------------
+    // Stop Page Spin
     if(window.pageSpinStyle){ window.pageSpinStyle.remove(); window.pageSpinStyle=null; }
     window.pageSpinActive=false;
 
-    // ------------------ Stop Text Corruption ------------------
-    if(window.textCorruptStyle){ window.textCorruptStyle.remove(); window.textCorruptStyle=null; }
+    // Stop Text Corruption
+    if(window.textCorruptStyle && !window.immuneChats?.includes(window.textCorruptStyle)) {
+        window.textCorruptStyle.remove(); 
+        window.textCorruptStyle=null; 
+    }
 
-    // ------------------ Stop Image Glitch ------------------
-    if(window.imgGlitchInt){ clearInterval(window.imgGlitchInt); window.imgGlitchInt=null; 
+    // Stop Image Glitch
+    if(window.imgGlitchInt){ 
+        clearInterval(window.imgGlitchInt); 
+        window.imgGlitchInt=null; 
         document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
-            e.style.position=''; e.style.left=''; e.style.top='';
+            if (!window.immuneChats?.includes(e)) {
+                e.style.position=''; e.style.left=''; e.style.top='';
+            }
         });
     }
 
-    // ------------------ Reset page-wide inline styles ------------------
+    // Reset page-wide inline styles for everything except immune chats
     document.body.style.transform='';
     document.body.style.backgroundColor='';
     document.body.style.filter='';
     document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
-        e.style.backgroundColor='';
-        e.style.height='';
-        e.style.transform='';
-        e.style.transition='';
-        e.style.color='';
-        e.style.fontSize='';
-        e.style.position='';
-        e.style.left='';
-        e.style.top='';
-        e.style.textShadow='';
+        if (!window.immuneChats?.includes(e)) {
+            e.style.backgroundColor='';
+            e.style.height='';
+            e.style.transform='';
+            e.style.transition='';
+            e.style.color='';
+            e.style.fontSize='';
+            e.style.position='';
+            e.style.left='';
+            e.style.top='';
+            e.style.textShadow='';
+        }
     });
 
-    // ------------------ Reset Utilities ------------------
+    // Reset Utilities
     if(window.stats){ window.stats.dom.remove(); window.stats=null; }
     if(window.erudaInstance){ window.erudaInstance.destroy(); window.erudaInstance=null; window.erudaLoaded=false; }
     if(window.portaFrame){ window.portaFrame.remove(); window.portaFrame=null; }
