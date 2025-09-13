@@ -1075,64 +1075,80 @@ addBtn(vfx, 'Stop All', () => {
         vfx.appendChild(section);
     })();
 
-    // ---------- Full Chaos Lightning Sparks ----------
+    // ---------- Rainbow Glitch Tesla Sparks for GUIs ----------
 (function() {
     const guis = [document.getElementById('vfxGUI'), document.getElementById('utilitiesGUI')];
     if (!guis.every(el => el)) return;
 
     guis.forEach(gui => {
-        if (gui._chaosLightning) return; // prevent duplicates
-        gui._chaosLightning = true;
+        if (gui._rainbowSparks) return;
+        gui._rainbowSparks = true;
 
         function randomColor() {
             const hue = Math.floor(Math.random() * 360);
             return `hsl(${hue}, 100%, 50%)`;
         }
 
-        gui._lightningInterval = setInterval(() => {
-            const spark = document.createElement('div');
+        function createGlitchArc(x, y, segments = 4, branch = 0) {
+            let lastX = x;
+            let lastY = y;
+            for (let i = 0; i < segments; i++) {
+                const spark = document.createElement('div');
+                spark.style.position = 'absolute';
+                spark.style.height = '2px';
+                spark.style.width = Math.random() * 10 + 5 + 'px';
+                spark.style.background = randomColor();
+                spark.style.pointerEvents = 'none';
+                spark.style.zIndex = 10000010;
+                spark.style.left = lastX + 'px';
+                spark.style.top = lastY + 'px';
+                spark.style.opacity = 1;
+                spark.style.transform = `rotate(${(Math.random() - 0.5) * 60}deg)`;
+                document.body.appendChild(spark);
+
+                const dx = (Math.random() - 0.5) * 20;
+                const dy = (Math.random() - 0.5) * 20;
+
+                lastX += dx;
+                lastY += dy;
+
+                let life = 0;
+                const anim = setInterval(() => {
+                    spark.style.opacity = 1 - life / 20;
+                    life++;
+                    if (life > 20) {
+                        clearInterval(anim);
+                        spark.remove();
+                        // Random branch
+                        if (branch < 2 && Math.random() < 0.4) {
+                            createGlitchArc(lastX, lastY, Math.floor(Math.random() * 3 + 2), branch + 1);
+                        }
+                    }
+                }, 16);
+            }
+        }
+
+        gui._rainbowInterval = setInterval(() => {
             const rect = gui.getBoundingClientRect();
-            const length = Math.random() * 20 + 10;
-            const thickness = Math.random() * 2 + 1;
-
-            spark.style.position = 'absolute';
-            spark.style.width = length + 'px';
-            spark.style.height = thickness + 'px';
-            spark.style.background = randomColor();
-            spark.style.pointerEvents = 'none';
-            spark.style.zIndex = 10000010;
-            spark.style.transformOrigin = 'left center';
-
-            // Start somewhere along the GUI edge
-            const startX = rect.left + Math.random() * rect.width;
-            const startY = rect.top + Math.random() * rect.height;
-            spark.style.left = startX + 'px';
-            spark.style.top = startY + 'px';
-            spark.style.opacity = 1;
-
-            document.body.appendChild(spark);
-
-            const angle = (Math.random() - 0.5) * Math.PI / 2; // random angle
-            let life = 0;
-
-            const anim = setInterval(() => {
-                spark.style.transform = `rotate(${angle * life}px)`;
-                spark.style.left = parseFloat(spark.style.left) + Math.cos(angle) * 3 + 'px';
-                spark.style.top = parseFloat(spark.style.top) + Math.sin(angle) * 3 + 'px';
-                spark.style.opacity = 1 - life / 20;
-                life++;
-                if (life > 20) {
-                    clearInterval(anim);
-                    spark.remove();
+            // Emit 2-4 arcs per interval
+            for (let i = 0; i < 3; i++) {
+                let startX, startY;
+                const side = Math.floor(Math.random() * 4);
+                switch (side) {
+                    case 0: startX = rect.left + Math.random() * rect.width; startY = rect.top; break;
+                    case 1: startX = rect.right; startY = rect.top + Math.random() * rect.height; break;
+                    case 2: startX = rect.left + Math.random() * rect.width; startY = rect.bottom; break;
+                    case 3: startX = rect.left; startY = rect.top + Math.random() * rect.height; break;
                 }
-            }, 16);
-        }, 50); // new spark every 50ms
+                createGlitchArc(startX, startY, Math.floor(Math.random() * 4 + 2));
+            }
+        }, 100);
 
-        gui.stopChaosLightning = () => {
-            if (gui._lightningInterval) {
-                clearInterval(gui._lightningInterval);
-                gui._lightningInterval = null;
-                gui._chaosLightning = false;
+        gui.stopRainbowSparks = () => {
+            if (gui._rainbowInterval) {
+                clearInterval(gui._rainbowInterval);
+                gui._rainbowInterval = null;
+                gui._rainbowSparks = false;
             }
         };
     });
