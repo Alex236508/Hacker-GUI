@@ -1075,65 +1075,67 @@ addBtn(vfx, 'Stop All', () => {
         vfx.appendChild(section);
     })();
 
-    // ---------- Glitch Sparks for Chat GUI ----------
+    // ---------- Full Chaos Lightning Sparks ----------
 (function() {
-    const chat = document.getElementById('globalChatContainer');
-    if (!chat) return;
+    const guis = [document.getElementById('vfxGUI'), document.getElementById('utilitiesGUI')];
+    if (!guis.every(el => el)) return;
 
-    if (chat._chaosSparks) return; // prevent multiple instances
-    chat._chaosSparks = true;
+    guis.forEach(gui => {
+        if (gui._chaosLightning) return; // prevent duplicates
+        gui._chaosLightning = true;
 
-    // Function to generate a random rainbow color
-    function randomColor() {
-        const hue = Math.floor(Math.random() * 360);
-        return `hsl(${hue}, 100%, 50%)`;
-    }
-
-    // Create sparks continuously
-    chat._chaosInterval = setInterval(() => {
-        const spark = document.createElement('div');
-        spark.style.position = 'absolute';
-        spark.style.width = spark.style.height = `${Math.random() * 4 + 2}px`;
-        spark.style.borderRadius = '50%';
-        spark.style.background = randomColor();
-        spark.style.pointerEvents = 'none';
-        spark.style.zIndex = 10000010;
-
-        // Start near the edge of chat
-        const rect = chat.getBoundingClientRect();
-        const startX = Math.random() * rect.width;
-        const startY = Math.random() * rect.height;
-        spark.style.left = startX + 'px';
-        spark.style.top = startY + 'px';
-        spark.style.opacity = 1;
-
-        document.body.appendChild(spark);
-
-        // Animate spark outward like lightning burst
-        const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 6 + 3; // faster than normal sparks
-        let life = 0;
-
-        const anim = setInterval(() => {
-            spark.style.left = parseFloat(spark.style.left) + Math.cos(angle) * speed + 'px';
-            spark.style.top = parseFloat(spark.style.top) + Math.sin(angle) * speed + 'px';
-            spark.style.opacity = 1 - life / 20; // fade fast
-            life++;
-            if (life > 20) {
-                clearInterval(anim);
-                spark.remove();
-            }
-        }, 16);
-    }, 60); // new spark every 60ms
-
-    // Stop sparks function
-    chat.stopChaosSparks = () => {
-        if (chat._chaosInterval) {
-            clearInterval(chat._chaosInterval);
-            chat._chaosInterval = null;
-            chat._chaosSparks = false;
+        function randomColor() {
+            const hue = Math.floor(Math.random() * 360);
+            return `hsl(${hue}, 100%, 50%)`;
         }
-    };
+
+        gui._lightningInterval = setInterval(() => {
+            const spark = document.createElement('div');
+            const rect = gui.getBoundingClientRect();
+            const length = Math.random() * 20 + 10;
+            const thickness = Math.random() * 2 + 1;
+
+            spark.style.position = 'absolute';
+            spark.style.width = length + 'px';
+            spark.style.height = thickness + 'px';
+            spark.style.background = randomColor();
+            spark.style.pointerEvents = 'none';
+            spark.style.zIndex = 10000010;
+            spark.style.transformOrigin = 'left center';
+
+            // Start somewhere along the GUI edge
+            const startX = rect.left + Math.random() * rect.width;
+            const startY = rect.top + Math.random() * rect.height;
+            spark.style.left = startX + 'px';
+            spark.style.top = startY + 'px';
+            spark.style.opacity = 1;
+
+            document.body.appendChild(spark);
+
+            const angle = (Math.random() - 0.5) * Math.PI / 2; // random angle
+            let life = 0;
+
+            const anim = setInterval(() => {
+                spark.style.transform = `rotate(${angle * life}px)`;
+                spark.style.left = parseFloat(spark.style.left) + Math.cos(angle) * 3 + 'px';
+                spark.style.top = parseFloat(spark.style.top) + Math.sin(angle) * 3 + 'px';
+                spark.style.opacity = 1 - life / 20;
+                life++;
+                if (life > 20) {
+                    clearInterval(anim);
+                    spark.remove();
+                }
+            }, 16);
+        }, 50); // new spark every 50ms
+
+        gui.stopChaosLightning = () => {
+            if (gui._lightningInterval) {
+                clearInterval(gui._lightningInterval);
+                gui._lightningInterval = null;
+                gui._chaosLightning = false;
+            }
+        };
+    });
 })();
 
     // -------------------- SHIFT+H TO HIDE --------------------
