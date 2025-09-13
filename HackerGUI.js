@@ -1075,7 +1075,7 @@ addBtn(vfx, 'Stop All', () => {
         vfx.appendChild(section);
     })();
 
-    // ---------- Full Chaos Sparks for Chat GUI ----------
+    // ---------- Glitch Sparks for Chat GUI ----------
 (function() {
     const chat = document.getElementById('globalChatContainer');
     if (!chat) return;
