@@ -1075,7 +1075,7 @@ addBtn(vfx, 'Stop All', () => {
         vfx.appendChild(section);
     })();
 
-    // ---------- Glitchy Corrupted Rainbow Arcs ----------
+    // ---------- Optimized Lightning Glitch Arcs ----------
 (function() {
     const guis = [document.getElementById('vfxGUI'), document.getElementById('utilitiesGUI')];
     if (!guis.every(el => el)) return;
@@ -1084,82 +1084,80 @@ addBtn(vfx, 'Stop All', () => {
         if (gui._glitchArcs) return;
         gui._glitchArcs = true;
 
-        function randomColor() {
-            const hue = Math.floor(Math.random() * 360);
-            return `hsl(${hue}, 100%, 50%)`;
-        }
-
-        function createArc(x, y, maxLength = 80, jaggedness = 18, branch = 0) {
-            let lastX = x;
-            let lastY = y;
-            let segments = Math.floor(maxLength / 6) + 3;
+        function createArc(startX, startY, angle, maxLength = 100, jaggedness = 15) {
+            let lastX = startX;
+            let lastY = startY;
+            const segments = Math.floor(maxLength / 8);
 
             for (let i = 0; i < segments; i++) {
-                const dx = (Math.random() - 0.5) * jaggedness * 3;
-                const dy = (Math.random() - 0.5) * jaggedness * 3;
+                const dx = Math.cos(angle) * (8 + Math.random() * 5);
+                const dy = Math.sin(angle) * (8 + Math.random() * 5);
+                const jitterX = (Math.random() - 0.5) * jaggedness;
+                const jitterY = (Math.random() - 0.5) * jaggedness;
 
                 const spark = document.createElement('div');
                 spark.style.position = 'absolute';
                 spark.style.height = '2px';
                 spark.style.width = Math.sqrt(dx * dx + dy * dy) + 'px';
-                spark.style.background = randomColor();
-                spark.style.pointerEvents = 'none';
-                spark.style.zIndex = 10000010;
                 spark.style.left = lastX + 'px';
                 spark.style.top = lastY + 'px';
+                spark.style.background = 'white';
                 spark.style.opacity = 1;
+                spark.style.pointerEvents = 'none';
+                spark.style.zIndex = 10000010;
                 spark.style.transformOrigin = '0 50%';
-                spark.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
-
-                // glitchy glow
-                spark.style.filter = 'blur(1.5px) saturate(2) contrast(2)';
+                spark.style.transform = `rotate(${Math.atan2(dy + jitterY, dx + jitterX)}rad)`;
+                spark.style.filter = 'hue-rotate(0deg) brightness(2) saturate(2) blur(1px)';
 
                 document.body.appendChild(spark);
 
-                lastX += dx;
-                lastY += dy;
-
+                // Animate glitchy hue shift + fade
                 let life = 0;
                 const anim = setInterval(() => {
-                    // flicker color like corrupted pixels
-                    spark.style.background = randomColor();
-                    spark.style.opacity = 1 - life / 12;
+                    spark.style.filter = `hue-rotate(${life * 40}deg) brightness(2) saturate(2) blur(1px)`;
+                    spark.style.opacity = 1 - life / 10;
                     life++;
-
-                    // occasional “scanline glitch” flicker
-                    if (Math.random() < 0.1) {
-                        spark.style.height = '1px';
-                        spark.style.filter = 'blur(2px) hue-rotate(90deg)';
-                    }
-
-                    if (life > 12) {
+                    if (life > 10) {
                         clearInterval(anim);
                         spark.remove();
-
-                        // branching arcs (chaotic corruption)
-                        if (branch < 2 && Math.random() < 0.25) {
-                            createArc(lastX, lastY, maxLength / 2, jaggedness, branch + 1);
-                        }
                     }
-                }, 30);
+                }, 40);
+
+                lastX += dx + jitterX;
+                lastY += dy + jitterY;
             }
         }
 
         gui._glitchInterval = setInterval(() => {
             const rect = gui.getBoundingClientRect();
-            const sparks = Math.floor(Math.random() * 4) + 1; // 1–4 arcs
-            for (let i = 0; i < sparks; i++) {
-                let startX, startY;
-                const side = Math.floor(Math.random() * 4);
-                switch (side) {
-                    case 0: startX = rect.left + Math.random() * rect.width; startY = rect.top; break;
-                    case 1: startX = rect.right; startY = rect.top + Math.random() * rect.height; break;
-                    case 2: startX = rect.left + Math.random() * rect.width; startY = rect.bottom; break;
-                    case 3: startX = rect.left; startY = rect.top + Math.random() * rect.height; break;
-                }
-                createArc(startX, startY, 50 + Math.random() * 120, 20 + Math.random() * 15);
+            const side = Math.floor(Math.random() * 4);
+            let startX, startY, angle;
+
+            switch (side) {
+                case 0: // top
+                    startX = rect.left + Math.random() * rect.width;
+                    startY = rect.top;
+                    angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.3; // mostly upward
+                    break;
+                case 1: // right
+                    startX = rect.right;
+                    startY = rect.top + Math.random() * rect.height;
+                    angle = 0 + (Math.random() - 0.5) * 0.3; // mostly right
+                    break;
+                case 2: // bottom
+                    startX = rect.left + Math.random() * rect.width;
+                    startY = rect.bottom;
+                    angle = Math.PI / 2 + (Math.random() - 0.5) * 0.3; // mostly downward
+                    break;
+                case 3: // left
+                    startX = rect.left;
+                    startY = rect.top + Math.random() * rect.height;
+                    angle = Math.PI + (Math.random() - 0.5) * 0.3; // mostly left
+                    break;
             }
-        }, 120);
+
+            createArc(startX, startY, angle, 80 + Math.random() * 50, 12);
+        }, 200);
 
         gui.stopGlitchArcs = () => {
             if (gui._glitchInterval) {
@@ -1170,7 +1168,6 @@ addBtn(vfx, 'Stop All', () => {
         };
     });
 })();
-
 
 
     // -------------------- SHIFT+H TO HIDE --------------------
