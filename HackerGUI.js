@@ -1075,7 +1075,7 @@ addBtn(vfx, 'Stop All', () => {
         vfx.appendChild(section);
     })();
 
-    // ---------- Lightning Glitch Arcs with Rapid Color Shift ----------
+    // ---------- Jagged Lightning Glitch Arcs ----------
 (function() {
     const guis = [document.getElementById('vfxGUI'), document.getElementById('utilitiesGUI')];
     if (!guis.every(el => el)) return;
@@ -1084,54 +1084,60 @@ addBtn(vfx, 'Stop All', () => {
         if (gui._glitchArcs) return;
         gui._glitchArcs = true;
 
-        function createArc(startX, startY, angle, maxLength = 100, jaggedness = 15, depth = 0) {
-            let lastX = startX;
-            let lastY = startY;
-            const segments = Math.floor(maxLength / 8);
+        function createArc(startX, startY, angle, maxLength = 120, jaggedness = 20) {
+            // Create a container for the arc
+            const arc = document.createElement("div");
+            arc.style.position = "absolute";
+            arc.style.left = "0";
+            arc.style.top = "0";
+            arc.style.width = "100%";
+            arc.style.height = "100%";
+            arc.style.pointerEvents = "none";
+            arc.style.zIndex = 10000010;
+
+            // Build a jagged path
+            let x = startX, y = startY;
+            let path = `M ${x} ${y}`;
+            const segments = Math.floor(maxLength / 12);
 
             for (let i = 0; i < segments; i++) {
-                const dx = Math.cos(angle) * (8 + Math.random() * 5);
-                const dy = Math.sin(angle) * (8 + Math.random() * 5);
-                const jitterX = (Math.random() - 0.5) * jaggedness;
-                const jitterY = (Math.random() - 0.5) * jaggedness;
-
-                const spark = document.createElement('div');
-                spark.style.position = 'absolute';
-                spark.style.height = '2px';
-                spark.style.width = Math.sqrt(dx * dx + dy * dy) + 'px';
-                spark.style.left = lastX + 'px';
-                spark.style.top = lastY + 'px';
-                spark.style.opacity = 1;
-                spark.style.pointerEvents = 'none';
-                spark.style.zIndex = 10000010;
-                spark.style.transformOrigin = '0 50%';
-                spark.style.transform = `rotate(${Math.atan2(dy + jitterY, dx + jitterX)}rad)`;
-                spark.style.background = 'hsl(0, 100%, 50%)'; // start red
-
-                document.body.appendChild(spark);
-
-                // Animate glitchy color cycling + fade
-                let life = 0;
-                const anim = setInterval(() => {
-                    const hue = (life * 90 + Math.random() * 90) % 360; // jumps through hues fast
-                    spark.style.background = `hsl(${hue}, 100%, 60%)`;
-                    spark.style.opacity = 1 - life / 12;
-                    life++;
-                    if (life > 12) {
-                        clearInterval(anim);
-                        spark.remove();
-                    }
-                }, 40);
-
-                lastX += dx + jitterX;
-                lastY += dy + jitterY;
-
-                // Random branching
-                if (Math.random() < 0.1 && depth < 2) {
-                    const branchAngle = angle + (Math.random() - 0.5) * 0.8;
-                    createArc(lastX, lastY, branchAngle, maxLength / 2, jaggedness, depth + 1);
-                }
+                x += Math.cos(angle) * (10 + Math.random() * 6);
+                y += Math.sin(angle) * (10 + Math.random() * 6);
+                x += (Math.random() - 0.5) * jaggedness;
+                y += (Math.random() - 0.5) * jaggedness;
+                path += ` L ${x} ${y}`;
             }
+
+            // Use inline SVG for lightning effect
+            arc.innerHTML = `
+                <svg style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;" xmlns="http://www.w3.org/2000/svg">
+                    <polyline points="" stroke="white" stroke-width="2" fill="none" />
+                </svg>
+            `;
+
+            const polyline = arc.querySelector("polyline");
+            polyline.setAttribute("points", path.replace(/[ML]/g, "").trim());
+
+            document.body.appendChild(arc);
+
+            // Animate glitch color + fade
+            let life = 0;
+            const anim = setInterval(() => {
+                if (life === 0) {
+                    polyline.setAttribute("stroke", "white"); // initial flash
+                    polyline.setAttribute("stroke-width", "3");
+                } else {
+                    const hue = (life * 120 + Math.random() * 180) % 360;
+                    polyline.setAttribute("stroke", `hsl(${hue}, 100%, 60%)`);
+                    polyline.setAttribute("stroke-width", "2");
+                }
+                polyline.setAttribute("opacity", 1 - life / 10);
+                life++;
+                if (life > 10) {
+                    clearInterval(anim);
+                    arc.remove();
+                }
+            }, 60);
         }
 
         gui._glitchInterval = setInterval(() => {
@@ -1143,27 +1149,27 @@ addBtn(vfx, 'Stop All', () => {
                 case 0: // top
                     startX = rect.left + Math.random() * rect.width;
                     startY = rect.top;
-                    angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.3;
+                    angle = -Math.PI / 2;
                     break;
                 case 1: // right
                     startX = rect.right;
                     startY = rect.top + Math.random() * rect.height;
-                    angle = 0 + (Math.random() - 0.5) * 0.3;
+                    angle = 0;
                     break;
                 case 2: // bottom
                     startX = rect.left + Math.random() * rect.width;
                     startY = rect.bottom;
-                    angle = Math.PI / 2 + (Math.random() - 0.5) * 0.3;
+                    angle = Math.PI / 2;
                     break;
                 case 3: // left
                     startX = rect.left;
                     startY = rect.top + Math.random() * rect.height;
-                    angle = Math.PI + (Math.random() - 0.5) * 0.3;
+                    angle = Math.PI;
                     break;
             }
 
-            createArc(startX, startY, angle, 90 + Math.random() * 60, 15);
-        }, 250);
+            createArc(startX, startY, angle, 100 + Math.random() * 60, 25);
+        }, 300);
 
         gui.stopGlitchArcs = () => {
             if (gui._glitchInterval) {
