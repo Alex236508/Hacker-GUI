@@ -843,14 +843,12 @@ addBtn(vfx,'Text Corruption',()=>{
 });
 
 
-    // Bubble Text (Chat-immune)
+    // ---------- Bubble Text (Chat-immune) ----------
 addBtn(vfx, 'Bubble Text', () => {
-    const chatEl = document.getElementById('globalChatContainer');
-    const isImmune = el => el === chatEl || chatEl.contains(el);
-
     if (window.bubbleActive) return;
     window.bubbleActive = true;
 
+    const chatEl = document.getElementById('globalChatContainer');
     const originalTextMap = new Map();
 
     const bubbleMap = {
@@ -865,29 +863,28 @@ addBtn(vfx, 'Bubble Text', () => {
     function transform(node) {
         if (!node) return;
         if (node.nodeType === Node.ELEMENT_NODE) {
-            if (isImmune(node) || node.closest('#vfxGUI,#utilitiesGUI')) return;
+            if(node === chatEl || node.closest && node.closest('#globalChatContainer,#vfxGUI,#utilitiesGUI')) return;
             node.childNodes.forEach(transform);
-        } else if (node.nodeType === Node.TEXT_NODE) {
-            if (!originalTextMap.has(node)) originalTextMap.set(node, node.nodeValue);
+        }
+        else if (node.nodeType === Node.TEXT_NODE) {
+            if(!node.nodeValue.trim()) return;
+            if(!originalTextMap.has(node)) originalTextMap.set(node, node.nodeValue);
             node.nodeValue = node.nodeValue.replace(/[a-zA-Z0-9]/g, ch => bubbleMap[ch] || ch);
         }
     }
 
     transform(document.body);
 
+    // Cleanup
     const cleanup = () => {
         originalTextMap.forEach((orig, node) => { try { node.nodeValue = orig; } catch(e){} });
         window.bubbleActive = false;
-        window._bubbleCleanup = null;
     };
 
     window._bubbleCleanup = cleanup;
-    if (!window.stopAllVFX) window.stopAllVFX = [];
+    if(!window.stopAllVFX) window.stopAllVFX = [];
     window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
     window.stopAllVFX.push(cleanup);
-
-}, () => {
-    if (window._bubbleCleanup) window._bubbleCleanup();
 });
 
 
@@ -985,69 +982,75 @@ addBtn(vfx, 'Full Chaos', () => {
     // Stop All VFX (Chat-immune)
 addBtn(vfx, 'Stop All', () => {
     const chatEl = document.getElementById('globalChatContainer');
-    const isImmune = el => el === chatEl || chatEl.contains(el);
 
+    // Call all registered VFX cleanup functions
     if (window.stopAllVFX) {
         window.stopAllVFX.forEach(fn => { 
-            try { fn(); } catch(e) {} 
+            try { fn(); } catch(e){} 
         });
         window.stopAllVFX = [];
     }
 
-    // ------------------ Stop Bubble Text ------------------
-    if(window._bubbleCleanup) window._bubbleCleanup();
+    // Bubble text cleanup
+    if(window._bubbleCleanup) try { window._bubbleCleanup(); } catch(e){}
     window.bubbleActive = false;
 
-    // ------------------ Stop Text Corruption ------------------
-    if(window._textCorruptCleanup) window._textCorruptCleanup();
+    // Text corruption cleanup
+    if(window._textCorruptCleanup) try { window._textCorruptCleanup(); } catch(e){}
 
-    // ------------------ Stop Matrix Rain ------------------
+    // Matrix Rain
     if(window.matrixInt){ clearInterval(window.matrixInt); window.matrixInt=null; }
     if(window.matrixCanvas){ window.matrixCanvas.remove(); window.matrixCanvas=null; }
     window.matrixActive=false;
 
-    // ------------------ Stop Smooth Disco ------------------
+    // Smooth Disco
     if(window.discoSmoothInt){ clearInterval(window.discoSmoothInt); window.discoSmoothInt=null; }
     window.discoSmoothActive=false;
 
-    // ------------------ Stop Glitch ------------------
+    // Glitch
     if(window.glitchInt){ clearInterval(window.glitchInt); window.glitchInt=null; }
     window.glitchActive=false;
 
-    // ------------------ Stop Full Chaos ------------------
+    // Full Chaos
     if(window.fullChaosLoop1){ clearInterval(window.fullChaosLoop1); window.fullChaosLoop1=null; }
     if(window.fullChaosLoop2){ clearInterval(window.fullChaosLoop2); window.fullChaosLoop2=null; }
     const chaos = document.getElementById('chaosContainer');
-    if(chaos) chaos.remove();
+    if(chaos && (!chatEl || !chatEl.contains(chaos))) chaos.remove();
     window.fullChaosActive=false;
 
-    // ------------------ Stop Page Spin ------------------
+    // Page Spin
     if(window.pageSpinStyle){ window.pageSpinStyle.remove(); window.pageSpinStyle=null; }
     window.pageSpinActive=false;
 
-    // ------------------ Stop Image Glitch ------------------
+    // Image Glitch
     if(window.imgGlitchInt){ clearInterval(window.imgGlitchInt); window.imgGlitchInt=null; 
         document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
-            e.style.position=''; e.style.left=''; e.style.top='';
+            if(!chatEl || !chatEl.contains(e)){
+                e.style.position=''; e.style.left=''; e.style.top='';
+            }
         });
     }
 
-    // ------------------ Reset page-wide inline styles ------------------
+    // Reset page-wide styles (skip chat)
     document.body.style.transform='';
     document.body.style.backgroundColor='';
     document.body.style.filter='';
-    document.querySelectorAll('body *:not(#globalChatContainer):not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
-        e.style.backgroundColor='';
-        e.style.height='';
-        e.style.transform='';
-        e.style.transition='';
-        e.style.color='';
-        e.style.fontSize='';
-        e.style.position='';
-        e.style.left='';
-        e.style.top='';
-        e.style.textShadow='';
+    document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
+        if(!chatEl || !chatEl.contains(e)){
+            e.style.backgroundColor='';
+            e.style.height='';
+            e.style.transform='';
+            e.style.transition='';
+            e.style.color='';
+            e.style.fontSize='';
+            e.style.position='';
+            e.style.left='';
+            e.style.top='';
+            e.style.textShadow='';
+        }
     });
+});
+
 
     // ------------------ Reset Utilities ------------------
     if(window.stats){ window.stats.dom.remove(); window.stats=null; }
