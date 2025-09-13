@@ -1075,7 +1075,7 @@ addBtn(vfx, 'Stop All', () => {
         vfx.appendChild(section);
     })();
 
-    // ---------- Jagged Lightning Glitch Arcs with Overlapping Color ----------
+    // ---------- Jagged Lightning Glitch Arcs (Shorter, with Chromatic Offset) ----------
 (function() {
     const guis = [document.getElementById('vfxGUI'), document.getElementById('utilitiesGUI')];
     if (!guis.every(el => el)) return;
@@ -1084,7 +1084,7 @@ addBtn(vfx, 'Stop All', () => {
         if (gui._glitchArcs) return;
         gui._glitchArcs = true;
 
-        function createArc(startX, startY, angle, maxLength = 120, jaggedness = 20, depth = 0) {
+        function createArc(startX, startY, angle, maxLength = 60, jaggedness = 15, depth = 0) {
             const arc = document.createElement("div");
             arc.style.position = "absolute";
             arc.style.left = "0";
@@ -1096,29 +1096,31 @@ addBtn(vfx, 'Stop All', () => {
 
             let x = startX, y = startY;
             let points = `${x},${y}`;
-            const segments = Math.floor(maxLength / 12);
+            const segments = Math.floor(maxLength / 10);
 
             for (let i = 0; i < segments; i++) {
-                x += Math.cos(angle) * (10 + Math.random() * 6);
-                y += Math.sin(angle) * (10 + Math.random() * 6);
+                x += Math.cos(angle) * (8 + Math.random() * 5);
+                y += Math.sin(angle) * (8 + Math.random() * 5);
                 x += (Math.random() - 0.5) * jaggedness;
                 y += (Math.random() - 0.5) * jaggedness;
                 points += ` ${x},${y}`;
 
-                if (depth < 1 && Math.random() < 0.2) {
-                    const branchAngle = angle + (Math.random() - 0.5) * Math.PI / 3;
+                if (depth < 1 && Math.random() < 0.15) {
+                    const branchAngle = angle + (Math.random() - 0.5) * Math.PI / 4;
                     setTimeout(() => {
-                        createArc(x, y, branchAngle, maxLength / 2, jaggedness * 0.7, depth + 1);
-                    }, 50);
+                        createArc(x, y, branchAngle, maxLength / 2, jaggedness * 0.6, depth + 1);
+                    }, 40);
                 }
             }
 
-            // --- Multiple stroke layers for glitch overlap ---
+            // --- Multiple stroke layers with small offsets ---
             arc.innerHTML = `
                 <svg style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;" xmlns="http://www.w3.org/2000/svg">
-                    <polyline class="main" points="${points}" stroke="white" stroke-width="3" fill="none" />
-                    <polyline class="ghost1" points="${points}" stroke="magenta" stroke-width="2" fill="none" opacity="0.7"/>
-                    <polyline class="ghost2" points="${points}" stroke="cyan" stroke-width="2" fill="none" opacity="0.7"/>
+                    <polyline class="main" points="${points}" stroke="white" stroke-width="2.5" fill="none" />
+                    <polyline class="ghost1" points="${points}" stroke="magenta" stroke-width="2" fill="none" opacity="0.6"
+                        transform="translate(${Math.random()*2-1},${Math.random()*2-1})"/>
+                    <polyline class="ghost2" points="${points}" stroke="cyan" stroke-width="2" fill="none" opacity="0.6"
+                        transform="translate(${Math.random()*2-1},${Math.random()*2-1})"/>
                 </svg>
             `;
 
@@ -1130,29 +1132,27 @@ addBtn(vfx, 'Stop All', () => {
             let life = 0;
             const anim = setInterval(() => {
                 if (life === 0) {
-                    // Burst flash at start
+                    // Initial burst flash
                     main.setAttribute("stroke", "white");
                     ghost1.setAttribute("stroke", "white");
                     ghost2.setAttribute("stroke", "white");
                 } else {
-                    const hue = (life * 80 + Math.random() * 120) % 360;
-                    const hue2 = (life * 100 + Math.random() * 150) % 360;
-                    const hue3 = (life * 60 + Math.random() * 200) % 360;
+                    const hue = (life * 80 + Math.random() * 100) % 360;
+                    const hue2 = (life * 110 + Math.random() * 140) % 360;
+                    const hue3 = (life * 90 + Math.random() * 180) % 360;
 
                     main.setAttribute("stroke", `hsl(${hue}, 100%, 60%)`);
                     ghost1.setAttribute("stroke", `hsl(${hue2}, 100%, 60%)`);
                     ghost2.setAttribute("stroke", `hsl(${hue3}, 100%, 60%)`);
-
-                    main.setAttribute("stroke-width", "2");
                 }
 
-                const opacity = 1 - life / 14;
+                const opacity = 1 - life / 12;
                 main.setAttribute("opacity", opacity);
-                ghost1.setAttribute("opacity", opacity * 0.7);
-                ghost2.setAttribute("opacity", opacity * 0.7);
+                ghost1.setAttribute("opacity", opacity * 0.6);
+                ghost2.setAttribute("opacity", opacity * 0.6);
 
                 life++;
-                if (life > 14) {
+                if (life > 12) {
                     clearInterval(anim);
                     arc.remove();
                 }
@@ -1171,11 +1171,11 @@ addBtn(vfx, 'Stop All', () => {
                 case 3: startX = rect.left; startY = rect.top + Math.random() * rect.height; angle = Math.PI; break;
             }
 
-            const count = 2 + Math.floor(Math.random() * 3);
+            const count = 2 + Math.floor(Math.random() * 2);
             for (let i = 0; i < count; i++) {
-                createArc(startX, startY, angle + (Math.random() - 0.5) * Math.PI / 6, 100 + Math.random() * 60, 25);
+                createArc(startX, startY, angle + (Math.random() - 0.5) * Math.PI / 8, 60 + Math.random() * 30, 15);
             }
-        }, 150);
+        }, 180);
 
         gui.stopGlitchArcs = () => {
             if (gui._glitchInterval) {
