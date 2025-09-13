@@ -808,46 +808,39 @@ addBtn(vfx,'Smooth Disco',()=>{
 
 // ---------- Text Corruption (Chat-immune) ----------
 addBtn(vfx, 'Text Corruption', () => {
-    if(window.textCorruptActive) return;
-    window.textCorruptActive = true;
-
     const chatEl = document.getElementById('globalChatContainer');
+    const isImmune = el => chatEl && (el === chatEl || chatEl.contains(el));
 
-    // Create the style element
-    const styleEl = document.createElement('style');
-    styleEl.id = 'textCorruptStyle';
-    styleEl.innerHTML = `
-        body { background: black !important; }
+    if (window.textCorruptStyle) return;
+
+    // Create style element
+    let s = document.createElement('style'); 
+    s.id = 'textCorruptStyle'; 
+    s.innerHTML = `
+        body { background:black !important; }
         body *:not(#globalChatContainer):not(#globalChatContainer *):not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *) {
             color: green !important;
             font-family: Courier New, monospace !important;
-        }
-        p, span, li, h1, h2, h3, h4, h5, h6 {
             font-size: 16px !important;
             text-shadow: 1px 1px #FF0000 !important;
         }
-        #vfxGUI,#utilitiesGUI{animation:none !important;}
+        #vfxGUI, #utilitiesGUI { animation:none !important; }
     `;
-    document.head.appendChild(styleEl);
+    document.head.appendChild(s);
+    window.textCorruptStyle = s;
 
     // Cleanup function
-    const cleanup = () => {
-        if(styleEl) styleEl.remove();
-        window.textCorruptActive = false;
+    window._textCorruptCleanup = () => {
+        if (window.textCorruptStyle) {
+            window.textCorruptStyle.remove();
+            window.textCorruptStyle = null;
+        }
+        window._textCorruptCleanup = null;
     };
 
-    window._textCorruptCleanup = cleanup;
-
-    // Add to Stop All VFX cleanup
-    if(!window.stopAllVFX) window.stopAllVFX = [];
-    window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
-    window.stopAllVFX.push(cleanup);
-
 }, () => {
-    // Off-button just calls cleanup
-    if(window._textCorruptCleanup) window._textCorruptCleanup();
+    if (window._textCorruptCleanup) window._textCorruptCleanup();
 });
-
 
     // ---------- Bubble Text (Chat-immune) ----------
 addBtn(vfx, 'Bubble Text', () => {
