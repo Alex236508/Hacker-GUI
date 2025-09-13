@@ -852,67 +852,53 @@ addBtn(vfx,'Text Corruption', () => {
 });
 
 
-    // Bubble Text
+    // Bubble Text (Chat-immune)
 addBtn(vfx, 'Bubble Text', () => {
     const chatEl = document.getElementById('globalChatContainer');
-const vfxGUI = document.getElementById('vfxGUI');
-const utilGUI = document.getElementById('utilitiesGUI');
-
-const isImmune = el =>
-    el === chatEl || (chatEl && chatEl.contains(el)) ||
-    el === vfxGUI || (vfxGUI && vfxGUI.contains(el)) ||
-    el === utilGUI || (utilGUI && utilGUI.contains(el));
+    const isImmune = el => el === chatEl || chatEl.contains(el);
 
     if (window.bubbleActive) return;
     window.bubbleActive = true;
 
     const originalTextMap = new Map();
     const bubbleMap = {
-        a: 'ⓐ', b: 'ⓑ', c: 'ⓒ', d: 'ⓓ', e: 'ⓔ', f: 'ⓕ', g: 'ⓖ', h: 'ⓗ', i: 'ⓘ', j: 'ⓙ',
-        k: 'ⓚ', l: 'ⓛ', m: 'ⓜ', n: 'ⓝ', o: 'ⓞ', p: 'ⓟ', q: 'ⓠ', r: 'ⓡ', s: 'ⓢ', t: 'ⓣ',
-        u: 'ⓤ', v: 'ⓥ', w: 'ⓦ', x: 'ⓧ', y: 'ⓨ', z: 'ⓩ', A: 'Ⓐ', B: 'Ⓑ', C: 'Ⓒ', D: 'Ⓓ',
-        E: 'Ⓔ', F: 'Ⓕ', G: 'Ⓖ', H: 'Ⓗ', I: 'Ⓘ', J: 'Ⓙ', K: 'Ⓚ', L: 'Ⓛ', M: 'Ⓜ', N: 'Ⓝ',
-        O: 'Ⓞ', P: 'Ⓟ', Q: 'Ⓠ', R: 'Ⓡ', S: 'Ⓢ', T: 'Ⓣ', U: 'Ⓤ', V: 'Ⓥ', W: 'Ⓦ', X: 'Ⓧ',
-        Y: 'Ⓨ', Z: 'Ⓩ', '0': '⓪', '1': '①', '2': '②', '3': '③', '4': '④', '5': '⑤', '6': '⑥',
+        a: 'ⓐ', b: 'ⓑ', c: 'ⓒ', d: 'ⓓ', e: 'ⓔ', f: 'ⓕ', g: 'ⓖ', h: 'ⓗ', i: 'ⓘ', j: 'ⓙ', k: 'ⓚ', l: 'ⓛ',
+        m: 'ⓜ', n: 'ⓝ', o: 'ⓞ', p: 'ⓟ', q: 'ⓠ', r: 'ⓡ', s: 'ⓢ', t: 'ⓣ', u: 'ⓤ', v: 'ⓥ', w: 'ⓦ', x: 'ⓧ',
+        y: 'ⓨ', z: 'ⓩ', A: 'Ⓐ', B: 'Ⓑ', C: 'Ⓒ', D: 'Ⓓ', E: 'Ⓔ', F: 'Ⓕ', G: 'Ⓖ', H: 'Ⓗ', I: 'Ⓘ', J: 'Ⓙ',
+        K: 'Ⓚ', L: 'Ⓛ', M: 'Ⓜ', N: 'Ⓝ', O: 'Ⓞ', P: 'Ⓟ', Q: 'Ⓠ', R: 'Ⓡ', S: 'Ⓢ', T: 'Ⓣ', U: 'Ⓤ', V: 'Ⓥ',
+        W: 'Ⓦ', X: 'Ⓧ', Y: 'Ⓨ', Z: 'Ⓩ', '0': '⓪', '1': '①', '2': '②', '3': '③', '4': '④', '5': '⑤', '6': '⑥',
         '7': '⑦', '8': '⑧', '9': '⑨'
     };
 
     function transform(node) {
         if (!node) return;
         if (node.nodeType === Node.ELEMENT_NODE) {
-            if (isImmune(node)) return;
+            try { if (node.id === 'vfxGUI' || node.id === 'utilitiesGUI' || (node.closest && node.closest('#vfxGUI,#utilitiesGUI')) || isImmune(node)) return; } catch(e) { return; }
             node.childNodes.forEach(transform);
             return;
         }
         if (node.nodeType === Node.TEXT_NODE) {
-            if (!originalTextMap.has(node)) originalTextMap.set(node, node.nodeValue);
-            node.nodeValue = node.nodeValue.replace(/[a-zA-Z0-9]/g, ch => bubbleMap[ch] || ch);
+            const txt = node.nodeValue;
+            if (!txt || !txt.trim()) return;
+            if (!originalTextMap.has(node)) originalTextMap.set(node, txt);
+            node.nodeValue = txt.replace(/[a-zA-Z0-9]/g, ch => bubbleMap[ch] || ch);
         }
     }
 
     transform(document.body);
 
     const cleanup = () => {
-    if (style) { style.remove(); }
-    window.textCorruptStyle = null;
-};
-
-window._textCorruptCleanup = cleanup;
-if (!window.stopAllVFX) window.stopAllVFX = [];
-window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
-window.stopAllVFX.push(cleanup);
- = () => {
         originalTextMap.forEach((orig, node) => { try { node.nodeValue = orig; } catch(e){} });
         window.bubbleActive = false;
     };
-
     window._bubbleCleanup = cleanup;
+
     if (!window.stopAllVFX) window.stopAllVFX = [];
     window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
     window.stopAllVFX.push(cleanup);
 
 }, () => {
-    if (window._bubbleCleanup) window._bubbleCleanup();
+    if(window._bubbleCleanup) window._bubbleCleanup();
 });
 
 
@@ -929,7 +915,8 @@ addBtn(vfx,'Page Spin',()=>{
   if(window.pageSpinStyle){window.pageSpinStyle.remove();window.pageSpinStyle=null;}
   window.pageSpinActive=false;
 });
-// Full chaos
+
+  // Full chaos
 addBtn(vfx, 'Full Chaos', () => {
   if (!window.fullChaosActive) {
     window.fullChaosActive = true;
@@ -1005,80 +992,79 @@ addBtn(vfx, 'Full Chaos', () => {
   }
 });
 
-    // ---------- Stop All VFX (chat immune) ----------
+    // Stop All VFX (Chat-immune)
 addBtn(vfx, 'Stop All', () => {
     const chatEl = document.getElementById('globalChatContainer');
     const isImmune = el => el === chatEl || chatEl.contains(el);
 
-    // Call all VFX cleanup functions
     if (window.stopAllVFX) {
-        window.stopAllVFX.forEach(fn => { try { fn(); } catch(e) {} });
+        window.stopAllVFX.forEach(fn => { 
+            try { fn(); } catch(e) {} 
+        });
         window.stopAllVFX = [];
     }
 
-    // Stop Bubble Text
-    if (window._bubbleCleanup) { try { window._bubbleCleanup(); } catch(e) {} window._bubbleCleanup=null; }
+    // ------------------ Stop Bubble Text ------------------
+    if(window._bubbleCleanup) window._bubbleCleanup();
     window.bubbleActive = false;
 
-    // Stop Matrix Rain
+    // ------------------ Stop Text Corruption ------------------
+    if(window._textCorruptCleanup) window._textCorruptCleanup();
+
+    // ------------------ Stop Matrix Rain ------------------
     if(window.matrixInt){ clearInterval(window.matrixInt); window.matrixInt=null; }
-    if(window.matrixCanvas && !isImmune(window.matrixCanvas)) { window.matrixCanvas.remove(); window.matrixCanvas=null; }
+    if(window.matrixCanvas){ window.matrixCanvas.remove(); window.matrixCanvas=null; }
     window.matrixActive=false;
 
-    // Stop Smooth Disco
+    // ------------------ Stop Smooth Disco ------------------
     if(window.discoSmoothInt){ clearInterval(window.discoSmoothInt); window.discoSmoothInt=null; }
     window.discoSmoothActive=false;
 
-    // Stop Glitch
+    // ------------------ Stop Glitch ------------------
     if(window.glitchInt){ clearInterval(window.glitchInt); window.glitchInt=null; }
     window.glitchActive=false;
 
-    // Stop Full Chaos
+    // ------------------ Stop Full Chaos ------------------
     if(window.fullChaosLoop1){ clearInterval(window.fullChaosLoop1); window.fullChaosLoop1=null; }
     if(window.fullChaosLoop2){ clearInterval(window.fullChaosLoop2); window.fullChaosLoop2=null; }
     const chaos = document.getElementById('chaosContainer');
-    if(chaos && !isImmune(chaos)) chaos.remove();
+    if(chaos) chaos.remove();
     window.fullChaosActive=false;
 
-    // Stop Page Spin
+    // ------------------ Stop Page Spin ------------------
     if(window.pageSpinStyle){ window.pageSpinStyle.remove(); window.pageSpinStyle=null; }
     window.pageSpinActive=false;
 
-    // Stop Text Corruption
-    if(window.textCorruptStyle && !isImmune(window.textCorruptStyle)) window.textCorruptStyle.remove();
-    window.textCorruptStyle=null;
-
-    // Stop Image Glitch
+    // ------------------ Stop Image Glitch ------------------
     if(window.imgGlitchInt){ clearInterval(window.imgGlitchInt); window.imgGlitchInt=null; 
         document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
-            if(!isImmune(e)) { e.style.position=''; e.style.left=''; e.style.top=''; }
+            e.style.position=''; e.style.left=''; e.style.top='';
         });
     }
 
-    // Reset page-wide inline styles
+    // ------------------ Reset page-wide inline styles ------------------
     document.body.style.transform='';
     document.body.style.backgroundColor='';
     document.body.style.filter='';
-    document.querySelectorAll('body *:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
-        if(!isImmune(e)) {
-            e.style.backgroundColor='';
-            e.style.height='';
-            e.style.transform='';
-            e.style.transition='';
-            e.style.color='';
-            e.style.fontSize='';
-            e.style.position='';
-            e.style.left='';
-            e.style.top='';
-            e.style.textShadow='';
-        }
+    document.querySelectorAll('body *:not(#globalChatContainer):not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>{
+        e.style.backgroundColor='';
+        e.style.height='';
+        e.style.transform='';
+        e.style.transition='';
+        e.style.color='';
+        e.style.fontSize='';
+        e.style.position='';
+        e.style.left='';
+        e.style.top='';
+        e.style.textShadow='';
     });
 
-    // Reset Utilities
+    // ------------------ Reset Utilities ------------------
     if(window.stats){ window.stats.dom.remove(); window.stats=null; }
     if(window.erudaInstance){ window.erudaInstance.destroy(); window.erudaInstance=null; window.erudaLoaded=false; }
     if(window.portaFrame){ window.portaFrame.remove(); window.portaFrame=null; }
 });
+
 
     // -------------------- FONT COLOR SLIDER --------------------
     (function(){
