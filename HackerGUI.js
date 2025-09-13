@@ -1075,7 +1075,7 @@ addBtn(vfx, 'Stop All', () => {
         vfx.appendChild(section);
     })();
 
-    // ---------- Lightning Glitch Arcs with Branching ----------
+    // ---------- Lightning Glitch Arcs with Rapid Color Shift ----------
 (function() {
     const guis = [document.getElementById('vfxGUI'), document.getElementById('utilitiesGUI')];
     if (!guis.every(el => el)) return;
@@ -1101,20 +1101,20 @@ addBtn(vfx, 'Stop All', () => {
                 spark.style.width = Math.sqrt(dx * dx + dy * dy) + 'px';
                 spark.style.left = lastX + 'px';
                 spark.style.top = lastY + 'px';
-                spark.style.background = 'white'; // raw electricity
                 spark.style.opacity = 1;
                 spark.style.pointerEvents = 'none';
                 spark.style.zIndex = 10000010;
                 spark.style.transformOrigin = '0 50%';
                 spark.style.transform = `rotate(${Math.atan2(dy + jitterY, dx + jitterX)}rad)`;
-                spark.style.filter = 'hue-rotate(0deg) brightness(2) saturate(2) blur(1px)';
+                spark.style.background = 'hsl(0, 100%, 50%)'; // start red
 
                 document.body.appendChild(spark);
 
-                // Animate glitchy hue shift + fade
+                // Animate glitchy color cycling + fade
                 let life = 0;
                 const anim = setInterval(() => {
-                    spark.style.filter = `hue-rotate(${life * 60}deg) brightness(2) saturate(3) blur(1px)`;
+                    const hue = (life * 90 + Math.random() * 90) % 360; // jumps through hues fast
+                    spark.style.background = `hsl(${hue}, 100%, 60%)`;
                     spark.style.opacity = 1 - life / 12;
                     life++;
                     if (life > 12) {
@@ -1126,9 +1126,9 @@ addBtn(vfx, 'Stop All', () => {
                 lastX += dx + jitterX;
                 lastY += dy + jitterY;
 
-                // Random branching (only a few, avoid lag)
+                // Random branching
                 if (Math.random() < 0.1 && depth < 2) {
-                    const branchAngle = angle + (Math.random() - 0.5) * 0.8; // ~ ±45°
+                    const branchAngle = angle + (Math.random() - 0.5) * 0.8;
                     createArc(lastX, lastY, branchAngle, maxLength / 2, jaggedness, depth + 1);
                 }
             }
@@ -1143,22 +1143,22 @@ addBtn(vfx, 'Stop All', () => {
                 case 0: // top
                     startX = rect.left + Math.random() * rect.width;
                     startY = rect.top;
-                    angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.3; // upward
+                    angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.3;
                     break;
                 case 1: // right
                     startX = rect.right;
                     startY = rect.top + Math.random() * rect.height;
-                    angle = 0 + (Math.random() - 0.5) * 0.3; // rightward
+                    angle = 0 + (Math.random() - 0.5) * 0.3;
                     break;
                 case 2: // bottom
                     startX = rect.left + Math.random() * rect.width;
                     startY = rect.bottom;
-                    angle = Math.PI / 2 + (Math.random() - 0.5) * 0.3; // downward
+                    angle = Math.PI / 2 + (Math.random() - 0.5) * 0.3;
                     break;
                 case 3: // left
                     startX = rect.left;
                     startY = rect.top + Math.random() * rect.height;
-                    angle = Math.PI + (Math.random() - 0.5) * 0.3; // leftward
+                    angle = Math.PI + (Math.random() - 0.5) * 0.3;
                     break;
             }
 
@@ -1174,6 +1174,7 @@ addBtn(vfx, 'Stop All', () => {
         };
     });
 })();
+
 
     // -------------------- SHIFT+H TO HIDE --------------------
     document.addEventListener('keydown', (e) => {
