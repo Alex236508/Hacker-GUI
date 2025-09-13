@@ -1075,7 +1075,7 @@ addBtn(vfx, 'Stop All', () => {
         vfx.appendChild(section);
     })();
 
-    // ---------- Jagged Lightning Glitch Arcs ----------
+    // ---------- Jagged Lightning Glitch Arcs with Branching ----------
 (function() {
     const guis = [document.getElementById('vfxGUI'), document.getElementById('utilitiesGUI')];
     if (!guis.every(el => el)) return;
@@ -1084,8 +1084,7 @@ addBtn(vfx, 'Stop All', () => {
         if (gui._glitchArcs) return;
         gui._glitchArcs = true;
 
-        function createArc(startX, startY, angle, maxLength = 120, jaggedness = 20) {
-            // Create a container for the arc
+        function createArc(startX, startY, angle, maxLength = 120, jaggedness = 20, depth = 0) {
             const arc = document.createElement("div");
             arc.style.position = "absolute";
             arc.style.left = "0";
@@ -1095,7 +1094,7 @@ addBtn(vfx, 'Stop All', () => {
             arc.style.pointerEvents = "none";
             arc.style.zIndex = 10000010;
 
-            // Build a jagged path
+            
             let x = startX, y = startY;
             let path = `M ${x} ${y}`;
             const segments = Math.floor(maxLength / 12);
@@ -1106,9 +1105,16 @@ addBtn(vfx, 'Stop All', () => {
                 x += (Math.random() - 0.5) * jaggedness;
                 y += (Math.random() - 0.5) * jaggedness;
                 path += ` L ${x} ${y}`;
+
+                
+                if (depth < 1 && Math.random() < 0.2) {
+                    const branchAngle = angle + (Math.random() - 0.5) * Math.PI / 3;
+                    setTimeout(() => {
+                        createArc(x, y, branchAngle, maxLength / 2, jaggedness * 0.7, depth + 1);
+                    }, 50);
+                }
             }
 
-            // Use inline SVG for lightning effect
             arc.innerHTML = `
                 <svg style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;" xmlns="http://www.w3.org/2000/svg">
                     <polyline points="" stroke="white" stroke-width="2" fill="none" />
@@ -1117,59 +1123,47 @@ addBtn(vfx, 'Stop All', () => {
 
             const polyline = arc.querySelector("polyline");
             polyline.setAttribute("points", path.replace(/[ML]/g, "").trim());
-
             document.body.appendChild(arc);
 
-            // Animate glitch color + fade
+            
             let life = 0;
             const anim = setInterval(() => {
                 if (life === 0) {
-                    polyline.setAttribute("stroke", "white"); // initial flash
+                    polyline.setAttribute("stroke", "white"); // burst flash
                     polyline.setAttribute("stroke-width", "3");
                 } else {
                     const hue = (life * 120 + Math.random() * 180) % 360;
                     polyline.setAttribute("stroke", `hsl(${hue}, 100%, 60%)`);
                     polyline.setAttribute("stroke-width", "2");
                 }
-                polyline.setAttribute("opacity", 1 - life / 10);
+                polyline.setAttribute("opacity", 1 - life / 12);
                 life++;
-                if (life > 10) {
+                if (life > 12) {
                     clearInterval(anim);
                     arc.remove();
                 }
-            }, 60);
+            }, 50);
         }
 
+        
         gui._glitchInterval = setInterval(() => {
             const rect = gui.getBoundingClientRect();
             const side = Math.floor(Math.random() * 4);
             let startX, startY, angle;
 
             switch (side) {
-                case 0: // top
-                    startX = rect.left + Math.random() * rect.width;
-                    startY = rect.top;
-                    angle = -Math.PI / 2;
-                    break;
-                case 1: // right
-                    startX = rect.right;
-                    startY = rect.top + Math.random() * rect.height;
-                    angle = 0;
-                    break;
-                case 2: // bottom
-                    startX = rect.left + Math.random() * rect.width;
-                    startY = rect.bottom;
-                    angle = Math.PI / 2;
-                    break;
-                case 3: // left
-                    startX = rect.left;
-                    startY = rect.top + Math.random() * rect.height;
-                    angle = Math.PI;
-                    break;
+                case 0: startX = rect.left + Math.random() * rect.width; startY = rect.top; angle = -Math.PI / 2; break;
+                case 1: startX = rect.right; startY = rect.top + Math.random() * rect.height; angle = 0; break;
+                case 2: startX = rect.left + Math.random() * rect.width; startY = rect.bottom; angle = Math.PI / 2; break;
+                case 3: startX = rect.left; startY = rect.top + Math.random() * rect.height; angle = Math.PI; break;
             }
 
-            createArc(startX, startY, angle, 100 + Math.random() * 60, 25);
-        }, 300);
+            
+            const count = 2 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < count; i++) {
+                createArc(startX, startY, angle + (Math.random() - 0.5) * Math.PI / 6, 100 + Math.random() * 60, 25);
+            }
+        }, 150);
 
         gui.stopGlitchArcs = () => {
             if (gui._glitchInterval) {
@@ -1180,6 +1174,7 @@ addBtn(vfx, 'Stop All', () => {
         };
     });
 })();
+
 
 
     // -------------------- SHIFT+H TO HIDE --------------------
