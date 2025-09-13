@@ -807,17 +807,15 @@ addBtn(vfx,'Smooth Disco',()=>{
 });
 
 // Text Corruption (Chat-immune)
-addBtn(vfx, 'Text Corruption', () => {
+addBtn(vfx,'Text Corruption',()=>{
     const chatEl = document.getElementById('globalChatContainer');
     const isImmune = el => el === chatEl || chatEl.contains(el);
 
     if(window._textCorruptCleanup) return;
 
-    // Create style element
     const s = document.createElement('style'); 
     s.id = 'textCorruptStyle'; 
     s.innerHTML = `
-        body { background:black !important; }
         body *:not(#globalChatContainer):not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *) {
             color: green !important;
             font-family: Courier New, monospace !important;
@@ -826,7 +824,6 @@ addBtn(vfx, 'Text Corruption', () => {
             font-size: 16px !important;
             text-shadow: 1px 1px #FF0000 !important;
         }
-        #vfxGUI, #utilitiesGUI { animation: none !important; }
     `;
     document.head.appendChild(s);
 
@@ -841,7 +838,7 @@ addBtn(vfx, 'Text Corruption', () => {
     window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
     window.stopAllVFX.push(cleanup);
 
-}, () => {
+},()=>{
     if(window._textCorruptCleanup) window._textCorruptCleanup();
 });
 
@@ -855,6 +852,7 @@ addBtn(vfx, 'Bubble Text', () => {
     window.bubbleActive = true;
 
     const originalTextMap = new Map();
+
     const bubbleMap = {
         a: 'ⓐ', b: 'ⓑ', c: 'ⓒ', d: 'ⓓ', e: 'ⓔ', f: 'ⓕ', g: 'ⓖ', h: 'ⓗ', i: 'ⓘ', j: 'ⓙ', k: 'ⓚ', l: 'ⓛ',
         m: 'ⓜ', n: 'ⓝ', o: 'ⓞ', p: 'ⓟ', q: 'ⓠ', r: 'ⓡ', s: 'ⓢ', t: 'ⓣ', u: 'ⓤ', v: 'ⓥ', w: 'ⓦ', x: 'ⓧ',
@@ -867,15 +865,11 @@ addBtn(vfx, 'Bubble Text', () => {
     function transform(node) {
         if (!node) return;
         if (node.nodeType === Node.ELEMENT_NODE) {
-            try { if (node.id === 'vfxGUI' || node.id === 'utilitiesGUI' || (node.closest && node.closest('#vfxGUI,#utilitiesGUI')) || isImmune(node)) return; } catch(e) { return; }
+            if (isImmune(node) || node.closest('#vfxGUI,#utilitiesGUI')) return;
             node.childNodes.forEach(transform);
-            return;
-        }
-        if (node.nodeType === Node.TEXT_NODE) {
-            const txt = node.nodeValue;
-            if (!txt || !txt.trim()) return;
-            if (!originalTextMap.has(node)) originalTextMap.set(node, txt);
-            node.nodeValue = txt.replace(/[a-zA-Z0-9]/g, ch => bubbleMap[ch] || ch);
+        } else if (node.nodeType === Node.TEXT_NODE) {
+            if (!originalTextMap.has(node)) originalTextMap.set(node, node.nodeValue);
+            node.nodeValue = node.nodeValue.replace(/[a-zA-Z0-9]/g, ch => bubbleMap[ch] || ch);
         }
     }
 
@@ -884,16 +878,18 @@ addBtn(vfx, 'Bubble Text', () => {
     const cleanup = () => {
         originalTextMap.forEach((orig, node) => { try { node.nodeValue = orig; } catch(e){} });
         window.bubbleActive = false;
+        window._bubbleCleanup = null;
     };
-    window._bubbleCleanup = cleanup;
 
+    window._bubbleCleanup = cleanup;
     if (!window.stopAllVFX) window.stopAllVFX = [];
     window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
     window.stopAllVFX.push(cleanup);
 
 }, () => {
-    if(window._bubbleCleanup) window._bubbleCleanup();
+    if (window._bubbleCleanup) window._bubbleCleanup();
 });
+
 
 
 // Page Spin
