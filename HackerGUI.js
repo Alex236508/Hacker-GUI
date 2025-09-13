@@ -152,7 +152,41 @@ makeDraggable(vfx, vfxLock);
         if(off) activeUtilities[name] = { on, off };
     }
 
-    // ---------- Global Chat (Firebase) ----------
+    addBtn(util, 'Embedded Browser', () => {
+    // If the browser already exists, just toggle visibility
+    const existingBrowser = document.getElementById('embeddedBrowserContainer');
+    if (existingBrowser) {
+        if (existingBrowser.style.display === 'none') {
+            existingBrowser.style.display = 'block';
+        } else {
+            existingBrowser.style.display = 'none';
+        }
+        return;
+    }
+
+    // Otherwise, load it for the first time
+    fetch('https://raw.githubusercontent.com/Alex236508/EmbeddedBrowser/refs/heads/main/Browser.js')
+        .then(r => r.text())
+        .then(t => {
+            eval(t);
+
+            // Optional: mark it as loaded
+            window.browserLoaded = true;
+
+            // Make the browser immune to all VFX
+            if (!window.immuneChats) window.immuneChats = [];
+            const browserEl = document.getElementById('embeddedBrowserContainer');
+            if (browserEl && !window.immuneChats.includes(browserEl)) {
+                window.immuneChats.push(browserEl);
+            }
+        })
+        .catch(err => {
+            console.error('Failed to load Embedded Browser:', err);
+        });
+});
+
+  
+// ---------- Global Chat (Firebase) ----------
 addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
