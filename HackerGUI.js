@@ -806,19 +806,17 @@ addBtn(vfx,'Smooth Disco',()=>{
     document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)').forEach(e=>e.style.backgroundColor='');
 });
 
-// Text Corruption
-addBtn(vfx,'Text Corruption', () => {
+// Text Corruption (Chat-immune)
+addBtn(vfx, 'Text Corruption', () => {
     const chatEl = document.getElementById('globalChatContainer');
     const isImmune = el => el === chatEl || chatEl.contains(el);
 
-    // Prevent multiple instances
-    if (window.textCorruptActive) return;
-    window.textCorruptActive = true;
+    if(window._textCorruptCleanup) return;
 
-    // Create the style element
-    const style = document.createElement('style');
-    style.id = 'textCorruptStyle';
-    style.innerHTML = `
+    // Create style element
+    const s = document.createElement('style'); 
+    s.id = 'textCorruptStyle'; 
+    s.innerHTML = `
         body { background:black !important; }
         body *:not(#globalChatContainer):not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *) {
             color: green !important;
@@ -828,26 +826,22 @@ addBtn(vfx,'Text Corruption', () => {
             font-size: 16px !important;
             text-shadow: 1px 1px #FF0000 !important;
         }
-        #vfxGUI,#utilitiesGUI{animation:none !important;}
+        #vfxGUI, #utilitiesGUI { animation: none !important; }
     `;
-    document.head.appendChild(style);
-    window.textCorruptStyle = style;
+    document.head.appendChild(s);
 
-    // Cleanup function
     const cleanup = () => {
-        if(style) style.remove();
-        window.textCorruptStyle = null;
-        window.textCorruptActive = false;
+        if(s) s.remove();
+        window._textCorruptCleanup = null;
     };
+
     window._textCorruptCleanup = cleanup;
 
-    // Register cleanup for stop-all
-    if(!window.stopAllVFX) window.stopAllVFX = [];
+    if (!window.stopAllVFX) window.stopAllVFX = [];
     window.stopAllVFX = window.stopAllVFX.filter(f => f !== cleanup);
     window.stopAllVFX.push(cleanup);
 
 }, () => {
-    // Off-button just calls cleanup
     if(window._textCorruptCleanup) window._textCorruptCleanup();
 });
 
