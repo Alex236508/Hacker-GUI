@@ -649,67 +649,82 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
     })();
 
         // -------------------- VFX BUTTONS --------------------
-  addBtn(vfx, 'Corruption Virus', () => {
-    if (window._corruptVirusActive) return; // already running
+      // corruption virus
+    addBtn(vfx, 'Corruption Virus', () => {
+    if (window._corruptVirusActive) return;
     window._corruptVirusActive = true;
 
-    let progress = 0; // how far the virus has spread (0 → 1)
+    let progress = 0; // virus spread amount
 
-    // Function to apply corruption styles to elements inside infected area
+    // Elements immune to corruption
+    const isImmune = (el) => {
+        return el.closest('#globalChatContainer, #vfxGUI, #utilitiesGUI');
+    };
+
+    // Apply corruption to infected elements
     function corruptElements() {
-        const all = document.querySelectorAll("body *:not(#globalChatContainer):not(#globalChatContainer *)");
+        const all = document.querySelectorAll("body *");
         const rectLimit = {
             x: window.innerWidth * progress,
             y: window.innerHeight * progress
         };
 
         all.forEach(el => {
+            if (isImmune(el)) return; // skip immune
+
             let rect = el.getBoundingClientRect();
             if (rect.left < rectLimit.x && rect.top < rectLimit.y) {
                 if (!el._corrupted) {
                     el._corrupted = true;
 
-                    // Random corruption effects
                     el._corruptInterval = setInterval(() => {
                         let r = Math.random();
 
+                        // Controlled scale/skew distortions
                         if (r < 0.3) {
-                            el.style.transform = `skew(${Math.random()*40-20}deg) scale(${1+Math.random()*0.5})`;
-                        } else if (r < 0.6) {
-                            el.style.filter = `hue-rotate(${Math.random()*360}deg) contrast(${0.5+Math.random()*1.5})`;
-                        } else if (r < 0.8) {
-                            el.style.opacity = Math.random() > 0.2 ? 1 : 0.5;
-                        } else {
-                            // Text corruption
+                            el.style.transform =
+                                `skew(${Math.random()*10-5}deg) scale(${1 + (Math.random()*0.2 - 0.1)})`;
+                        }
+                        // Hue-shift glitch
+                        else if (r < 0.6) {
+                            el.style.filter =
+                                `hue-rotate(${Math.random()*360}deg) contrast(${0.8 + Math.random()*0.4})`;
+                        }
+                        // Flicker opacity
+                        else if (r < 0.8) {
+                            el.style.opacity = (Math.random() > 0.1 ? 1 : 0.7);
+                        }
+                        // Text corruption (light)
+                        else {
                             if (el.childNodes.length && el.childNodes[0].nodeType === 3) {
                                 let txt = el._origText || el.textContent;
                                 el._origText = txt;
                                 let chars = txt.split("");
                                 for (let i=0; i<chars.length; i++) {
-                                    if (Math.random() < 0.1) {
+                                    if (Math.random() < 0.05) {
                                         chars[i] = String.fromCharCode(33+Math.floor(Math.random()*94));
                                     }
                                 }
                                 el.textContent = chars.join("");
                             }
                         }
-                    }, 200 + Math.random()*300);
+                    }, 250 + Math.random()*250);
                 }
             }
         });
     }
 
-    // Spread function
+    // Spread
     function spread() {
         if (progress < 1) {
-            progress += 0.005; // speed of spread
+            progress += 0.004; // spreading speed
             corruptElements();
             requestAnimationFrame(spread);
         }
     }
     spread();
 
-    // Sparks layer (visual chaos, but behind GUIs)
+    // Sparks Canvas (with ghost overlaps)
     let canvas = document.createElement("canvas");
     canvas.style.position = "fixed";
     canvas.style.top = "0";
@@ -724,20 +739,44 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    let sparks = [];
+
+    function newSpark() {
+        let x = 0, y = 0; // start top-left
+        let angle = Math.random() * Math.PI / 2; // down-right spread
+        return {
+            x, y,
+            vx: Math.cos(angle) * (2 + Math.random()*2),
+            vy: Math.sin(angle) * (2 + Math.random()*2),
+            life: 0,
+            maxLife: 40 + Math.random()*20
+        };
+    }
+
     function drawSparks() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        for (let i=0; i<20; i++) {
-            let x = Math.random() * canvas.width * progress;
-            let y = Math.random() * canvas.height * progress;
-            let len = 20 + Math.random()*40;
-            let angle = Math.random()*Math.PI/2;
-            ctx.strokeStyle = `hsl(${(Date.now()/10+i*30)%360},100%,50%)`;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x+Math.cos(angle)*len, y+Math.sin(angle)*len);
-            ctx.stroke();
-        }
+        // Add new sparks
+        if (Math.random() < 0.3) sparks.push(newSpark());
+
+        // Draw sparks
+        sparks.forEach((s, i) => {
+            s.x += s.vx;
+            s.y += s.vy;
+            s.life++;
+
+            // ghost overlapping arcs
+            for (let g=0; g<3; g++) {
+                ctx.strokeStyle = `hsla(${(Date.now()/5 + g*90) % 360}, 100%, 50%, 0.6)`;
+                ctx.beginPath();
+                ctx.moveTo(s.x, s.y);
+                ctx.lineTo(s.x + (Math.random()-0.5)*20, s.y + (Math.random()-0.5)*20);
+                ctx.stroke();
+            }
+
+            if (s.life > s.maxLife) sparks.splice(i,1);
+        });
+
         requestAnimationFrame(drawSparks);
     }
     drawSparks();
