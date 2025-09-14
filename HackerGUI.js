@@ -649,7 +649,125 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
     })();
 
         // -------------------- VFX BUTTONS --------------------
-  // 3D Page
+  addBtn(vfx, 'Corruption Virus', () => {
+    if (window._corruptVirusActive) return; // already running
+    window._corruptVirusActive = true;
+
+    let progress = 0; // how far the virus has spread (0 → 1)
+
+    // Function to apply corruption styles to elements inside infected area
+    function corruptElements() {
+        const all = document.querySelectorAll("body *:not(#globalChatContainer):not(#globalChatContainer *)");
+        const rectLimit = {
+            x: window.innerWidth * progress,
+            y: window.innerHeight * progress
+        };
+
+        all.forEach(el => {
+            let rect = el.getBoundingClientRect();
+            if (rect.left < rectLimit.x && rect.top < rectLimit.y) {
+                if (!el._corrupted) {
+                    el._corrupted = true;
+
+                    // Random corruption effects
+                    el._corruptInterval = setInterval(() => {
+                        let r = Math.random();
+
+                        if (r < 0.3) {
+                            el.style.transform = `skew(${Math.random()*40-20}deg) scale(${1+Math.random()*0.5})`;
+                        } else if (r < 0.6) {
+                            el.style.filter = `hue-rotate(${Math.random()*360}deg) contrast(${0.5+Math.random()*1.5})`;
+                        } else if (r < 0.8) {
+                            el.style.opacity = Math.random() > 0.2 ? 1 : 0.5;
+                        } else {
+                            // Text corruption
+                            if (el.childNodes.length && el.childNodes[0].nodeType === 3) {
+                                let txt = el._origText || el.textContent;
+                                el._origText = txt;
+                                let chars = txt.split("");
+                                for (let i=0; i<chars.length; i++) {
+                                    if (Math.random() < 0.1) {
+                                        chars[i] = String.fromCharCode(33+Math.floor(Math.random()*94));
+                                    }
+                                }
+                                el.textContent = chars.join("");
+                            }
+                        }
+                    }, 200 + Math.random()*300);
+                }
+            }
+        });
+    }
+
+    // Spread function
+    function spread() {
+        if (progress < 1) {
+            progress += 0.005; // speed of spread
+            corruptElements();
+            requestAnimationFrame(spread);
+        }
+    }
+    spread();
+
+    // Sparks layer (visual chaos, but behind GUIs)
+    let canvas = document.createElement("canvas");
+    canvas.style.position = "fixed";
+    canvas.style.top = "0";
+    canvas.style.left = "0";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.pointerEvents = "none";
+    canvas.style.zIndex = "999999";
+    document.body.appendChild(canvas);
+
+    let ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    function drawSparks() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i=0; i<20; i++) {
+            let x = Math.random() * canvas.width * progress;
+            let y = Math.random() * canvas.height * progress;
+            let len = 20 + Math.random()*40;
+            let angle = Math.random()*Math.PI/2;
+            ctx.strokeStyle = `hsl(${(Date.now()/10+i*30)%360},100%,50%)`;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x+Math.cos(angle)*len, y+Math.sin(angle)*len);
+            ctx.stroke();
+        }
+        requestAnimationFrame(drawSparks);
+    }
+    drawSparks();
+
+    // Cleanup
+    window._corruptVirusCleanup = () => {
+        window._corruptVirusActive = false;
+        canvas.remove();
+
+        const all = document.querySelectorAll("*");
+        all.forEach(el => {
+            if (el._corrupted) {
+                clearInterval(el._corruptInterval);
+                el._corrupted = false;
+                if (el._origText) el.textContent = el._origText;
+                el.style.transform = "";
+                el.style.filter = "";
+                el.style.opacity = "";
+            }
+        });
+    };
+
+}, () => {
+    if (window._corruptVirusCleanup) {
+        window._corruptVirusCleanup();
+    }
+});
+
+    
+    // 3D Page
   addBtn(vfx,'3D Page',()=>{
   if(!window.triScript){
     let s=document.createElement('script');
@@ -1074,119 +1192,6 @@ addBtn(vfx, 'Stop All', () => {
         section.appendChild(picker);
         vfx.appendChild(section);
     })();
-
-    // ---------- Jagged Lightning Glitch Arcs (Shorter, with Chromatic Offset) ----------
-(function() {
-    const guis = [document.getElementById('vfxGUI'), document.getElementById('utilitiesGUI')];
-    if (!guis.every(el => el)) return;
-
-    guis.forEach(gui => {
-        if (gui._glitchArcs) return;
-        gui._glitchArcs = true;
-
-        function createArc(startX, startY, angle, maxLength = 60, jaggedness = 15, depth = 0) {
-            const arc = document.createElement("div");
-            arc.style.position = "absolute";
-            arc.style.left = "0";
-            arc.style.top = "0";
-            arc.style.width = "100%";
-            arc.style.height = "100%";
-            arc.style.pointerEvents = "none";
-            arc.style.zIndex = 10000010;
-
-            let x = startX, y = startY;
-            let points = `${x},${y}`;
-            const segments = Math.floor(maxLength / 10);
-
-            for (let i = 0; i < segments; i++) {
-                x += Math.cos(angle) * (8 + Math.random() * 5);
-                y += Math.sin(angle) * (8 + Math.random() * 5);
-                x += (Math.random() - 0.5) * jaggedness;
-                y += (Math.random() - 0.5) * jaggedness;
-                points += ` ${x},${y}`;
-
-                if (depth < 1 && Math.random() < 0.15) {
-                    const branchAngle = angle + (Math.random() - 0.5) * Math.PI / 4;
-                    setTimeout(() => {
-                        createArc(x, y, branchAngle, maxLength / 2, jaggedness * 0.6, depth + 1);
-                    }, 40);
-                }
-            }
-
-            // --- Multiple stroke layers with small offsets ---
-            arc.innerHTML = `
-                <svg style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;" xmlns="http://www.w3.org/2000/svg">
-                    <polyline class="main" points="${points}" stroke="white" stroke-width="2.5" fill="none" />
-                    <polyline class="ghost1" points="${points}" stroke="magenta" stroke-width="2" fill="none" opacity="0.6"
-                        transform="translate(${Math.random()*2-1},${Math.random()*2-1})"/>
-                    <polyline class="ghost2" points="${points}" stroke="cyan" stroke-width="2" fill="none" opacity="0.6"
-                        transform="translate(${Math.random()*2-1},${Math.random()*2-1})"/>
-                </svg>
-            `;
-
-            const main = arc.querySelector(".main");
-            const ghost1 = arc.querySelector(".ghost1");
-            const ghost2 = arc.querySelector(".ghost2");
-            document.body.appendChild(arc);
-
-            let life = 0;
-            const anim = setInterval(() => {
-                if (life === 0) {
-                    // Initial burst flash
-                    main.setAttribute("stroke", "white");
-                    ghost1.setAttribute("stroke", "white");
-                    ghost2.setAttribute("stroke", "white");
-                } else {
-                    const hue = (life * 80 + Math.random() * 100) % 360;
-                    const hue2 = (life * 110 + Math.random() * 140) % 360;
-                    const hue3 = (life * 90 + Math.random() * 180) % 360;
-
-                    main.setAttribute("stroke", `hsl(${hue}, 100%, 60%)`);
-                    ghost1.setAttribute("stroke", `hsl(${hue2}, 100%, 60%)`);
-                    ghost2.setAttribute("stroke", `hsl(${hue3}, 100%, 60%)`);
-                }
-
-                const opacity = 1 - life / 12;
-                main.setAttribute("opacity", opacity);
-                ghost1.setAttribute("opacity", opacity * 0.6);
-                ghost2.setAttribute("opacity", opacity * 0.6);
-
-                life++;
-                if (life > 12) {
-                    clearInterval(anim);
-                    arc.remove();
-                }
-            }, 50);
-        }
-
-        gui._glitchInterval = setInterval(() => {
-            const rect = gui.getBoundingClientRect();
-            const side = Math.floor(Math.random() * 4);
-            let startX, startY, angle;
-
-            switch (side) {
-                case 0: startX = rect.left + Math.random() * rect.width; startY = rect.top; angle = -Math.PI / 2; break;
-                case 1: startX = rect.right; startY = rect.top + Math.random() * rect.height; angle = 0; break;
-                case 2: startX = rect.left + Math.random() * rect.width; startY = rect.bottom; angle = Math.PI / 2; break;
-                case 3: startX = rect.left; startY = rect.top + Math.random() * rect.height; angle = Math.PI; break;
-            }
-
-            const count = 2 + Math.floor(Math.random() * 2);
-            for (let i = 0; i < count; i++) {
-                createArc(startX, startY, angle + (Math.random() - 0.5) * Math.PI / 8, 60 + Math.random() * 30, 15);
-            }
-        }, 180);
-
-        gui.stopGlitchArcs = () => {
-            if (gui._glitchInterval) {
-                clearInterval(gui._glitchInterval);
-                gui._glitchInterval = null;
-                gui._glitchArcs = false;
-            }
-        };
-    });
-})();
-
 
     // -------------------- SHIFT+H TO HIDE --------------------
     document.addEventListener('keydown', (e) => {
