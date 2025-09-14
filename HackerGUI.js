@@ -649,82 +649,18 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
     })();
 
         // -------------------- VFX BUTTONS --------------------
-      // corruption virus
-    addBtn(vfx, 'Corruption Virus', () => {
-    if (window._corruptVirusActive) return;
-    window._corruptVirusActive = true;
+      
+    // corrupted virus
+    addBtn(vfx, 'Corrupted Virus', () => {
+    if (window._CorruptedVirusActive) return;
+    window._corruptedActive = true;
 
-    let progress = 0; // virus spread amount
-
-    // Elements immune to corruption
+    // Immune GUIs
     const isImmune = (el) => {
         return el.closest('#globalChatContainer, #vfxGUI, #utilitiesGUI');
     };
 
-    // Apply corruption to infected elements
-    function corruptElements() {
-        const all = document.querySelectorAll("body *");
-        const rectLimit = {
-            x: window.innerWidth * progress,
-            y: window.innerHeight * progress
-        };
-
-        all.forEach(el => {
-            if (isImmune(el)) return; // skip immune
-
-            let rect = el.getBoundingClientRect();
-            if (rect.left < rectLimit.x && rect.top < rectLimit.y) {
-                if (!el._corrupted) {
-                    el._corrupted = true;
-
-                    el._corruptInterval = setInterval(() => {
-                        let r = Math.random();
-
-                        // Controlled scale/skew distortions
-                        if (r < 0.3) {
-                            el.style.transform =
-                                `skew(${Math.random()*10-5}deg) scale(${1 + (Math.random()*0.2 - 0.1)})`;
-                        }
-                        // Hue-shift glitch
-                        else if (r < 0.6) {
-                            el.style.filter =
-                                `hue-rotate(${Math.random()*360}deg) contrast(${0.8 + Math.random()*0.4})`;
-                        }
-                        // Flicker opacity
-                        else if (r < 0.8) {
-                            el.style.opacity = (Math.random() > 0.1 ? 1 : 0.7);
-                        }
-                        // Text corruption (light)
-                        else {
-                            if (el.childNodes.length && el.childNodes[0].nodeType === 3) {
-                                let txt = el._origText || el.textContent;
-                                el._origText = txt;
-                                let chars = txt.split("");
-                                for (let i=0; i<chars.length; i++) {
-                                    if (Math.random() < 0.05) {
-                                        chars[i] = String.fromCharCode(33+Math.floor(Math.random()*94));
-                                    }
-                                }
-                                el.textContent = chars.join("");
-                            }
-                        }
-                    }, 250 + Math.random()*250);
-                }
-            }
-        });
-    }
-
-    // Spread
-    function spread() {
-        if (progress < 1) {
-            progress += 0.004; // spreading speed
-            corruptElements();
-            requestAnimationFrame(spread);
-        }
-    }
-    spread();
-
-    // Sparks Canvas (with ghost overlaps)
+    // Canvas for sparks
     let canvas = document.createElement("canvas");
     canvas.style.position = "fixed";
     canvas.style.top = "0";
@@ -739,71 +675,113 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    let sparks = [];
+    let arcs = [];
 
-    function newSpark() {
-        let x = 0, y = 0; // start top-left
-        let angle = Math.random() * Math.PI / 2; // down-right spread
+    // Generate initial arc
+    function newArc(x=0, y=0, depth=0) {
         return {
             x, y,
-            vx: Math.cos(angle) * (2 + Math.random()*2),
-            vy: Math.sin(angle) * (2 + Math.random()*2),
             life: 0,
-            maxLife: 40 + Math.random()*20
+            maxLife: 60,
+            depth,
+            branchTimer: 10 + Math.random()*20,
+            history: [{x,y}]
         };
     }
 
-    function drawSparks() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    arcs.push(newArc(0,0));
 
-        // Add new sparks
-        if (Math.random() < 0.3) sparks.push(newSpark());
+    function corruptAt(x,y) {
+        let el = document.elementFromPoint(x,y);
+        if (!el || isImmune(el)) return;
 
-        // Draw sparks
-        sparks.forEach((s, i) => {
-            s.x += s.vx;
-            s.y += s.vy;
-            s.life++;
+        if (!el._corrupted) {
+            el._corrupted = true;
+            el._corruptInterval = setInterval(() => {
+                let r = Math.random();
+                if (r < 0.3) {
+                    el.style.transform =
+                      `scale(${1 + (Math.random()*0.15 - 0.07)}) skew(${Math.random()*6-3}deg)`;
+                } else if (r < 0.6) {
+                    el.style.filter = `hue-rotate(${Math.random()*360}deg)`;
+                } else {
+                    el.style.opacity = (Math.random() > 0.1 ? 1 : 0.8);
+                }
+            }, 300);
+        }
+    }
 
-            // ghost overlapping arcs
-            for (let g=0; g<3; g++) {
-                ctx.strokeStyle = `hsla(${(Date.now()/5 + g*90) % 360}, 100%, 50%, 0.6)`;
-                ctx.beginPath();
-                ctx.moveTo(s.x, s.y);
-                ctx.lineTo(s.x + (Math.random()-0.5)*20, s.y + (Math.random()-0.5)*20);
-                ctx.stroke();
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+
+        arcs.forEach((arc,i) => {
+            let last = arc.history[arc.history.length-1];
+
+            // Move spark forward a little in a jagged pattern
+            let angle = (Math.random()*Math.PI/2) + (arc.depth*0.3);
+            let len = 8 + Math.random()*12;
+            let nx = last.x + Math.cos(angle)*len;
+            let ny = last.y + Math.sin(angle)*len;
+
+            arc.history.push({x:nx,y:ny});
+            arc.life++;
+
+            // Corrupt element at this location
+            corruptAt(nx,ny);
+
+            // Draw the jagged path
+            ctx.strokeStyle = `hsl(${(Date.now()/10 + arc.life*20)%360},100%,60%)`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(last.x,last.y);
+            ctx.lineTo(nx,ny);
+            ctx.stroke();
+
+            // Ghost overlay (glitchy feel)
+            ctx.strokeStyle = `hsla(${(Date.now()/5 + arc.life*60)%360},100%,50%,0.5)`;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(last.x+2,last.y+2);
+            ctx.lineTo(nx+2,ny+2);
+            ctx.stroke();
+
+            // Branch occasionally
+            arc.branchTimer--;
+            if (arc.branchTimer <= 0 && arc.depth < 4) {
+                arcs.push(newArc(nx,ny,arc.depth+1));
+                arc.branchTimer = 9999; // only branch once
             }
 
-            if (s.life > s.maxLife) sparks.splice(i,1);
+            if (arc.life > arc.maxLife) arcs.splice(i,1);
         });
 
-        requestAnimationFrame(drawSparks);
+        // Add new arcs slowly
+        if (Math.random() < 0.02) arcs.push(newArc(0,0));
+
+        requestAnimationFrame(draw);
     }
-    drawSparks();
+    draw();
 
     // Cleanup
-    window._corruptVirusCleanup = () => {
-        window._corruptVirusActive = false;
+    window._CorruptedVirusCleanup = () => {
+        window._CorruptedVirusActive = false;
         canvas.remove();
+        arcs = [];
 
-        const all = document.querySelectorAll("*");
-        all.forEach(el => {
+        document.querySelectorAll("*").forEach(el => {
             if (el._corrupted) {
                 clearInterval(el._corruptInterval);
                 el._corrupted = false;
-                if (el._origText) el.textContent = el._origText;
                 el.style.transform = "";
                 el.style.filter = "";
                 el.style.opacity = "";
             }
         });
     };
-
 }, () => {
-    if (window._corruptVirusCleanup) {
-        window._corruptVirusCleanup();
-    }
+    if (window._CorruptedVirusCleanup) window._CorruptedVirusCleanup();
 });
+
 
     
     // 3D Page
