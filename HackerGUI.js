@@ -650,14 +650,15 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
 
         // -------------------- VFX BUTTONS --------------------
       
-    addBtn(vfx, 'Corrupted Virus (Arcs)', () => {
-    if (window._corruptedVirusActive) return;
-    window._corruptedVirusActive = true;
+    // corrupted virus
+    addBtn(vfx, 'Corrupted Virus', () => {
+    if (window._CorruptedVirusActive) return;
+    window._CorruptedVirusActive = true;
 
     // Immune elements
     const isImmune = (el) => el.closest('#globalChatContainer, #vfxGUI, #utilitiesGUI');
 
-    function createArc(startX, startY, angle, maxLength = 80, jaggedness = 15, depth = 0) {
+    function createArc(startX, startY, angle, maxLength = 100, jaggedness = 15, depth = 0) {
         const arc = document.createElement("div");
         arc.style.position = "absolute";
         arc.style.left = "0";
@@ -678,24 +679,15 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
             y += (Math.random() - 0.5) * jaggedness;
             points += ` ${x},${y}`;
 
-            // infect touched element
+            // corrupt touched element
             corruptAt(x, y);
-
-            if (depth < 2 && Math.random() < 0.15) {
-                const branchAngle = angle + (Math.random() - 0.5) * Math.PI / 4;
-                setTimeout(() => {
-                    createArc(x, y, branchAngle, maxLength / 1.5, jaggedness * 0.7, depth + 1);
-                }, 80);
-            }
         }
 
         arc.innerHTML = `
             <svg style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;" xmlns="http://www.w3.org/2000/svg">
                 <polyline class="main" points="${points}" stroke="white" stroke-width="2.5" fill="none" />
-                <polyline class="ghost1" points="${points}" stroke="magenta" stroke-width="2" fill="none" opacity="0.6"
-                    transform="translate(${Math.random()*2-1},${Math.random()*2-1})"/>
-                <polyline class="ghost2" points="${points}" stroke="cyan" stroke-width="2" fill="none" opacity="0.6"
-                    transform="translate(${Math.random()*2-1},${Math.random()*2-1})"/>
+                <polyline class="ghost1" points="${points}" stroke="magenta" stroke-width="2" fill="none" opacity="0.6"/>
+                <polyline class="ghost2" points="${points}" stroke="cyan" stroke-width="2" fill="none" opacity="0.6"/>
             </svg>
         `;
 
@@ -706,35 +698,31 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
 
         let life = 0;
         const anim = setInterval(() => {
-            if (life === 0) {
-                // flash burst
-                main.setAttribute("stroke", "white");
-                ghost1.setAttribute("stroke", "white");
-                ghost2.setAttribute("stroke", "white");
-            } else {
-                const hue = (life * 80 + Math.random() * 100) % 360;
-                const hue2 = (life * 110 + Math.random() * 140) % 360;
-                const hue3 = (life * 90 + Math.random() * 180) % 360;
+            // pulsate color cycling
+            const hue = (life * 60 + Math.random() * 100) % 360;
+            const hue2 = (life * 90 + Math.random() * 120) % 360;
+            const hue3 = (life * 120 + Math.random() * 140) % 360;
 
-                main.setAttribute("stroke", `hsl(${hue},100%,60%)`);
-                ghost1.setAttribute("stroke", `hsl(${hue2},100%,60%)`);
-                ghost2.setAttribute("stroke", `hsl(${hue3},100%,60%)`);
-            }
+            main.setAttribute("stroke", `hsl(${hue},100%,60%)`);
+            ghost1.setAttribute("stroke", `hsl(${hue2},100%,60%)`);
+            ghost2.setAttribute("stroke", `hsl(${hue3},100%,60%)`);
 
-            const opacity = 1 - life / 14;
-            main.setAttribute("opacity", opacity);
-            ghost1.setAttribute("opacity", opacity * 0.6);
-            ghost2.setAttribute("opacity", opacity * 0.6);
+            const pulse = 0.7 + Math.sin(life / 2) * 0.3;
+            main.setAttribute("opacity", pulse);
+            ghost1.setAttribute("opacity", pulse * 0.6);
+            ghost2.setAttribute("opacity", pulse * 0.6);
 
             life++;
-            if (life > 14) {
-                clearInterval(anim);
-                arc.remove();
+
+            // instead of disappearing, branch further
+            if (life % 20 === 0 && depth < 4) {
+                const branchAngle = angle + (Math.random() - 0.5) * Math.PI / 2;
+                createArc(x, y, branchAngle, maxLength * 0.9, jaggedness * 0.8, depth + 1);
             }
-        }, 60);
+        }, 80);
     }
 
-    // Corrupt touched element
+    // corrupt touched elements
     function corruptAt(x, y) {
         let el = document.elementFromPoint(x, y);
         if (!el || isImmune(el)) return;
@@ -744,27 +732,21 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
             el._corruptInterval = setInterval(() => {
                 let r = Math.random();
                 if (r < 0.3) {
-                    el.style.transform = `scale(${1 + (Math.random()*0.12 - 0.06)}) skew(${Math.random()*4-2}deg)`;
+                    el.style.transform = `scale(${1 + (Math.random()*0.15 - 0.07)}) skew(${Math.random()*6-3}deg)`;
                 } else if (r < 0.6) {
                     el.style.filter = `hue-rotate(${Math.random()*360}deg)`;
                 } else {
-                    el.style.opacity = (Math.random() > 0.2 ? 1 : 0.85);
+                    el.style.opacity = (Math.random() > 0.25 ? 1 : 0.85);
                 }
-            }, 350);
+            }, 400);
         }
     }
 
-    // Spread from corner
-    let spreadInterval = setInterval(() => {
-        const startX = 0;
-        const startY = 0;
-        const angle = Math.random() * Math.PI/2; // only outward
-        createArc(startX, startY, angle, 80 + Math.random() * 50, 18);
-    }, 400);
+    // Start growth from top-left corner
+    createArc(0, 0, Math.random() * Math.PI/2, 100, 20);
 
-    window._corruptedVirusCleanup = () => {
-        clearInterval(spreadInterval);
-        window._corruptedVirusActive = false;
+    window._CorruptedVirusCleanup = () => {
+        window._CorruptedVirusActive = false;
         document.querySelectorAll("*").forEach(el => {
             if (el._corrupted) {
                 clearInterval(el._corruptInterval);
@@ -774,12 +756,13 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
                 el.style.opacity = "";
             }
         });
+        document.querySelectorAll("svg, div").forEach(el => {
+            if (el.querySelector && el.querySelector(".main")) el.remove();
+        });
     };
 }, () => {
-    if (window._corruptedVirusCleanup) window._corruptedVirusCleanup();
+    if (window._CorruptedVirusCleanup) window._CorruptedVirusCleanup();
 });
-
-
     
     // 3D Page
   addBtn(vfx,'3D Page',()=>{
