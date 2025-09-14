@@ -652,47 +652,49 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
       
     // corrupted virus
     addBtn(vfx, 'Corrupted Virus', () => {
-    if (window._CorruptedVirusActive) return;
-    window._corruptedActive = true;
+    if (window._corruptedVirusActive) return;
+    window._corruptedVirusActive = true;
 
-    // Immune GUIs
-    const isImmune = (el) => {
-        return el.closest('#globalChatContainer, #vfxGUI, #utilitiesGUI');
-    };
+    // immune: gui elements
+    const isImmune = (el) => el.closest('#globalChatContainer, #vfxGUI, #utilitiesGUI');
 
-    // Canvas for sparks
+    // canvas for sparks
     let canvas = document.createElement("canvas");
-    canvas.style.position = "fixed";
-    canvas.style.top = "0";
-    canvas.style.left = "0";
-    canvas.style.width = "100%";
-    canvas.style.height = "100%";
-    canvas.style.pointerEvents = "none";
-    canvas.style.zIndex = "999999";
+    Object.assign(canvas.style, {
+        position: "fixed",
+        top: "0",
+        left: "0",
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        zIndex: "999999"
+    });
     document.body.appendChild(canvas);
 
     let ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
 
-    let arcs = [];
+    let sparks = [];
 
-    // Generate initial arc
-    function newArc(x=0, y=0, depth=0) {
+    // create a new spark/branch
+    function newSpark(x, y, depth = 0) {
         return {
             x, y,
+            vx: (Math.random() - 0.5) * 6,
+            vy: (Math.random() - 0.5) * 6,
             life: 0,
-            maxLife: 60,
+            maxLife: 40 + Math.random() * 30,
             depth,
-            branchTimer: 10 + Math.random()*20,
-            history: [{x,y}]
+            branchTimer: 10 + Math.random()*20
         };
     }
 
-    arcs.push(newArc(0,0));
+    sparks.push(newSpark(0, 0));
 
-    function corruptAt(x,y) {
-        let el = document.elementFromPoint(x,y);
+    // corruption effect
+    function corruptAt(x, y) {
+        let el = document.elementFromPoint(x, y);
         if (!el || isImmune(el)) return;
 
         if (!el._corrupted) {
@@ -700,8 +702,7 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
             el._corruptInterval = setInterval(() => {
                 let r = Math.random();
                 if (r < 0.3) {
-                    el.style.transform =
-                      `scale(${1 + (Math.random()*0.15 - 0.07)}) skew(${Math.random()*6-3}deg)`;
+                    el.style.transform = `scale(${1 + (Math.random()*0.15 - 0.07)}) skew(${Math.random()*5-2.5}deg)`;
                 } else if (r < 0.6) {
                     el.style.filter = `hue-rotate(${Math.random()*360}deg)`;
                 } else {
@@ -714,60 +715,58 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
     function draw() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
 
-        arcs.forEach((arc,i) => {
-            let last = arc.history[arc.history.length-1];
+        let newBranches = [];
 
-            // Move spark forward a little in a jagged pattern
-            let angle = (Math.random()*Math.PI/2) + (arc.depth*0.3);
-            let len = 8 + Math.random()*12;
-            let nx = last.x + Math.cos(angle)*len;
-            let ny = last.y + Math.sin(angle)*len;
+        sparks.forEach((s, i) => {
+            s.x += s.vx;
+            s.y += s.vy;
+            s.life++;
 
-            arc.history.push({x:nx,y:ny});
-            arc.life++;
+            // corrupt elements it passes through
+            corruptAt(s.x, s.y);
 
-            // Corrupt element at this location
-            corruptAt(nx,ny);
-
-            // Draw the jagged path
-            ctx.strokeStyle = `hsl(${(Date.now()/10 + arc.life*20)%360},100%,60%)`;
+            // base spark line
+            ctx.strokeStyle = `hsl(${(Date.now()/10 + s.life*30)%360},100%,60%)`;
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(last.x,last.y);
-            ctx.lineTo(nx,ny);
+            ctx.moveTo(s.x, s.y);
+            ctx.lineTo(s.x - s.vx, s.y - s.vy);
             ctx.stroke();
 
-            // Ghost overlay (glitchy feel)
-            ctx.strokeStyle = `hsla(${(Date.now()/5 + arc.life*60)%360},100%,50%,0.5)`;
+            // ghost overlay for glitch
+            ctx.strokeStyle = `hsla(${(Date.now()/5 + s.life*80)%360},100%,50%,0.5)`;
             ctx.lineWidth = 4;
             ctx.beginPath();
-            ctx.moveTo(last.x+2,last.y+2);
-            ctx.lineTo(nx+2,ny+2);
+            ctx.moveTo(s.x+2, s.y+2);
+            ctx.lineTo(s.x - s.vx+2, s.y - s.vy+2);
             ctx.stroke();
 
-            // Branch occasionally
-            arc.branchTimer--;
-            if (arc.branchTimer <= 0 && arc.depth < 4) {
-                arcs.push(newArc(nx,ny,arc.depth+1));
-                arc.branchTimer = 9999; // only branch once
+            // branch occasionally
+            s.branchTimer--;
+            if (s.branchTimer <= 0 && s.depth < 4) {
+                newBranches.push(newSpark(s.x, s.y, s.depth+1));
+                s.branchTimer = 9999; // only branch once
             }
 
-            if (arc.life > arc.maxLife) arcs.splice(i,1);
+            if (s.life > s.maxLife) sparks.splice(i,1);
         });
 
-        // Add new arcs slowly
-        if (Math.random() < 0.02) arcs.push(newArc(0,0));
+        sparks.push(...newBranches);
+
+        // keep infection alive
+        if (sparks.length < 5 && Math.random() < 0.03) {
+            sparks.push(newSpark(0, 0));
+        }
 
         requestAnimationFrame(draw);
     }
     draw();
 
-    // Cleanup
-    window._CorruptedVirusCleanup = () => {
-        window._CorruptedVirusActive = false;
+    // cleanup
+    window._corruptedVirusCleanup = () => {
+        window._corruptedVirusActive = false;
         canvas.remove();
-        arcs = [];
-
+        sparks = [];
         document.querySelectorAll("*").forEach(el => {
             if (el._corrupted) {
                 clearInterval(el._corruptInterval);
@@ -779,7 +778,7 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
         });
     };
 }, () => {
-    if (window._CorruptedVirusCleanup) window._CorruptedVirusCleanup();
+    if (window._corruptedVirusCleanup) window._corruptedVirusCleanup();
 });
 
 
