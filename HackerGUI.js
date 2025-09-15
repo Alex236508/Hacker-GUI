@@ -369,14 +369,10 @@ fileInput.addEventListener('change', async () => {
     if (!file) return;
 
     try {
-        // Create a reference in Firebase Storage
         const fileRef = storage.ref('uploads/' + Date.now() + "_" + file.name);
-        // Upload the file
         await fileRef.put(file);
-        // Get the downloadable URL
         const fileURL = await fileRef.getDownloadURL();
 
-        // Push message to database
         db.ref('messages').push({
             user: username,
             text: '',
