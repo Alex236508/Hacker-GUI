@@ -192,23 +192,26 @@ addBtn(util, 'Global Chat', () => {
     window.chatActive = true;
 
     const loadFirebase = () => {
-        if (!window.firebase) {
-            const s1 = document.createElement('script');
-            s1.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
-            s1.onload = () => {
-                const s2 = document.createElement('script');
-                s2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
-                s2.onload = () => {
-    const s3 = document.createElement('script');
-    s3.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js';
-    s3.onload = initChat;
-    document.body.appendChild(s3);
+    if (!window.firebase) {
+        const s1 = document.createElement('script');
+        s1.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+        s1.onload = () => {
+            const s2 = document.createElement('script');
+            s2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
+            s2.onload = () => {
+                const s3 = document.createElement('script');
+                s3.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js';
+                s3.onload = initChat;
+                document.body.appendChild(s3);
+            };
+            document.body.appendChild(s2); // <--- THIS WAS MISSING
+        };
+        document.body.appendChild(s1);
+    } else {
+        initChat();
+    }
 };
 
-            };
-            document.body.appendChild(s1);
-        } else initChat();
-    };
 
     loadFirebase();
 
