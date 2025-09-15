@@ -652,105 +652,108 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
     })();
 
         // -------------------- VFX BUTTONS --------------------
-    // --------- Tesla Coil Forward Sparks with Corruption ---------  
-    addBtn(vfx, 'Corrupt Infection', () => {
-   if (window._sparkInfectionActive) return; // prevent double start
-    (function() {
-        window._sparkInfectionActive = true;
+   
+    // ---------- Corrupted Virus ----------
+addBtn(vfx, "Corrupted Virus", () => {
+    if (window.infectionActive) return;
+    window.infectionActive = true;
 
-        const excludedIds = ["chat", "vfxGUI", "utilitiesGUI"];
-        let active = true;
-        let corrupted = new Set();
-        let arcs = [];
+    const immune = new Set([
+        document.getElementById("globalChatContainer"),
+        document.getElementById("vfxGUI"),
+        document.getElementById("utilitiesGUI")
+    ]);
 
-        // ---- Style for corruption ----
-        const style = document.createElement("style");
-        style.textContent = `
-            .corrupted {
-                animation: corruptPulse 1s infinite;
-                filter: hue-rotate(90deg) contrast(1.6) saturate(2);
-            }
-            @keyframes corruptPulse {
-                0% { transform: skew(0deg); opacity: 1; }
-                50% { transform: skew(2deg); opacity: 0.9; }
-                100% { transform: skew(0deg); opacity: 1; }
-            }
+    function createArc(x, y, angle) {
+        if (!window.infectionActive) return;
+
+        // Arc container
+        const arc = document.createElement("div");
+        arc.style.position = "absolute";
+        arc.style.left = "0";
+        arc.style.top = "0";
+        arc.style.width = "100%";
+        arc.style.height = "100%";
+        arc.style.pointerEvents = "none";
+        arc.style.zIndex = 999999;
+
+        let points = `${x},${y}`;
+        let px = x, py = y;
+        const segs = 6;
+
+        for (let i = 0; i < segs; i++) {
+            px += Math.cos(angle) * (15 + Math.random() * 8);
+            py += Math.sin(angle) * (15 + Math.random() * 8);
+            px += (Math.random() - 0.5) * 10;
+            py += (Math.random() - 0.5) * 10;
+            points += ` ${px},${py}`;
+        }
+
+        arc.innerHTML = `
+            <svg style="position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;" xmlns="http://www.w3.org/2000/svg">
+                <polyline class="main" points="${points}" stroke="white" stroke-width="2.5" fill="none" />
+                <polyline class="ghost1" points="${points}" stroke="magenta" stroke-width="2" fill="none" opacity="0.6"/>
+                <polyline class="ghost2" points="${points}" stroke="cyan" stroke-width="2" fill="none" opacity="0.6"/>
+            </svg>
         `;
-        document.head.appendChild(style);
 
-        // ---- Create an arc ----
-        function createArc(x, y, angle) {
-            const arc = { x, y, angle, life: 0 };
-            arcs.push(arc);
-        }
+        document.body.appendChild(arc);
 
-        // ---- Corrupt an element ----
-        function corruptElement(el) {
-            if (!el || corrupted.has(el)) return;
-            if (excludedIds.some(id => el.closest(`#${id}`))) return; // skip excluded
-            el.classList.add("corrupted");
-            corrupted.add(el);
-        }
+        const main = arc.querySelector(".main");
+        const g1 = arc.querySelector(".ghost1");
+        const g2 = arc.querySelector(".ghost2");
 
-        // ---- Main loop ----
-        function animate() {
-            if (!active) return;
-            let newArcs = [];
+        let life = 0;
+        const anim = setInterval(() => {
+            if (!window.infectionActive) { clearInterval(anim); arc.remove(); return; }
 
-            arcs.forEach(arc => {
-                // extend arc forward
-                let dx = Math.cos(arc.angle) * 12 + (Math.random() - 0.5) * 4;
-                let dy = Math.sin(arc.angle) * 12 + (Math.random() - 0.5) * 4;
-                arc.x += dx;
-                arc.y += dy;
+            // Flicker colors
+            const hue = (life * 90 + Math.random() * 100) % 360;
+            const hue2 = (life * 120 + Math.random() * 140) % 360;
+            const hue3 = (life * 60 + Math.random() * 180) % 360;
 
-                // Branch only forward, small chance
-                if (Math.random() < 0.05) {
-                    let branchAngle = arc.angle + (Math.random() - 0.5) * Math.PI / 8;
-                    newArcs.push({ x: arc.x, y: arc.y, angle: branchAngle, life: 0 });
+            main.setAttribute("stroke", `hsl(${hue},100%,60%)`);
+            g1.setAttribute("stroke", `hsl(${hue2},100%,60%)`);
+            g2.setAttribute("stroke", `hsl(${hue3},100%,60%)`);
+
+            const opacity = 1 - life / 12;
+            main.setAttribute("opacity", opacity);
+            g1.setAttribute("opacity", opacity * 0.6);
+            g2.setAttribute("opacity", opacity * 0.6);
+
+            life++;
+            if (life > 12) {
+                clearInterval(anim);
+                arc.remove();
+
+                // Corrupt element at end
+                const elem = document.elementFromPoint(px, py);
+                if (elem && !immune.has(elem) && !elem.closest("#vfxGUI, #utilitiesGUI, #globalChatContainer")) {
+                    elem.style.transform = `scale(${1 + Math.random() * 0.4}) rotate(${(Math.random()-0.5)*15}deg)`;
+                    elem.style.color = `hsl(${Math.random()*360},100%,60%)`;
+                    elem.style.textShadow = "0 0 6px magenta, 0 0 12px cyan";
                 }
 
-                // Visual spark
-                const spark = document.createElement("div");
-                spark.style.position = "absolute";
-                spark.style.left = arc.x + "px";
-                spark.style.top = arc.y + "px";
-                spark.style.width = "3px";
-                spark.style.height = "3px";
-                spark.style.borderRadius = "50%";
-                spark.style.background = `hsl(${Math.random() * 360}, 100%, 70%)`;
-                spark.style.pointerEvents = "none";
-                spark.style.zIndex = 1000000;
-                document.body.appendChild(spark);
-                setTimeout(() => spark.remove(), 200);
-
-                // Collision check
-                const el = document.elementFromPoint(arc.x, arc.y);
-                if (el && el !== document.body && !el.classList.contains("corrupted")) {
-                    corruptElement(el);
+                // Slowly crawl forward with a new arc
+                if (window.infectionActive) {
+                    setTimeout(() => {
+                        createArc(px, py, angle + (Math.random()-0.5)*Math.PI/8);
+                    }, 600); // crawl speed delay
                 }
+            }
+        }, 70);
+    }
 
-                arc.life++;
-            });
+    // Start infection from top-left
+    createArc(0, 0, Math.PI/4);
 
-            arcs = arcs.concat(newArcs);
-            requestAnimationFrame(animate);
-        }
-
-        // ---- Start infection from top-left ----
-        createArc(20, 20, Math.PI / 4);
-        animate();
-
-        // ---- Stop function ----
-        window.stopAllInfection = function() {
-            active = false;
-            arcs = [];
-            corrupted.forEach(el => el.classList.remove("corrupted"));
-            corrupted.clear();
-            window._sparkInfectionActive = false;
-        };
-    })();
+    // Stop function
+    window.stopAllInfection = () => {
+        window.infectionActive = false;
+        document.querySelectorAll("svg").forEach(el => el.remove());
+    };
 });
+
     
     // 3D Page
   addBtn(vfx,'3D Page',()=>{
