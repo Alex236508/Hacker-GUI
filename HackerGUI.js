@@ -653,8 +653,8 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
 
         // -------------------- VFX BUTTONS --------------------
    
-    // ---------- Corrupted Virus ----------
-addBtn(vfx, "Corrupted Virus", () => {
+    // ---------- Infection Virus (forward + sideways branching) ----------
+addBtn(vfx, "Infection Virus", () => {
     if (window.infectionActive) return;
     window.infectionActive = true;
 
@@ -707,7 +707,7 @@ addBtn(vfx, "Corrupted Virus", () => {
         const anim = setInterval(() => {
             if (!window.infectionActive) { clearInterval(anim); return; }
 
-            // Flicker colors (keeps arcs alive-looking)
+            // Flicker colors
             const hue = (life * 50 + Math.random() * 120) % 360;
             const hue2 = (life * 80 + Math.random() * 180) % 360;
             const hue3 = (life * 60 + Math.random() * 200) % 360;
@@ -727,15 +727,21 @@ addBtn(vfx, "Corrupted Virus", () => {
             elem.style.textShadow = "0 0 5px magenta, 0 0 8px cyan";
         }
 
-        // Branching (but controlled to avoid lag)
+        // Branching
         if (depth < 12 && window.infectionActive) {
             setTimeout(() => {
-                // Continue forward
+                // Forward branch (default)
                 createArc(px, py, angle + (Math.random()-0.5) * Math.PI/10, depth+1);
 
-                // Random chance to split
+                // Occasional angled split
                 if (Math.random() < 0.4) {
                     createArc(px, py, angle + (Math.random()-0.5) * Math.PI/5, depth+1);
+                }
+
+                // Rare sideways branch (90° left/right)
+                if (Math.random() < 0.25) {
+                    const sideAngle = angle + (Math.random() < 0.5 ? Math.PI/2 : -Math.PI/2);
+                    createArc(px, py, sideAngle + (Math.random()-0.5) * Math.PI/12, depth+1);
                 }
             }, 500 + Math.random()*400);
         }
@@ -750,7 +756,6 @@ addBtn(vfx, "Corrupted Virus", () => {
         document.querySelectorAll("svg").forEach(el => el.remove());
     };
 });
-
 
     
     // 3D Page
