@@ -653,19 +653,25 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
 
         // -------------------- VFX BUTTONS --------------------
    
-    // ---------- Infection Virus (Forking Arcs that Spread Everywhere) ----------
+    // ---------- Infection Virus (Forking Arcs, Limited + Biased) ----------
 addBtn(vfx, "Infection Virus", () => {
     if (window.infectionActive) return;
     window.infectionActive = true;
 
+    // --- Immune containers ---
     const immune = new Set([
         document.getElementById("globalChatContainer"),
         document.getElementById("vfxGUI"),
         document.getElementById("utilitiesGUI")
     ]);
 
+    // --- Arc limit ---
+    window.infectionArcCount = 0;
+    const maxArcs = 200; // hard cap
+
     function createArc(x, y, angle, depth = 0) {
-        if (!window.infectionActive) return;
+        if (!window.infectionActive || window.infectionArcCount >= maxArcs) return;
+        window.infectionArcCount++;
 
         // Arc container
         const arc = document.createElement("div");
@@ -684,8 +690,11 @@ addBtn(vfx, "Infection Virus", () => {
         for (let i = 0; i < segs; i++) {
             px += Math.cos(angle) * (15 + Math.random() * 10);
             py += Math.sin(angle) * (15 + Math.random() * 10);
+
+            // add jaggedness
             px += (Math.random() - 0.5) * 8;
             py += (Math.random() - 0.5) * 8;
+
             points += ` ${px},${py}`;
         }
 
@@ -696,7 +705,6 @@ addBtn(vfx, "Infection Virus", () => {
                 <polyline class="ghost2" points="${points}" stroke="cyan" stroke-width="2" fill="none" opacity="0.6"/>
             </svg>
         `;
-
         document.body.appendChild(arc);
 
         const main = arc.querySelector(".main");
@@ -707,7 +715,7 @@ addBtn(vfx, "Infection Virus", () => {
         const anim = setInterval(() => {
             if (!window.infectionActive) { clearInterval(anim); return; }
 
-            // Flicker colors
+            // flickering rainbow glitch effect
             const hue = (life * 50 + Math.random() * 120) % 360;
             const hue2 = (life * 80 + Math.random() * 180) % 360;
             const hue3 = (life * 60 + Math.random() * 200) % 360;
@@ -719,40 +727,42 @@ addBtn(vfx, "Infection Virus", () => {
             life++;
         }, 100);
 
-        // Corrupt element at the end
+        // corrupt whatever the arc ends on
         const elem = document.elementFromPoint(px, py);
         if (elem && !immune.has(elem) && !elem.closest("#vfxGUI, #utilitiesGUI, #globalChatContainer")) {
-            elem.style.transform = `scale(${1 + Math.random() * 0.3}) rotate(${(Math.random()-0.5)*8}deg)`;
+            elem.style.transform = `scale(${1 + Math.random() * 0.2}) rotate(${(Math.random()-0.5)*6}deg)`;
             elem.style.color = `hsl(${Math.random()*360},100%,60%)`;
             elem.style.textShadow = "0 0 5px magenta, 0 0 8px cyan";
         }
 
-        // Always fork forward
-        if (depth < 12 && window.infectionActive) {
+        // controlled branching
+        if (depth < 12 && window.infectionActive && window.infectionArcCount < maxArcs) {
             setTimeout(() => {
-                // Main forward path
-                createArc(px, py, angle + (Math.random()-0.5) * Math.PI/12, depth+1);
+                // --- bias angle slightly toward bottom-right (45°) ---
+                const bias = Math.PI / 4;
+                const newAngle = angle * 0.7 + bias * 0.3 + (Math.random() - 0.5) * Math.PI/16;
 
-                // Side forks (like lightning branches)
-                createArc(px, py, angle + Math.PI/6 * (Math.random() > 0.5 ? 1 : -1), depth+1);
-                if (Math.random() < 0.5) {
-                    createArc(px, py, angle + Math.PI/3 * (Math.random() > 0.5 ? 1 : -1), depth+1);
+                // main forward arc
+                createArc(px, py, newAngle, depth + 1);
+
+                // side fork (less aggressive now)
+                if (Math.random() < 0.7) {
+                    createArc(px, py, newAngle + (Math.random() > 0.5 ? Math.PI/6 : -Math.PI/6), depth + 1);
                 }
-            }, 600 + Math.random()*400);
+            }, 500 + Math.random() * 400);
         }
     }
 
-    // Start infection from top-left corner
-    createArc(0, 0, Math.PI/4);
+    // start infection at top-left heading bottom-right
+    createArc(0, 0, Math.PI / 4);
 
-    // Stop function
+    // stop function
     window.stopAllInfection = () => {
         window.infectionActive = false;
+        window.infectionArcCount = 0;
         document.querySelectorAll("svg").forEach(el => el.remove());
     };
 });
-
-
     
     // 3D Page
   addBtn(vfx,'3D Page',()=>{
