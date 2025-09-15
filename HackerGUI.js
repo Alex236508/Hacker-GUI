@@ -416,12 +416,12 @@ function getUserColor(user, currentUser) {
     return colors[Math.abs(hash) % colors.length];
 }
 
-function addMessage(user, text, currentUser) {
+function addMessage(user, text, timestamp, currentUser) {
     const color = getUserColor(user, currentUser);
 
     // Format the timestamp (hh:mm AM/PM)
-    const now = new Date();
-    const timeString = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const time = new Date(timestamp);
+    const timeString = time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
     const msgDiv = document.createElement('div');
     msgDiv.style.color = color;
@@ -446,18 +446,21 @@ function addMessage(user, text, currentUser) {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-
-
+// Listen for new messages
 db.ref('messages').on('child_added', snapshot => {
     const data = snapshot.val();
-    if (data) addMessage(data.user, data.text, username); // pass current username
+    if (data) addMessage(data.user, data.text, data.timestamp, username);
 });
 
-
+// Send messages
 input.addEventListener('keydown', e => {
     if (e.key === 'Enter' && input.value.trim()) {
         const msg = input.value.trim();
-        db.ref('messages').push({ user: username, text: msg });
+        db.ref('messages').push({ 
+            user: username, 
+            text: msg, 
+            timestamp: Date.now() // store the time at send
+        });
         input.value = '';
     }
 });
