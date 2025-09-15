@@ -198,8 +198,13 @@ addBtn(util, 'Global Chat', () => {
             s1.onload = () => {
                 const s2 = document.createElement('script');
                 s2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
-                s2.onload = initChat;
-                document.body.appendChild(s2);
+                s2.onload = () => {
+    const s3 = document.createElement('script');
+    s3.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js';
+    s3.onload = initChat;
+    document.body.appendChild(s3);
+};
+
             };
             document.body.appendChild(s1);
         } else initChat();
@@ -232,13 +237,15 @@ addBtn(util, 'Global Chat', () => {
             authDomain: "hacker-gui-global-chat.firebaseapp.com",
             databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
             projectId: "hacker-gui-global-chat",
-            storageBucket: "hacker-gui-global-chat.firebasestorage.app",
+            storageBucket: "hacker-gui-global-chat.appspot.com",
             messagingSenderId: "410978781234",
             appId: "1:410978781234:web:ee08f15ee9be48970c542b",
             measurementId: "G-SB0B1FLF29"
         };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const storage = firebase.storage();
+
 
         const username = await getUsername(db);
 if (!username) {
@@ -316,12 +323,31 @@ if(chatBox){
         messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
         chat.appendChild(messagesDiv);
 
-        // ---------- Input ----------
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Type a message...';
-        input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
-        chat.appendChild(input);
+        // ---------- Input + Upload ----------
+const inputWrapper = document.createElement('div');
+inputWrapper.style.cssText = 'display:flex;align-items:center;background:black;';
+
+const input = document.createElement('input');
+input.type = 'text';
+input.placeholder = 'Type a message...';
+input.style.cssText = 'flex:1;border:none;outline:none;padding:5px;background:black;color:#0f0;';
+
+const uploadBtn = document.createElement('button');
+uploadBtn.textContent = '📎';
+uploadBtn.style.cssText = 'background:black;color:#0f0;border:none;cursor:pointer;font-size:16px;padding:5px;';
+
+const fileInput = document.createElement('input');
+fileInput.type = 'file';
+fileInput.accept = 'image/*,video/*,.gif';
+fileInput.style.display = 'none';
+
+uploadBtn.onclick = () => fileInput.click();
+
+inputWrapper.appendChild(input);
+inputWrapper.appendChild(uploadBtn);
+chat.appendChild(inputWrapper);
+chat.appendChild(fileInput);
+
 
         // ---------- Resizable ----------
 const resizeHandle = document.createElement('div');
@@ -416,41 +442,55 @@ function getUserColor(user, currentUser) {
     return colors[Math.abs(hash) % colors.length];
 }
 
-function addMessage(user, text, timestamp, currentUser) {
+function addMessage(user, text, timestamp, currentUser, file, fileType) {
     const color = getUserColor(user, currentUser);
-
-    // Format the timestamp (hh:mm AM/PM)
-    const time = new Date(timestamp);
-    const timeString = time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const time = new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
     const msgDiv = document.createElement('div');
     msgDiv.style.color = color;
 
-    // Create the timestamp span
     const timestampSpan = document.createElement('span');
-    timestampSpan.textContent = timeString;
-    timestampSpan.style.color = '#888';       // faded gray
-    timestampSpan.style.opacity = '0.6';      // more faded
+    timestampSpan.textContent = time;
+    timestampSpan.style.color = '#888';
     timestampSpan.style.marginRight = '6px';
-    timestampSpan.style.fontSize = '0.8em';   // smaller than normal text
+    timestampSpan.style.fontSize = '0.8em';
 
-    // Build the rest of the message
-    const userText = document.createElement('span');
-    userText.textContent = `${user}: ${text}`;
+    const userSpan = document.createElement('span');
+    userSpan.textContent = `${user}: `;
 
-    // Put them together
     msgDiv.appendChild(timestampSpan);
-    msgDiv.appendChild(userText);
+    msgDiv.appendChild(userSpan);
+
+    if (file) {
+        if (fileType.startsWith("image/")) {
+            const img = document.createElement('img');
+            img.src = file;
+            img.style.maxWidth = "100%";
+            img.style.borderRadius = "4px";
+            msgDiv.appendChild(img);
+        } else if (fileType.startsWith("video/")) {
+            const video = document.createElement('video');
+            video.src = file;
+            video.controls = true;
+            video.style.maxWidth = "100%";
+            msgDiv.appendChild(video);
+        } else {
+            const link = document.createElement('a');
+            link.href = file;
+            link.textContent = "📎 File";
+            link.target = "_blank";
+            msgDiv.appendChild(link);
+        }
+    } else {
+        const textSpan = document.createElement('span');
+        textSpan.textContent = text;
+        msgDiv.appendChild(textSpan);
+    }
 
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-// Listen for new messages
-db.ref('messages').on('child_added', snapshot => {
-    const data = snapshot.val();
-    if (data) addMessage(data.user, data.text, data.timestamp, username);
-});
 
 // Send messages
 input.addEventListener('keydown', e => {
@@ -465,6 +505,33 @@ input.addEventListener('keydown', e => {
     }
 });
 
+      // Handle file uploads
+fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    const fileRef = storage.ref('uploads/' + Date.now() + "_" + file.name);
+    await fileRef.put(file);
+    const fileURL = await fileRef.getDownloadURL();
+
+    db.ref('messages').push({
+        user: username,
+        text: '',
+        file: fileURL,
+        fileType: file.type,
+        timestamp: Date.now()
+    });
+
+    fileInput.value = ''; // reset input after upload
+});
+
+// Listen for new messages
+db.ref('messages').on('child_added', snap => {
+    const msg = snap.val();
+    addMessage(msg.user, msg.text, msg.timestamp, username, msg.file, msg.fileType);
+});
+
+      
         // ---------- Cleanup ----------
         function cleanupChat() {
             clearInterval(window.chatGlowInt);
