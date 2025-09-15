@@ -445,6 +445,7 @@ function getUserColor(user, currentUser) {
     return colors[Math.abs(hash) % colors.length];
 }
 
+      // Messaging w/ video and images
 function addMessage(user, text, timestamp, currentUser, file, fileType) {
     const color = getUserColor(user, currentUser);
     const time = new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -467,7 +468,7 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
     if (file) {
         const type = (fileType || "").toLowerCase();
 
-        // Image
+        // IMAGE
         if (type.startsWith("image/") || file.match(/\.(png|jpe?g|gif|webp)$/i)) {
             const img = document.createElement('img');
             img.src = file;
@@ -475,7 +476,7 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
             img.style.borderRadius = "4px";
             msgDiv.appendChild(img);
 
-        // Video
+        // VIDEO
         } else if (type.startsWith("video/") || file.match(/\.(mp4|webm|ogg)$/i)) {
             const videoWrapper = document.createElement('div');
             videoWrapper.style.position = 'relative';
@@ -484,7 +485,7 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
 
             const video = document.createElement('video');
             video.src = file;
-            video.autoplay = false;     // start paused
+            video.autoplay = false;
             video.loop = true;
             video.muted = true;
             video.controls = false;
@@ -492,7 +493,6 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
             video.style.borderRadius = '4px';
             videoWrapper.appendChild(video);
 
-            // Mute/Unmute button
             const muteBtn = document.createElement('button');
             muteBtn.innerText = '🔇';
             muteBtn.style.position = 'absolute';
@@ -514,47 +514,11 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
             videoWrapper.appendChild(muteBtn);
             msgDiv.appendChild(videoWrapper);
 
-            // Add to a global list of videos for scroll-based control
+            // add video to global list for scroll play/pause
             window.chatVideos = window.chatVideos || [];
             window.chatVideos.push(video);
 
-            // Scroll listener to handle TikTok-like autoplay
-            if (!window.videoScrollHandlerAdded) {
-                window.videoScrollHandlerAdded = true;
-                const observer = new IntersectionObserver(
-                    (entries) => {
-                        // Sort videos by visibility
-                        let mostVisible = null;
-                        let maxRatio = 0;
-                        window.chatVideos.forEach(v => {
-                            const rect = v.getBoundingClientRect();
-                            const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
-                            const ratio = visibleHeight / rect.height;
-                            if (ratio > maxRatio) {
-                                maxRatio = ratio;
-                                mostVisible = v;
-                            }
-                        });
-
-                        // Play the most visible video, pause others
-                        window.chatVideos.forEach(v => {
-                            if (v === mostVisible && maxRatio > 0.5) {
-                                v.play().catch(() => {});
-                            } else {
-                                v.pause();
-                            }
-                        });
-                    },
-                    { threshold: [0, 0.5, 1] }
-                );
-
-                // Observe all videos
-                const container = document.getElementById('globalChatContainer');
-                if (container) observer.observe(container);
-                // Also trigger on scroll
-                container.addEventListener('scroll', () => observer.takeRecords());
-                window.addEventListener('scroll', () => observer.takeRecords());
-            }
+        // OTHER FILES
         } else {
             const link = document.createElement('a');
             link.href = file;
@@ -562,8 +526,8 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
             link.target = "_blank";
             msgDiv.appendChild(link);
         }
-
     } else {
+        // TEXT ONLY
         const textSpan = document.createElement('span');
         textSpan.textContent = text;
         msgDiv.appendChild(textSpan);
@@ -571,8 +535,41 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
 
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    // TikTok-style video observer
+    if (window.chatVideos && !window.videoScrollHandlerAdded) {
+        window.videoScrollHandlerAdded = true;
+
+        const scrollHandler = () => {
+            let mostVisible = null;
+            let maxRatio = 0;
+
+            window.chatVideos.forEach(v => {
+                const rect = v.getBoundingClientRect();
+                const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+                const ratio = visibleHeight / rect.height;
+                if (ratio > maxRatio) {
+                    maxRatio = ratio;
+                    mostVisible = v;
+                }
+            });
+
+            window.chatVideos.forEach(v => {
+                if (v === mostVisible && maxRatio > 0.5) {
+                    v.play().catch(() => {});
+                } else {
+                    v.pause();
+                }
+            });
+        };
+
+        const container = document.getElementById('globalChatContainer');
+        container.addEventListener('scroll', scrollHandler);
+        window.addEventListener('scroll', scrollHandler);
+        scrollHandler(); // trigger once immediately
+    }
 }
-      
+     
         // ---------- Cleanup ----------
         function cleanupChat() {
             clearInterval(window.chatGlowInt);
