@@ -653,7 +653,7 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
 
         // -------------------- VFX BUTTONS --------------------
    
-    // ---------- Infection Virus (forward + sideways branching) ----------
+    // ---------- Infection Virus (Forking Arcs that Spread Everywhere) ----------
 addBtn(vfx, "Infection Virus", () => {
     if (window.infectionActive) return;
     window.infectionActive = true;
@@ -727,23 +727,18 @@ addBtn(vfx, "Infection Virus", () => {
             elem.style.textShadow = "0 0 5px magenta, 0 0 8px cyan";
         }
 
-        // Branching
+        // Always fork forward
         if (depth < 12 && window.infectionActive) {
             setTimeout(() => {
-                // Forward branch (default)
-                createArc(px, py, angle + (Math.random()-0.5) * Math.PI/10, depth+1);
+                // Main forward path
+                createArc(px, py, angle + (Math.random()-0.5) * Math.PI/12, depth+1);
 
-                // Occasional angled split
-                if (Math.random() < 0.4) {
-                    createArc(px, py, angle + (Math.random()-0.5) * Math.PI/5, depth+1);
+                // Side forks (like lightning branches)
+                createArc(px, py, angle + Math.PI/6 * (Math.random() > 0.5 ? 1 : -1), depth+1);
+                if (Math.random() < 0.5) {
+                    createArc(px, py, angle + Math.PI/3 * (Math.random() > 0.5 ? 1 : -1), depth+1);
                 }
-
-                // Rare sideways branch (90° left/right)
-                if (Math.random() < 0.25) {
-                    const sideAngle = angle + (Math.random() < 0.5 ? Math.PI/2 : -Math.PI/2);
-                    createArc(px, py, sideAngle + (Math.random()-0.5) * Math.PI/12, depth+1);
-                }
-            }, 500 + Math.random()*400);
+            }, 600 + Math.random()*400);
         }
     }
 
@@ -756,6 +751,7 @@ addBtn(vfx, "Infection Virus", () => {
         document.querySelectorAll("svg").forEach(el => el.remove());
     };
 });
+
 
     
     // 3D Page
