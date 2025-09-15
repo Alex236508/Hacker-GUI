@@ -511,60 +511,62 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
         const type = (fileType || "").toLowerCase();
 
         // IMAGE
-        if (type.startsWith("image/") || file.match(/\.(png|jpe?g|gif|webp)$/i)) {
-            const img = document.createElement('img');
-            img.src = file;
-            img.style.maxWidth = "100%";
-            img.style.borderRadius = "4px";
-            msgDiv.appendChild(img);
+if (type.startsWith("image/") || file.match(/\.(png|jpe?g|gif|webp)$/i)) {
+    const img = document.createElement('img');
+    img.src = file;
+    img.style.maxWidth = "100%";
+    img.style.borderRadius = "4px";
+    msgDiv.appendChild(img);
+} 
+// VIDEO
+else if (type.startsWith("video/") || file.match(/\.(mp4|webm|ogg)$/i)) {
+    const videoWrapper = document.createElement('div');
+    videoWrapper.style.position = 'relative';
+    videoWrapper.style.display = 'inline-block';
+    videoWrapper.style.width = '100%';
 
-        // VIDEO
-        } else if (type.startsWith("video/") || file.match(/\.(mp4|webm|ogg)$/i)) {
-            const videoWrapper = document.createElement('div');
-            videoWrapper.style.position = 'relative';
-            videoWrapper.style.display = 'inline-block';
-            videoWrapper.style.width = '100%';
+    const video = document.createElement('video');
+    video.src = file;
+    video.autoplay = false;
+    video.loop = true;
+    video.muted = true;
+    video.controls = false;
+    video.style.width = '100%';
+    video.style.borderRadius = '4px';
+    videoWrapper.appendChild(video);
 
-            const video = document.createElement('video');
-            video.src = file;
-            video.autoplay = false;
-            video.loop = true;
-            video.muted = true;
-            video.controls = false;
-            video.style.width = '100%';
-            video.style.borderRadius = '4px';
-            videoWrapper.appendChild(video);
+    const muteBtn = document.createElement('button');
+    muteBtn.innerText = '🔇';
+    muteBtn.style.position = 'absolute';
+    muteBtn.style.bottom = '5px';
+    muteBtn.style.right = '5px';
+    muteBtn.style.background = 'rgba(0,0,0,0.6)';
+    muteBtn.style.color = '#0f0';
+    muteBtn.style.border = 'none';
+    muteBtn.style.cursor = 'pointer';
+    muteBtn.style.padding = '2px 5px';
+    muteBtn.style.borderRadius = '3px';
+    muteBtn.style.fontSize = '12px';
+    muteBtn.onclick = () => {
+        video.muted = !video.muted;
+        muteBtn.innerText = video.muted ? '🔇' : '🔊';
+    };
+    videoWrapper.appendChild(muteBtn);
 
-            const muteBtn = document.createElement('button');
-            muteBtn.innerText = '🔇';
-            muteBtn.style.position = 'absolute';
-            muteBtn.style.bottom = '5px';
-            muteBtn.style.right = '5px';
-            muteBtn.style.background = 'rgba(0,0,0,0.6)';
-            muteBtn.style.color = '#0f0';
-            muteBtn.style.border = 'none';
-            muteBtn.style.cursor = 'pointer';
-            muteBtn.style.padding = '2px 5px';
-            muteBtn.style.borderRadius = '3px';
-            muteBtn.style.fontSize = '12px';
-            muteBtn.onclick = () => {
-                video.muted = !video.muted;
-                muteBtn.innerText = video.muted ? '🔇' : '🔊';
-            };
-            videoWrapper.appendChild(muteBtn);
+    msgDiv.appendChild(videoWrapper);
 
-            msgDiv.appendChild(videoWrapper);
+    window.chatVideos = window.chatVideos || [];
+    window.chatVideos.push(video);
+} 
+// OTHER FILES
+else {
+    const link = document.createElement('a');
+    link.href = file;
+    link.textContent = "📎 File";
+    link.target = "_blank";
+    msgDiv.appendChild(link);
+}
 
-            window.chatVideos = window.chatVideos || [];
-            window.chatVideos.push(video);
-
-        // OTHER FILES
-        } else {
-            const link = document.createElement('a');
-            link.href = file;
-            link.textContent = "📎 File";
-            link.target = "_blank";
-            msgDiv.appendChild(link);
         }
     } else {
         // TEXT ONLY
