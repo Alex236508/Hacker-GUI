@@ -654,7 +654,7 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
         // -------------------- VFX BUTTONS --------------------
    
     // ---------- Corrupted Virus ----------
-addBtn(vfx, "CorruptedVirus", () => {
+addBtn(vfx, "Corrupted Virus", () => {
     if (window.infectionActive) return;
     window.infectionActive = true;
 
@@ -1151,14 +1151,25 @@ addBtn(vfx, 'Stop All', () => {
     // ------------------ Stop Text Corruption ------------------
     if(window._textCorruptCleanup) window._textCorruptCleanup();
 
-    // ------------------ Stop Image Glitch ------------------
-    if(window.imgGlitchInt){ clearInterval(window.imgGlitchInt); window.imgGlitchInt=null; 
+        // ------------------ Stop Image Glitch ------------------
+    if(window.imgGlitchInt){
+        clearInterval(window.imgGlitchInt);
+        window.imgGlitchInt = null;
         document.querySelectorAll('img:not(#vfxGUI *):not(#utilitiesGUI *)').forEach(e=>{
-            if(!isImmune(e)){ e.style.position=''; e.style.left=''; e.style.top=''; }
-        
-          if (window.stopAllInfection) window.stopAllInfection();
-});
+            if(!isImmune(e)){
+                e.style.position='';
+                e.style.left='';
+                e.style.top='';
+            }
+        });
     }
+
+    // ------------------ Stop Infection Virus ------------------
+    if (window.stopAllInfection) {
+        try { window.stopAllInfection(); } catch (e) {}
+        window.stopAllInfection = null;
+    }
+
 
     // ------------------ Reset page-wide inline styles (skip chat) ------------------
     document.body.style.transform='';
