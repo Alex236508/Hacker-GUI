@@ -508,72 +508,72 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
     msgDiv.appendChild(userSpan);
 
     if (file) {
-        const type = (fileType || "").toLowerCase();
+    const type = (fileType || "").toLowerCase();
 
-        // IMAGE
-if (type.startsWith("image/") || file.match(/\.(png|jpe?g|gif|webp)$/i)) {
-    const img = document.createElement('img');
-    img.src = file;
-    img.style.maxWidth = "100%";
-    img.style.borderRadius = "4px";
-    msgDiv.appendChild(img);
-} 
-// VIDEO
-else if (type.startsWith("video/") || file.match(/\.(mp4|webm|ogg)$/i)) {
-    const videoWrapper = document.createElement('div');
-    videoWrapper.style.position = 'relative';
-    videoWrapper.style.display = 'inline-block';
-    videoWrapper.style.width = '100%';
+    // IMAGE
+    if (type.startsWith("image/") || file.match(/\.(png|jpe?g|gif|webp)$/i)) {
+        const img = document.createElement('img');
+        img.src = file;
+        img.style.maxWidth = "100%";
+        img.style.borderRadius = "4px";
+        msgDiv.appendChild(img);
 
-    const video = document.createElement('video');
-    video.src = file;
-    video.autoplay = false;
-    video.loop = true;
-    video.muted = true;
-    video.controls = false;
-    video.style.width = '100%';
-    video.style.borderRadius = '4px';
-    videoWrapper.appendChild(video);
+    // VIDEO
+    } else if (type.startsWith("video/") || file.match(/\.(mp4|webm|ogg)$/i)) {
+        const videoWrapper = document.createElement('div');
+        videoWrapper.style.position = 'relative';
+        videoWrapper.style.display = 'inline-block';
+        videoWrapper.style.width = '100%';
 
-    const muteBtn = document.createElement('button');
-    muteBtn.innerText = '🔇';
-    muteBtn.style.position = 'absolute';
-    muteBtn.style.bottom = '5px';
-    muteBtn.style.right = '5px';
-    muteBtn.style.background = 'rgba(0,0,0,0.6)';
-    muteBtn.style.color = '#0f0';
-    muteBtn.style.border = 'none';
-    muteBtn.style.cursor = 'pointer';
-    muteBtn.style.padding = '2px 5px';
-    muteBtn.style.borderRadius = '3px';
-    muteBtn.style.fontSize = '12px';
-    muteBtn.onclick = () => {
-        video.muted = !video.muted;
-        muteBtn.innerText = video.muted ? '🔇' : '🔊';
-    };
-    videoWrapper.appendChild(muteBtn);
+        const video = document.createElement('video');
+        video.src = file;
+        video.autoplay = false;
+        video.loop = true;
+        video.muted = true;
+        video.controls = false;
+        video.style.width = '100%';
+        video.style.borderRadius = '4px';
+        videoWrapper.appendChild(video);
 
-    msgDiv.appendChild(videoWrapper);
+        // Mute button
+        const muteBtn = document.createElement('button');
+        muteBtn.innerText = '🔇';
+        muteBtn.style.position = 'absolute';
+        muteBtn.style.bottom = '5px';
+        muteBtn.style.right = '5px';
+        muteBtn.style.background = 'rgba(0,0,0,0.6)';
+        muteBtn.style.color = '#0f0';
+        muteBtn.style.border = 'none';
+        muteBtn.style.cursor = 'pointer';
+        muteBtn.style.padding = '2px 5px';
+        muteBtn.style.borderRadius = '3px';
+        muteBtn.style.fontSize = '12px';
+        muteBtn.onclick = () => {
+            video.muted = !video.muted;
+            muteBtn.innerText = video.muted ? '🔇' : '🔊';
+        };
+        videoWrapper.appendChild(muteBtn);
 
-    window.chatVideos = window.chatVideos || [];
-    window.chatVideos.push(video);
-} 
-// OTHER FILES
-else {
-    const link = document.createElement('a');
-    link.href = file;
-    link.textContent = "📎 File";
-    link.target = "_blank";
-    msgDiv.appendChild(link);
-}
+        msgDiv.appendChild(videoWrapper);
 
-        }
+        // Track video for TikTok-style auto-play
+        window.chatVideos = window.chatVideos || [];
+        window.chatVideos.push(video);
+
+    // OTHER FILES
     } else {
-        // TEXT ONLY
-        const textSpan = document.createElement('span');
-        textSpan.textContent = text;
-        msgDiv.appendChild(textSpan);
+        const link = document.createElement('a');
+        link.href = file;
+        link.textContent = "📎 File";
+        link.target = "_blank";
+        msgDiv.appendChild(link);
     }
+} else {
+    // TEXT ONLY
+    const textSpan = document.createElement('span');
+    textSpan.textContent = text;
+    msgDiv.appendChild(textSpan);
+}
 
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
