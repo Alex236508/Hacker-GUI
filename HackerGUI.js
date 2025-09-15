@@ -664,7 +664,7 @@ addBtn(vfx, "Corrupted Virus", () => {
         document.getElementById("utilitiesGUI")
     ]);
 
-    function createArc(x, y, angle) {
+    function createArc(x, y, angle, depth = 0) {
         if (!window.infectionActive) return;
 
         // Arc container
@@ -682,10 +682,10 @@ addBtn(vfx, "Corrupted Virus", () => {
         const segs = 6;
 
         for (let i = 0; i < segs; i++) {
-            px += Math.cos(angle) * (15 + Math.random() * 8);
-            py += Math.sin(angle) * (15 + Math.random() * 8);
-            px += (Math.random() - 0.5) * 10;
-            py += (Math.random() - 0.5) * 10;
+            px += Math.cos(angle) * (15 + Math.random() * 10);
+            py += Math.sin(angle) * (15 + Math.random() * 10);
+            px += (Math.random() - 0.5) * 8;
+            py += (Math.random() - 0.5) * 8;
             points += ` ${px},${py}`;
         }
 
@@ -705,46 +705,43 @@ addBtn(vfx, "Corrupted Virus", () => {
 
         let life = 0;
         const anim = setInterval(() => {
-            if (!window.infectionActive) { clearInterval(anim); arc.remove(); return; }
+            if (!window.infectionActive) { clearInterval(anim); return; }
 
-            // Flicker colors
-            const hue = (life * 90 + Math.random() * 100) % 360;
-            const hue2 = (life * 120 + Math.random() * 140) % 360;
-            const hue3 = (life * 60 + Math.random() * 180) % 360;
+            // Flicker colors (keeps arcs alive-looking)
+            const hue = (life * 50 + Math.random() * 120) % 360;
+            const hue2 = (life * 80 + Math.random() * 180) % 360;
+            const hue3 = (life * 60 + Math.random() * 200) % 360;
 
             main.setAttribute("stroke", `hsl(${hue},100%,60%)`);
             g1.setAttribute("stroke", `hsl(${hue2},100%,60%)`);
             g2.setAttribute("stroke", `hsl(${hue3},100%,60%)`);
 
-            const opacity = 1 - life / 12;
-            main.setAttribute("opacity", opacity);
-            g1.setAttribute("opacity", opacity * 0.6);
-            g2.setAttribute("opacity", opacity * 0.6);
-
             life++;
-            if (life > 12) {
-                clearInterval(anim);
-                arc.remove();
+        }, 100);
 
-                // Corrupt element at end
-                const elem = document.elementFromPoint(px, py);
-                if (elem && !immune.has(elem) && !elem.closest("#vfxGUI, #utilitiesGUI, #globalChatContainer")) {
-                    elem.style.transform = `scale(${1 + Math.random() * 0.4}) rotate(${(Math.random()-0.5)*15}deg)`;
-                    elem.style.color = `hsl(${Math.random()*360},100%,60%)`;
-                    elem.style.textShadow = "0 0 6px magenta, 0 0 12px cyan";
-                }
+        // Corrupt element at the end
+        const elem = document.elementFromPoint(px, py);
+        if (elem && !immune.has(elem) && !elem.closest("#vfxGUI, #utilitiesGUI, #globalChatContainer")) {
+            elem.style.transform = `scale(${1 + Math.random() * 0.3}) rotate(${(Math.random()-0.5)*8}deg)`;
+            elem.style.color = `hsl(${Math.random()*360},100%,60%)`;
+            elem.style.textShadow = "0 0 5px magenta, 0 0 8px cyan";
+        }
 
-                // Slowly crawl forward with a new arc
-                if (window.infectionActive) {
-                    setTimeout(() => {
-                        createArc(px, py, angle + (Math.random()-0.5)*Math.PI/8);
-                    }, 600); // crawl speed delay
+        // Branching (but controlled to avoid lag)
+        if (depth < 12 && window.infectionActive) {
+            setTimeout(() => {
+                // Continue forward
+                createArc(px, py, angle + (Math.random()-0.5) * Math.PI/10, depth+1);
+
+                // Random chance to split
+                if (Math.random() < 0.4) {
+                    createArc(px, py, angle + (Math.random()-0.5) * Math.PI/5, depth+1);
                 }
-            }
-        }, 70);
+            }, 500 + Math.random()*400);
+        }
     }
 
-    // Start infection from top-left
+    // Start infection from top-left corner
     createArc(0, 0, Math.PI/4);
 
     // Stop function
@@ -753,6 +750,7 @@ addBtn(vfx, "Corrupted Virus", () => {
         document.querySelectorAll("svg").forEach(el => el.remove());
     };
 });
+
 
     
     // 3D Page
