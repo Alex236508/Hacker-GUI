@@ -654,7 +654,7 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
         // -------------------- VFX BUTTONS --------------------
    
     // ---------- Corrupted Virus ----------
-addBtn(vfx, "Corrupted Virus", () => {
+addBtn(vfx, "CorruptedVirus", () => {
     if (window.infectionActive) return;
     window.infectionActive = true;
 
@@ -667,11 +667,13 @@ addBtn(vfx, "Corrupted Virus", () => {
     window.infectionArcCount = 0;
     const maxArcs = 200;
 
+    // Track corruption intervals + original styles
+    window.corruptedElems = new Map(); // elem -> { interval, orig }
+
     function createArc(x, y, angle, depth = 0) {
         if (!window.infectionActive || window.infectionArcCount >= maxArcs) return;
         window.infectionArcCount++;
 
-        // arc container
         const arc = document.createElement("div");
         arc.style.position = "absolute";
         arc.style.left = "0";
@@ -721,15 +723,26 @@ addBtn(vfx, "Corrupted Virus", () => {
         // --- Infect element with ongoing distortion ---
         const elem = document.elementFromPoint(px, py);
         if (elem && !immune.has(elem) && !elem.closest("#vfxGUI, #utilitiesGUI, #globalChatContainer")) {
-            let tick = 0;
-            const corruptAnim = setInterval(() => {
-                if (!window.infectionActive) { clearInterval(corruptAnim); return; }
-                const hue = (tick * 10) % 360;
-                elem.style.filter = `hue-rotate(${hue}deg)`;
-                elem.style.transform = `scale(${1 + Math.sin(tick/10)*0.1}) rotate(${(Math.random()-0.5)*5}deg) skew(${(Math.random()-0.5)*4}deg, ${(Math.random()-0.5)*4}deg)`;
-                elem.style.textShadow = `0 0 5px hsl(${hue},100%,60%), 0 0 10px hsl(${(hue+180)%360},100%,60%)`;
-                tick++;
-            }, 120);
+            if (!window.corruptedElems.has(elem)) {
+                // Save original styles
+                const orig = {
+                    filter: elem.style.filter,
+                    transform: elem.style.transform,
+                    textShadow: elem.style.textShadow
+                };
+
+                let tick = 0;
+                const corruptAnim = setInterval(() => {
+                    if (!window.infectionActive) { clearInterval(corruptAnim); return; }
+                    const hue = (tick * 10) % 360;
+                    elem.style.filter = `hue-rotate(${hue}deg)`;
+                    elem.style.transform = `scale(${1 + Math.sin(tick/10)*0.1}) rotate(${(Math.random()-0.5)*5}deg) skew(${(Math.random()-0.5)*4}deg, ${(Math.random()-0.5)*4}deg)`;
+                    elem.style.textShadow = `0 0 5px hsl(${hue},100%,60%), 0 0 10px hsl(${(hue+180)%360},100%,60%)`;
+                    tick++;
+                }, 120);
+
+                window.corruptedElems.set(elem, { interval: corruptAnim, orig });
+            }
         }
 
         // --- branching ---
@@ -751,9 +764,17 @@ addBtn(vfx, "Corrupted Virus", () => {
         window.infectionActive = false;
         window.infectionArcCount = 0;
         document.querySelectorAll("svg").forEach(el => el.remove());
+
+        // Restore corrupted elements
+        window.corruptedElems.forEach(({ interval, orig }, elem) => {
+            clearInterval(interval);
+            elem.style.filter = orig.filter;
+            elem.style.transform = orig.transform;
+            elem.style.textShadow = orig.textShadow;
+        });
+        window.corruptedElems.clear();
     };
 });
-
     
     // 3D Page
   addBtn(vfx,'3D Page',()=>{
