@@ -350,7 +350,53 @@ inputWrapper.appendChild(input);
 inputWrapper.appendChild(uploadBtn);
 chat.appendChild(inputWrapper);
 chat.appendChild(fileInput);
+      // ------------------- Send text messages -------------------
+input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && input.value.trim()) {
+        const msg = input.value.trim();
+        db.ref('messages').push({ 
+            user: username, 
+            text: msg, 
+            timestamp: Date.now()
+        });
+        input.value = '';
+    }
+});
 
+// ------------------- Handle file uploads -------------------
+fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    try {
+        // Create a reference in Firebase Storage
+        const fileRef = storage.ref('uploads/' + Date.now() + "_" + file.name);
+        // Upload the file
+        await fileRef.put(file);
+        // Get the downloadable URL
+        const fileURL = await fileRef.getDownloadURL();
+
+        // Push message to database
+        db.ref('messages').push({
+            user: username,
+            text: '',
+            file: fileURL,
+            fileType: file.type,
+            timestamp: Date.now()
+        });
+    } catch (err) {
+        console.error("Upload failed:", err);
+        alert("Failed to upload file. Try again.");
+    }
+
+    fileInput.value = ''; // reset input after upload
+});
+
+// ------------------- Listen for new messages -------------------
+db.ref('messages').on('child_added', snap => {
+    const msg = snap.val();
+    addMessage(msg.user, msg.text, msg.timestamp, username, msg.file, msg.fileType);
+});
 
         // ---------- Resizable ----------
 const resizeHandle = document.createElement('div');
@@ -505,16 +551,14 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
             muteBtn.style.padding = '2px 5px';
             muteBtn.style.borderRadius = '3px';
             muteBtn.style.fontSize = '12px';
-
             muteBtn.onclick = () => {
                 video.muted = !video.muted;
                 muteBtn.innerText = video.muted ? '🔇' : '🔊';
             };
-
             videoWrapper.appendChild(muteBtn);
+
             msgDiv.appendChild(videoWrapper);
 
-            // add video to global list for scroll play/pause
             window.chatVideos = window.chatVideos || [];
             window.chatVideos.push(video);
 
@@ -536,14 +580,13 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-    // TikTok-style video observer
+    // TikTok-style auto-play for videos
     if (window.chatVideos && !window.videoScrollHandlerAdded) {
         window.videoScrollHandlerAdded = true;
 
         const scrollHandler = () => {
             let mostVisible = null;
             let maxRatio = 0;
-
             window.chatVideos.forEach(v => {
                 const rect = v.getBoundingClientRect();
                 const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
@@ -553,7 +596,6 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
                     mostVisible = v;
                 }
             });
-
             window.chatVideos.forEach(v => {
                 if (v === mostVisible && maxRatio > 0.5) {
                     v.play().catch(() => {});
@@ -566,22 +608,9 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
         const container = document.getElementById('globalChatContainer');
         container.addEventListener('scroll', scrollHandler);
         window.addEventListener('scroll', scrollHandler);
-        scrollHandler(); // trigger once immediately
+        scrollHandler(); // trigger once
     }
 }
-     
-        // ---------- Cleanup ----------
-        function cleanupChat() {
-            clearInterval(window.chatGlowInt);
-            if(username) db.ref('users/' + username).remove();
-            chat.remove();
-            window.chatActive = false;
-        }
-
-        closeBtn.onclick = cleanupChat;
-        window.addEventListener('beforeunload', cleanupChat);
-    }
-});
   
   // Keyboard shortcut: Shift + B to toggle chat visibility
 document.addEventListener('keydown', e => {
