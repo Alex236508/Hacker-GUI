@@ -465,18 +465,96 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
     msgDiv.appendChild(userSpan);
 
     if (file) {
-        if (fileType.startsWith("image/")) {
+        const type = (fileType || "").toLowerCase();
+
+        // Image
+        if (type.startsWith("image/") || file.match(/\.(png|jpe?g|gif|webp)$/i)) {
             const img = document.createElement('img');
             img.src = file;
             img.style.maxWidth = "100%";
             img.style.borderRadius = "4px";
             msgDiv.appendChild(img);
-        } else if (fileType.startsWith("video/")) {
+
+        // Video
+        } else if (type.startsWith("video/") || file.match(/\.(mp4|webm|ogg)$/i)) {
+            const videoWrapper = document.createElement('div');
+            videoWrapper.style.position = 'relative';
+            videoWrapper.style.display = 'inline-block';
+            videoWrapper.style.width = '100%';
+
             const video = document.createElement('video');
             video.src = file;
-            video.controls = true;
-            video.style.maxWidth = "100%";
-            msgDiv.appendChild(video);
+            video.autoplay = false;     // start paused
+            video.loop = true;
+            video.muted = true;
+            video.controls = false;
+            video.style.width = '100%';
+            video.style.borderRadius = '4px';
+            videoWrapper.appendChild(video);
+
+            // Mute/Unmute button
+            const muteBtn = document.createElement('button');
+            muteBtn.innerText = '🔇';
+            muteBtn.style.position = 'absolute';
+            muteBtn.style.bottom = '5px';
+            muteBtn.style.right = '5px';
+            muteBtn.style.background = 'rgba(0,0,0,0.6)';
+            muteBtn.style.color = '#0f0';
+            muteBtn.style.border = 'none';
+            muteBtn.style.cursor = 'pointer';
+            muteBtn.style.padding = '2px 5px';
+            muteBtn.style.borderRadius = '3px';
+            muteBtn.style.fontSize = '12px';
+
+            muteBtn.onclick = () => {
+                video.muted = !video.muted;
+                muteBtn.innerText = video.muted ? '🔇' : '🔊';
+            };
+
+            videoWrapper.appendChild(muteBtn);
+            msgDiv.appendChild(videoWrapper);
+
+            // Add to a global list of videos for scroll-based control
+            window.chatVideos = window.chatVideos || [];
+            window.chatVideos.push(video);
+
+            // Scroll listener to handle TikTok-like autoplay
+            if (!window.videoScrollHandlerAdded) {
+                window.videoScrollHandlerAdded = true;
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        // Sort videos by visibility
+                        let mostVisible = null;
+                        let maxRatio = 0;
+                        window.chatVideos.forEach(v => {
+                            const rect = v.getBoundingClientRect();
+                            const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+                            const ratio = visibleHeight / rect.height;
+                            if (ratio > maxRatio) {
+                                maxRatio = ratio;
+                                mostVisible = v;
+                            }
+                        });
+
+                        // Play the most visible video, pause others
+                        window.chatVideos.forEach(v => {
+                            if (v === mostVisible && maxRatio > 0.5) {
+                                v.play().catch(() => {});
+                            } else {
+                                v.pause();
+                            }
+                        });
+                    },
+                    { threshold: [0, 0.5, 1] }
+                );
+
+                // Observe all videos
+                const container = document.getElementById('globalChatContainer');
+                if (container) observer.observe(container);
+                // Also trigger on scroll
+                container.addEventListener('scroll', () => observer.takeRecords());
+                window.addEventListener('scroll', () => observer.takeRecords());
+            }
         } else {
             const link = document.createElement('a');
             link.href = file;
@@ -484,6 +562,7 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
             link.target = "_blank";
             msgDiv.appendChild(link);
         }
+
     } else {
         const textSpan = document.createElement('span');
         textSpan.textContent = text;
@@ -493,47 +572,6 @@ function addMessage(user, text, timestamp, currentUser, file, fileType) {
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
-
-
-// Send messages
-input.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && input.value.trim()) {
-        const msg = input.value.trim();
-        db.ref('messages').push({ 
-            user: username, 
-            text: msg, 
-            timestamp: Date.now() // store the time at send
-        });
-        input.value = '';
-    }
-});
-
-      // Handle file uploads
-fileInput.addEventListener('change', async () => {
-    const file = fileInput.files[0];
-    if (!file) return;
-
-    const fileRef = storage.ref('uploads/' + Date.now() + "_" + file.name);
-    await fileRef.put(file);
-    const fileURL = await fileRef.getDownloadURL();
-
-    db.ref('messages').push({
-        user: username,
-        text: '',
-        file: fileURL,
-        fileType: file.type,
-        timestamp: Date.now()
-    });
-
-    fileInput.value = ''; // reset input after upload
-});
-
-// Listen for new messages
-db.ref('messages').on('child_added', snap => {
-    const msg = snap.val();
-    addMessage(msg.user, msg.text, msg.timestamp, username, msg.file, msg.fileType);
-});
-
       
         // ---------- Cleanup ----------
         function cleanupChat() {
