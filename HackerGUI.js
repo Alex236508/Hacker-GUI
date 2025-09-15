@@ -185,33 +185,25 @@ makeDraggable(vfx, vfxLock);
         });
 });
 
-  
+
 // ---------- Global Chat (Firebase) ----------
 addBtn(util, 'Global Chat', () => {
     if (window.chatActive) return;
     window.chatActive = true;
 
     const loadFirebase = () => {
-    if (!window.firebase) {
-        const s1 = document.createElement('script');
-        s1.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
-        s1.onload = () => {
-            const s2 = document.createElement('script');
-            s2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
-            s2.onload = () => {
-                const s3 = document.createElement('script');
-                s3.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js';
-                s3.onload = initChat;
-                document.body.appendChild(s3);
+        if (!window.firebase) {
+            const s1 = document.createElement('script');
+            s1.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+            s1.onload = () => {
+                const s2 = document.createElement('script');
+                s2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
+                s2.onload = initChat;
+                document.body.appendChild(s2);
             };
-            document.body.appendChild(s2); // <--- THIS WAS MISSING
-        };
-        document.body.appendChild(s1);
-    } else {
-        initChat();
-    }
-};
-
+            document.body.appendChild(s1);
+        } else initChat();
+    };
 
     loadFirebase();
 
@@ -240,15 +232,13 @@ addBtn(util, 'Global Chat', () => {
             authDomain: "hacker-gui-global-chat.firebaseapp.com",
             databaseURL: "https://hacker-gui-global-chat-default-rtdb.firebaseio.com",
             projectId: "hacker-gui-global-chat",
-            storageBucket: "hacker-gui-global-chat.appspot.com",
+            storageBucket: "hacker-gui-global-chat.firebasestorage.app",
             messagingSenderId: "410978781234",
             appId: "1:410978781234:web:ee08f15ee9be48970c542b",
             measurementId: "G-SB0B1FLF29"
         };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const storage = firebase.storage();
-
 
         const username = await getUsername(db);
 if (!username) {
@@ -326,73 +316,12 @@ if(chatBox){
         messagesDiv.style.cssText = 'flex:1; overflow-y:auto; padding:5px;';
         chat.appendChild(messagesDiv);
 
-        // ---------- Input + Upload ----------
-const inputWrapper = document.createElement('div');
-inputWrapper.style.cssText = 'display:flex;align-items:center;background:black;';
-
-const input = document.createElement('input');
-input.type = 'text';
-input.placeholder = 'Type a message...';
-input.style.cssText = 'flex:1;border:none;outline:none;padding:5px;background:black;color:#0f0;';
-
-const uploadBtn = document.createElement('button');
-uploadBtn.textContent = '📎';
-uploadBtn.style.cssText = 'background:black;color:#0f0;border:none;cursor:pointer;font-size:16px;padding:5px;';
-
-const fileInput = document.createElement('input');
-fileInput.type = 'file';
-fileInput.accept = 'image/*,video/*,.gif';
-fileInput.style.display = 'none';
-
-uploadBtn.onclick = () => fileInput.click();
-
-inputWrapper.appendChild(input);
-inputWrapper.appendChild(uploadBtn);
-chat.appendChild(inputWrapper);
-chat.appendChild(fileInput);
-      // ------------------- Send text messages -------------------
-input.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && input.value.trim()) {
-        const msg = input.value.trim();
-        db.ref('messages').push({ 
-            user: username, 
-            text: msg, 
-            timestamp: Date.now()
-        });
-        input.value = '';
-    }
-});
-
-// ------------------- Handle file uploads -------------------
-fileInput.addEventListener('change', async () => {
-    const file = fileInput.files[0];
-    if (!file) return;
-
-    try {
-        const fileRef = storage.ref('uploads/' + Date.now() + "_" + file.name);
-        await fileRef.put(file);
-        const fileURL = await fileRef.getDownloadURL();
-
-        db.ref('messages').push({
-            user: username,
-            text: '',
-            file: fileURL,
-            fileType: file.type,
-            timestamp: Date.now()
-        });
-    } catch (err) {
-        console.error("Upload failed:", err);
-        alert("Failed to upload file. Try again.");
-    }
-
-    fileInput.value = ''; // reset input after upload
-});
-
-// ------------------- Listen for new messages -------------------
-db.ref('messages').on('child_added', snap => {
-    const msg = snap.val();
-    addMessage(msg.user, msg.text, msg.timestamp, username, msg.file, msg.fileType);
-});
+        // ---------- Input ----------
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Type a message...';
+        input.style.cssText = 'border:none;outline:none;padding:5px;background:black;color:#0f0;';
+        chat.appendChild(input);
 
         // ---------- Resizable ----------
 const resizeHandle = document.createElement('div');
@@ -487,129 +416,68 @@ function getUserColor(user, currentUser) {
     return colors[Math.abs(hash) % colors.length];
 }
 
-      // Messaging w/ video and images
-function addMessage(user, text, timestamp, currentUser, file, fileType) {
+function addMessage(user, text, timestamp, currentUser) {
     const color = getUserColor(user, currentUser);
-    const time = new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+    // Format the timestamp (hh:mm AM/PM)
+    const time = new Date(timestamp);
+    const timeString = time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
     const msgDiv = document.createElement('div');
     msgDiv.style.color = color;
 
+    // Create the timestamp span
     const timestampSpan = document.createElement('span');
-    timestampSpan.textContent = time;
-    timestampSpan.style.color = '#888';
+    timestampSpan.textContent = timeString;
+    timestampSpan.style.color = '#888';       // faded gray
+    timestampSpan.style.opacity = '0.6';      // more faded
     timestampSpan.style.marginRight = '6px';
-    timestampSpan.style.fontSize = '0.8em';
+    timestampSpan.style.fontSize = '0.8em';   // smaller than normal text
 
-    const userSpan = document.createElement('span');
-    userSpan.textContent = `${user}: `;
+    // Build the rest of the message
+    const userText = document.createElement('span');
+    userText.textContent = `${user}: ${text}`;
 
+    // Put them together
     msgDiv.appendChild(timestampSpan);
-    msgDiv.appendChild(userSpan);
-
-    if (file) {
-    const type = (fileType || "").toLowerCase();
-
-    // IMAGE
-    if (type.startsWith("image/") || file.match(/\.(png|jpe?g|gif|webp)$/i)) {
-        const img = document.createElement('img');
-        img.src = file;
-        img.style.maxWidth = "100%";
-        img.style.borderRadius = "4px";
-        msgDiv.appendChild(img);
-
-    // VIDEO
-    } else if (type.startsWith("video/") || file.match(/\.(mp4|webm|ogg)$/i)) {
-        const videoWrapper = document.createElement('div');
-        videoWrapper.style.position = 'relative';
-        videoWrapper.style.display = 'inline-block';
-        videoWrapper.style.width = '100%';
-
-        const video = document.createElement('video');
-        video.src = file;
-        video.autoplay = false;
-        video.loop = true;
-        video.muted = true;
-        video.controls = false;
-        video.style.width = '100%';
-        video.style.borderRadius = '4px';
-        videoWrapper.appendChild(video);
-
-        // Mute button
-        const muteBtn = document.createElement('button');
-        muteBtn.innerText = '🔇';
-        muteBtn.style.position = 'absolute';
-        muteBtn.style.bottom = '5px';
-        muteBtn.style.right = '5px';
-        muteBtn.style.background = 'rgba(0,0,0,0.6)';
-        muteBtn.style.color = '#0f0';
-        muteBtn.style.border = 'none';
-        muteBtn.style.cursor = 'pointer';
-        muteBtn.style.padding = '2px 5px';
-        muteBtn.style.borderRadius = '3px';
-        muteBtn.style.fontSize = '12px';
-        muteBtn.onclick = () => {
-            video.muted = !video.muted;
-            muteBtn.innerText = video.muted ? '🔇' : '🔊';
-        };
-        videoWrapper.appendChild(muteBtn);
-
-        msgDiv.appendChild(videoWrapper);
-
-        // Track video for TikTok-style auto-play
-        window.chatVideos = window.chatVideos || [];
-        window.chatVideos.push(video);
-
-    // OTHER FILES
-    } else {
-        const link = document.createElement('a');
-        link.href = file;
-        link.textContent = "📎 File";
-        link.target = "_blank";
-        msgDiv.appendChild(link);
-    }
-} else {
-    // TEXT ONLY
-    const textSpan = document.createElement('span');
-    textSpan.textContent = text;
-    msgDiv.appendChild(textSpan);
-}
+    msgDiv.appendChild(userText);
 
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-    // TikTok-style auto-play for videos
-    if (window.chatVideos && !window.videoScrollHandlerAdded) {
-        window.videoScrollHandlerAdded = true;
-
-        const scrollHandler = () => {
-            let mostVisible = null;
-            let maxRatio = 0;
-            window.chatVideos.forEach(v => {
-                const rect = v.getBoundingClientRect();
-                const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
-                const ratio = visibleHeight / rect.height;
-                if (ratio > maxRatio) {
-                    maxRatio = ratio;
-                    mostVisible = v;
-                }
-            });
-            window.chatVideos.forEach(v => {
-                if (v === mostVisible && maxRatio > 0.5) {
-                    v.play().catch(() => {});
-                } else {
-                    v.pause();
-                }
-            });
-        };
-
-        const container = document.getElementById('globalChatContainer');
-        container.addEventListener('scroll', scrollHandler);
-        window.addEventListener('scroll', scrollHandler);
-        scrollHandler(); // trigger once
-    }
 }
-  
+
+// Listen for new messages
+db.ref('messages').on('child_added', snapshot => {
+    const data = snapshot.val();
+    if (data) addMessage(data.user, data.text, data.timestamp, username);
+});
+
+// Send messages
+input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && input.value.trim()) {
+        const msg = input.value.trim();
+        db.ref('messages').push({ 
+            user: username, 
+            text: msg, 
+            timestamp: Date.now() // store the time at send
+        });
+        input.value = '';
+    }
+});
+
+        // ---------- Cleanup ----------
+        function cleanupChat() {
+            clearInterval(window.chatGlowInt);
+            if(username) db.ref('users/' + username).remove();
+            chat.remove();
+            window.chatActive = false;
+        }
+
+        closeBtn.onclick = cleanupChat;
+        window.addEventListener('beforeunload', cleanupChat);
+    }
+});
+
   // Keyboard shortcut: Shift + B to toggle chat visibility
 document.addEventListener('keydown', e => {
     const target = e.target;
@@ -784,7 +652,7 @@ window.immuneChats.push(document.getElementById('globalChatContainer'));
     })();
 
         // -------------------- VFX BUTTONS --------------------
-   
+
     // ---------- Corrupted Virus ----------
 addBtn(vfx, "Corrupted Virus", () => {
     if (window.infectionActive) return;
@@ -907,7 +775,7 @@ addBtn(vfx, "Corrupted Virus", () => {
         window.corruptedElems.clear();
     };
 });
-    
+
     // 3D Page
   addBtn(vfx,'3D Page',()=>{
   if(!window.triScript){
@@ -1236,6 +1104,7 @@ addBtn(vfx, 'Full Chaos', () => {
     window.fullChaosActive = false;
   }
 });
+
 // Fake blocked page
 addBtn(vfx,'Block link',()=>{
   window.linkRedirectsInt=setInterval(()=>{
