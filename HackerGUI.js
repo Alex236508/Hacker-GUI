@@ -138,87 +138,54 @@ function makeDraggable(g, lock){
 makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
     
+// vfxContainer already exists
 const vfxContainer = document.getElementById('vfxGUI');
 
-const titleBoxWrapper = document.createElement('div');
-titleBoxWrapper.style.cssText = `
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: rgba(0,0,0,0.7);
-    padding: 5px;
-    border-radius: 5px;
-    z-index: 10000005;
+// Create a wrapper for all bottom-right controls
+const controlsWrapper = document.createElement('div');
+controlsWrapper.style.cssText = `
+    position:absolute; bottom:5px; right:5px;
+    display:flex; flex-direction: column; gap:4px;
+    background:rgba(0,0,0,0.5); padding:4px; border-radius:4px;
+    z-index:10000001;
 `;
 
+// Tab title input
 const titleInput = document.createElement('input');
 titleInput.type = 'text';
 titleInput.placeholder = 'Tab title';
 titleInput.style.cssText = `
-    width:120px;
-    border:none;
-    outline:none;
-    padding:3px 5px;
-    border-radius:3px;
-    background:black;
-    color:#0f0;
-    font-family:monospace;
-    font-size:12px;
+    width:80px; font-size:10px; padding:2px;
+    background:black; color:#0f0; border:none; outline:none;
 `;
-
-titleBoxWrapper.appendChild(titleInput);
-vfxContainer.appendChild(titleBoxWrapper);
-
 titleInput.addEventListener('input', () => {
-    document.title = titleInput.value || "Default Title";
+    document.title = titleInput.value;
 });
+controlsWrapper.appendChild(titleInput);
 
-// ---------- Tab Title & Favicon Controls ----------
-const vfxContainer = document.getElementById('vfxGUI');
-if (vfxContainer) {
-    const controlsWrapper = document.createElement('div');
-    controlsWrapper.style.cssText = `
-        position:absolute; bottom:5px; right:5px;
-        display:flex; gap:4px; align-items:center;
-        background:rgba(0,0,0,0.5); padding:4px; border-radius:4px;
-        z-index:10000001;
-    `;
+// File input below tab renamer
+const faviconInput = document.createElement('input');
+faviconInput.type = 'file';
+faviconInput.accept = 'image/*';
+faviconInput.style.cssText = 'width:20px; height:20px; cursor:pointer; padding:0; margin:0;';
+faviconInput.addEventListener('change', () => {
+    const file = faviconInput.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    let link = document.querySelector("link[rel*='icon']");
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+    }
+    link.href = url;
+});
+controlsWrapper.appendChild(faviconInput);
 
-    // Favicon input
-    const faviconInput = document.createElement('input');
-    faviconInput.type = 'file';
-    faviconInput.accept = 'image/*';
-    faviconInput.style.cssText = 'width:20px; height:20px; cursor:pointer; padding:0; margin:0;';
+// Append the wrapper to vfxGUI
+vfxContainer.appendChild(controlsWrapper);
 
-    faviconInput.addEventListener('change', () => {
-        const file = faviconInput.files[0];
-        if (!file) return;
-        const url = URL.createObjectURL(file);
-        let link = document.querySelector("link[rel*='icon']");
-        if (!link) {
-            link = document.createElement('link');
-            link.rel = 'icon';
-            document.head.appendChild(link);
-        }
-        link.href = url;
-    });
 
-    // Tab title input
-    const titleInput = document.createElement('input');
-    titleInput.type = 'text';
-    titleInput.placeholder = 'Tab title';
-    titleInput.style.cssText = `
-        width:80px; font-size:10px; padding:2px;
-        background:black; color:#0f0; border:none; outline:none;
-    `;
-    titleInput.addEventListener('input', () => {
-        document.title = titleInput.value;
-    });
-
-    controlsWrapper.appendChild(faviconInput);
-    controlsWrapper.appendChild(titleInput);
-    vfxContainer.appendChild(controlsWrapper);
-}
 
     // ---------- UTILITIES BUTTONS ----------
 (function(){
