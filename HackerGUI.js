@@ -185,8 +185,8 @@ makeDraggable(vfx, vfxLock);
         });
 });
 
-  addBtn(util, 'Open URL in Iframe', () => {
-    const url = prompt("Enter URL to open in iframe:");
+  addBtn(util, 'about:blank cloak', () => {
+    const url = prompt("Enter URL");
     if (url) {
         const w = window.open("about:blank", "_blank");
         w.document.write(`
