@@ -80,7 +80,7 @@
     box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
     user-select:none;cursor:move;
   `;
-  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>DOM Manipulation</b></div>';
+  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Page Effects</b></div>';
   document.body.appendChild(vfx);
 
     // -------------------- BUTTON HELPER --------------------
