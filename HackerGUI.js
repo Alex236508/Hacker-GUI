@@ -138,64 +138,68 @@ function makeDraggable(g, lock){
 makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
     
-// vfxContainer already exists
+// ---------- Tab Title & Favicon Controls ----------
 const vfxContainer = document.getElementById('vfxGUI');
+if (vfxContainer) {
+    const controlsWrapper = document.createElement('div');
+    controlsWrapper.style.cssText = `
+        position:absolute; bottom:5px; right:5px;
+        display:flex; gap:6px; align-items:center;
+        background:rgba(0,0,0,0.5); padding:4px; border-radius:4px;
+        z-index:10000001;
+    `;
 
-// Create a wrapper for all bottom-right controls
-const controlsWrapper = document.createElement('div');
-controlsWrapper.style.cssText = `
-    position:absolute; bottom:5px; right:5px;
-    display:flex; flex-direction: column; gap:4px;
-    background:rgba(0,0,0,0.5); padding:4px; border-radius:4px;
-    z-index:10000001;
-`;
+    // Hidden file input for favicon
+    const faviconInput = document.createElement('input');
+    faviconInput.type = 'file';
+    faviconInput.accept = 'image/*';
+    faviconInput.style.display = 'none';
+    faviconInput.addEventListener('change', () => {
+        const file = faviconInput.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
 
-// Tab title input
-const titleInput = document.createElement('input');
-titleInput.type = 'text';
-titleInput.placeholder = 'Tab title';
-titleInput.style.cssText = `
-    width:80px; font-size:10px; padding:2px;
-    background:black; color:#0f0; border:none; outline:none;
-`;
-titleInput.addEventListener('input', () => {
-    document.title = titleInput.value;
-});
-controlsWrapper.appendChild(titleInput);
+        // Find or create favicon <link>
+        let link = document.querySelector("link[rel*='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+        }
+        link.href = url;
+    });
 
-// File input below tab renamer
-// Hidden file input
-const faviconInput = document.createElement('input');
-faviconInput.type = 'file';
-faviconInput.accept = 'image/*';
-faviconInput.style.display = 'none';
-faviconInput.addEventListener('change', () => {
-    const file = faviconInput.files[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    let link = document.querySelector("link[rel*='icon']");
-    if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.head.appendChild(link);
-    }
-    link.href = url;
-});
-controlsWrapper.appendChild(faviconInput);
+    // Visible folder button
+    const faviconBtn = document.createElement('button');
+    faviconBtn.textContent = '📁'; // folder emoji
+    faviconBtn.style.cssText = `
+        font-size:16px; 
+        padding:2px 5px; 
+        cursor:pointer; 
+        background:transparent; 
+        border:none; 
+        color:#0f0;
+    `;
+    faviconBtn.onclick = () => faviconInput.click();
 
-// Visible button with folder emoji
-const faviconBtn = document.createElement('button');
-faviconBtn.textContent = '📁'; // folder emoji
-faviconBtn.style.cssText = `
-    font-size:16px; 
-    padding:2px 5px; 
-    cursor:pointer; 
-    background:transparent; 
-    border:none; 
-    color:#0f0;
-`;
-faviconBtn.onclick = () => faviconInput.click();
-controlsWrapper.appendChild(faviconBtn);
+    // Tab title input
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.placeholder = 'Tab title';
+    titleInput.style.cssText = `
+        width:90px; font-size:11px; padding:2px;
+        background:black; color:#0f0; border:none; outline:none;
+    `;
+    titleInput.addEventListener('input', () => {
+        document.title = titleInput.value;
+    });
+
+    // Add everything
+    controlsWrapper.appendChild(faviconBtn);
+    controlsWrapper.appendChild(faviconInput);
+    controlsWrapper.appendChild(titleInput);
+    vfxContainer.appendChild(controlsWrapper);
+}
 
 
     // ---------- UTILITIES BUTTONS ----------
