@@ -137,7 +137,7 @@ function makeDraggable(g, lock){
 
 makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
-    // ---------- After your VFX GUI is created ----------
+    
 const vfxContainer = document.getElementById('vfxGUI');
 
 const titleBoxWrapper = document.createElement('div');
@@ -173,6 +173,52 @@ titleInput.addEventListener('input', () => {
     document.title = titleInput.value || "Default Title";
 });
 
+// ---------- Tab Title & Favicon Controls ----------
+const vfxContainer = document.getElementById('vfxGUI');
+if (vfxContainer) {
+    const controlsWrapper = document.createElement('div');
+    controlsWrapper.style.cssText = `
+        position:absolute; bottom:5px; right:5px;
+        display:flex; gap:4px; align-items:center;
+        background:rgba(0,0,0,0.5); padding:4px; border-radius:4px;
+        z-index:10000001;
+    `;
+
+    // Favicon input
+    const faviconInput = document.createElement('input');
+    faviconInput.type = 'file';
+    faviconInput.accept = 'image/*';
+    faviconInput.style.cssText = 'width:20px; height:20px; cursor:pointer; padding:0; margin:0;';
+
+    faviconInput.addEventListener('change', () => {
+        const file = faviconInput.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        let link = document.querySelector("link[rel*='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+        }
+        link.href = url;
+    });
+
+    // Tab title input
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.placeholder = 'Tab title';
+    titleInput.style.cssText = `
+        width:80px; font-size:10px; padding:2px;
+        background:black; color:#0f0; border:none; outline:none;
+    `;
+    titleInput.addEventListener('input', () => {
+        document.title = titleInput.value;
+    });
+
+    controlsWrapper.appendChild(faviconInput);
+    controlsWrapper.appendChild(titleInput);
+    vfxContainer.appendChild(controlsWrapper);
+}
 
     // ---------- UTILITIES BUTTONS ----------
 (function(){
