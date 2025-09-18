@@ -70,6 +70,7 @@
   `;
   util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
   document.body.appendChild(util);
+   
     // -------------------- VFX GUI --------------------
     const vfx = document.createElement('div');
   vfx.id = 'vfxGUI';
@@ -80,7 +81,7 @@
     box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
     user-select:none;cursor:move;
   `;
-  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>VFX Buttons</b></div>';
+  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Hacker GUI</b></div>';
   document.body.appendChild(vfx);
 
     // -------------------- BUTTON HELPER --------------------
