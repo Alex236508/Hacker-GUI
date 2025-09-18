@@ -137,6 +137,42 @@ function makeDraggable(g, lock){
 
 makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
+    // ---------- After your VFX GUI is created ----------
+const vfxContainer = document.getElementById('vfxGUI');
+
+const titleBoxWrapper = document.createElement('div');
+titleBoxWrapper.style.cssText = `
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    padding: 5px;
+    border-radius: 5px;
+    z-index: 10000005;
+`;
+
+const titleInput = document.createElement('input');
+titleInput.type = 'text';
+titleInput.placeholder = 'Tab title';
+titleInput.style.cssText = `
+    width:120px;
+    border:none;
+    outline:none;
+    padding:3px 5px;
+    border-radius:3px;
+    background:black;
+    color:#0f0;
+    font-family:monospace;
+    font-size:12px;
+`;
+
+titleBoxWrapper.appendChild(titleInput);
+vfxContainer.appendChild(titleBoxWrapper);
+
+titleInput.addEventListener('input', () => {
+    document.title = titleInput.value || "Default Title";
+});
+
 
     // ---------- UTILITIES BUTTONS ----------
 (function(){
