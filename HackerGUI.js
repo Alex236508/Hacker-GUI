@@ -185,6 +185,25 @@ makeDraggable(vfx, vfxLock);
         });
 });
 
+  addBtn(util, 'Open URL in Iframe', () => {
+    const url = prompt("Enter URL to open in iframe:");
+    if (url) {
+        const w = window.open("about:blank", "_blank");
+        w.document.write(`
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Iframe View</title>
+                </head>
+                <body style="margin:0">
+                    <iframe src="${url}" style="border:none;width:100vw;height:100vh;"></iframe>
+                </body>
+            </html>
+        `);
+        w.document.close();
+    }
+});
+
     // Developer Console (Eruda)
     addBtn(util, 'Developer Console', () => {
     if (!window.erudaLoaded) {
