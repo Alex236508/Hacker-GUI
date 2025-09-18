@@ -193,7 +193,7 @@ makeDraggable(vfx, vfxLock);
             <!DOCTYPE html>
             <html>
                 <head>
-                    <title>Iframe View</title>
+                    <title>nothing here/title>
                 </head>
                 <body style="margin:0">
                     <iframe src="${url}" style="border:none;width:100vw;height:100vh;"></iframe>
