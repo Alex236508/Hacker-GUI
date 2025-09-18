@@ -164,10 +164,11 @@ titleInput.addEventListener('input', () => {
 controlsWrapper.appendChild(titleInput);
 
 // File input below tab renamer
+// Hidden file input
 const faviconInput = document.createElement('input');
 faviconInput.type = 'file';
 faviconInput.accept = 'image/*';
-faviconInput.style.cssText = 'width:20px; height:20px; cursor:pointer; padding:0; margin:0;';
+faviconInput.style.display = 'none';
 faviconInput.addEventListener('change', () => {
     const file = faviconInput.files[0];
     if (!file) return;
@@ -182,9 +183,19 @@ faviconInput.addEventListener('change', () => {
 });
 controlsWrapper.appendChild(faviconInput);
 
-// Append the wrapper to vfxGUI
-vfxContainer.appendChild(controlsWrapper);
-
+// Visible button with folder emoji
+const faviconBtn = document.createElement('button');
+faviconBtn.textContent = '📁'; // folder emoji
+faviconBtn.style.cssText = `
+    font-size:16px; 
+    padding:2px 5px; 
+    cursor:pointer; 
+    background:transparent; 
+    border:none; 
+    color:#0f0;
+`;
+faviconBtn.onclick = () => faviconInput.click();
+controlsWrapper.appendChild(faviconBtn);
 
 
     // ---------- UTILITIES BUTTONS ----------
