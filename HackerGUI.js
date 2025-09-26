@@ -87,7 +87,7 @@
      function addBtn(container,name,on,off){
   const b=document.createElement('button');
   b.innerText=name;
-  b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:00ff00;padding:2px;border-radius:2px;cursor:pointer;font-family:Consolas,monospace;';
+  b.style.cssText='width:100%;margin:2px 0;background:#000000;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
   b.onclick=on;
   container.appendChild(b);
   }
