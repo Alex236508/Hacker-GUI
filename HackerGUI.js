@@ -64,7 +64,7 @@
     position:fixed;top:50px;left:50px;width:280px;
     background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
     padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
     user-select:none;cursor:move;
   `;
   util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
@@ -77,7 +77,7 @@
     position:fixed;top:50px;right:50px;width:320px;
     background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
     padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:999999;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
     user-select:none;cursor:move;
   `;
   vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Page Effects</b></div>';
