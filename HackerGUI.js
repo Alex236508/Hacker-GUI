@@ -138,6 +138,7 @@ makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
     
 // ---------- Tab Title & Favicon Controls ----------
+// ---------- Tab Title & Favicon Controls ----------
 const vfxContainer = document.getElementById('vfxGUI');
 if (vfxContainer) {
     const controlsWrapper = document.createElement('div');
@@ -148,6 +149,18 @@ if (vfxContainer) {
         z-index:10000001;
     `;
 
+    // Helper: set favicon
+    function setFavicon(url) {
+        if (!url) return;
+        let link = document.querySelector("link[rel*='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+        }
+        link.href = url;
+    }
+
     // Hidden file input for favicon
     const faviconInput = document.createElement('input');
     faviconInput.type = 'file';
@@ -157,20 +170,13 @@ if (vfxContainer) {
         const file = faviconInput.files[0];
         if (!file) return;
         const url = URL.createObjectURL(file);
-
-        // Find or create favicon <link>
-        let link = document.querySelector("link[rel*='icon']");
-        if (!link) {
-            link = document.createElement('link');
-            link.rel = 'icon';
-            document.head.appendChild(link);
-        }
-        link.href = url;
+        setFavicon(url);
     });
 
     // Visible folder button
     const faviconBtn = document.createElement('button');
     faviconBtn.textContent = '📁'; // folder emoji
+    faviconBtn.title = 'Choose local image';
     faviconBtn.style.cssText = `
         font-size:16px; 
         padding:2px 5px; 
@@ -180,6 +186,21 @@ if (vfxContainer) {
         color:#0f0;
     `;
     faviconBtn.onclick = () => faviconInput.click();
+
+    // URL input for favicon
+    const urlInput = document.createElement('input');
+    urlInput.type = 'text';
+    urlInput.placeholder = 'Image URL';
+    urlInput.style.cssText = `
+        width:120px; font-size:11px; padding:2px;
+        background:black; color:#0f0; border:none; outline:none;
+    `;
+    urlInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && urlInput.value.trim()) {
+            setFavicon(urlInput.value.trim());
+            urlInput.value = '';
+        }
+    });
 
     // Tab title input
     const titleInput = document.createElement('input');
@@ -196,6 +217,7 @@ if (vfxContainer) {
     // Add everything
     controlsWrapper.appendChild(faviconBtn);
     controlsWrapper.appendChild(faviconInput);
+    controlsWrapper.appendChild(urlInput);
     controlsWrapper.appendChild(titleInput);
     vfxContainer.appendChild(controlsWrapper);
 }
