@@ -62,7 +62,7 @@
   util.id = 'utilitiesGUI';
   util.style.cssText = `
     position:fixed;top:50px;left:50px;width:280px;
-    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+    background:#000000;color:#00ff00;font-family:Consolas,monospace;
     padding:10px;border:2px solid #00ff00;border-radius:8px;
     box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
     user-select:none;cursor:move;
@@ -75,7 +75,7 @@
   vfx.id = 'vfxGUI';
   vfx.style.cssText = `
     position:fixed;top:50px;right:50px;width:320px;
-    background:#1b1b1b;color:#00ff00;font-family:Consolas,monospace;
+    background:#000000;color:#00ff00;font-family:Consolas,monospace;
     padding:10px;border:2px solid #00ff00;border-radius:8px;
     box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
     user-select:none;cursor:move;
