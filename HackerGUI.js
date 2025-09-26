@@ -84,12 +84,13 @@
   document.body.appendChild(vfx);
 
     // -------------------- BUTTON HELPER --------------------
-     function addBtn(n,on,off)
-{let r=false;const b=document.createElement('button')
-    ;b.style.cssText='display:block;width:100%;margin:4px 0;padding:6px;background:#0f0f0f;color:#00ff00;border:1px solid #00ff00;cursor:pointer;';const s=document.createElement('span');
- s.innerText=' [Stopped]';s.style.color='#ff0000';b.innerText=n;b.appendChild(s);
- b.onclick=function(){r=!r;if(r){s.innerText=' [Running…]';s.style.color='#00ff00';on();}else{s.innerText=' [Stopped]';s.style.color='#ff0000';off&&off();}};g.appendChild(b);}document.body.appendChild(g);
-
+     function addBtn(container,name,on,off){
+  const b=document.createElement('button');
+  b.innerText=name;
+  b.style.cssText='width:100%;margin:2px 0;background:#252525;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+  b.onclick=on;
+  container.appendChild(b);
+  }
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
     const lock = document.createElement('div');
