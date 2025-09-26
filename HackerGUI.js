@@ -545,100 +545,57 @@ addBtn(vfx, "Corrupted Virus", () => {
 });
 
     // ---------- Disintegrate Element ----------
-addBtn(vfx, 'Disintegrate Element', () => {
-    if (window.bladeActive) return;
-    window.bladeActive = true;
-
+addBtn(vfx, 'Red Virus Disintegrate', () => {
     const immuneSelector = '#vfxGUI, #vfxGUI *, #utilitiesGUI, #utilitiesGUI *, #globalChatContainer, #globalChatContainer *';
-
-    const handler = function(ev) {
+    
+    const handler = (ev) => {
         const target = ev.target;
         if (!target || target.closest(immuneSelector)) return;
         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
 
         const el = target;
         const rect = el.getBoundingClientRect();
-        if(rect.width===0||rect.height===0) return;
+        if(rect.width===0 || rect.height===0) return;
 
-        // Hide original element's content
-        const originalContent = el.innerHTML;
-        el.style.position = 'relative';
-        el.style.color = 'transparent';
-        el.style.userSelect = 'none';
-        el.style.transition = 'opacity 2s ease';
-        el.style.opacity = '1';
+        const particleCount = 200; // can increase for more chaotic effect
+        el.style.visibility = 'hidden'; // hide original element
 
-        const particles = [];
-
-        const text = originalContent.replace(/<[^>]+>/g, ''); // strip HTML tags
-        const count = Math.max(50, text.length*2);
-
-        for(let i=0;i<count;i++){
+        for(let i=0;i<particleCount;i++){
             const p = document.createElement('div');
-            p.textContent = Math.random()<0.5?'0':'4';
-            p.style.position='absolute';
-            p.style.left = Math.random()*rect.width+'px';
-            p.style.top = Math.random()*rect.height+'px';
-            p.style.fontFamily='monospace';
-            const size = 8+Math.random()*16;
-            p.style.fontSize = size+'px';
-            p.style.fontWeight = '700';
-            p.style.color = `hsl(${Math.random()*360}, 90%, ${40+Math.random()*30}%)`;
-            p.style.pointerEvents='none';
-            p.style.textShadow = '0 0 6px rgba(0,0,0,0.6)';
-            el.appendChild(p);
-            particles.push(p);
+            p.textContent = Math.random() < 0.5 ? '0' : '4';
+            p.style.position = 'fixed';
+            p.style.left = rect.left + Math.random()*rect.width + 'px';
+            p.style.top = rect.top + Math.random()*rect.height + 'px';
+            p.style.fontSize = (8 + Math.random()*16) + 'px';
+            p.style.fontWeight = 'bold';
+            p.style.color = `rgba(255,0,0,${0.6 + Math.random()*0.4})`;
+            p.style.pointerEvents = 'none';
+            p.style.transform = `rotate(${Math.random()*360}deg)`;
+            document.body.appendChild(p);
 
-            const angle = (Math.random()*Math.PI)-Math.PI/2; // upward
-            const speed = 50 + Math.random()*150;
+            const angle = Math.random()*2*Math.PI;
+            const speed = 100 + Math.random()*200;
             const vx = Math.cos(angle)*speed;
-            const vy = -(50 + Math.random()*150);
+            const vy = Math.sin(angle)*speed - 100; // slight upward bias
             const rot = Math.random()*720-360;
 
-            const delay = Math.random()*200;
             setTimeout(()=>{
                 p.style.transition = 'transform 2s ease-out, opacity 2s ease-out';
                 p.style.transform = `translate(${vx}px, ${vy}px) rotate(${rot}deg) scale(${0.5+Math.random()})`;
-                p.style.opacity='0';
-            }, delay);
+                p.style.opacity = '0';
+            }, Math.random()*200);
 
-            setTimeout(()=>{ try{ p.remove(); } catch(e){} }, 2200 + delay);
+            setTimeout(()=>{ try{ p.remove(); } catch(e){} }, 2200);
         }
 
-        // Fade element itself
-        setTimeout(()=>{
-            try { el.style.opacity='0'; } catch(e){}
-        }, 100);
-
-        // Restore after a delay if needed
-        setTimeout(()=>{
-            try{
-                el.style.opacity='1';
-                el.style.color='';
-            }catch(e){}
-        }, 2500);
+        setTimeout(()=>{ el.remove(); }, 2200);
     };
 
     document.addEventListener('click', handler, true);
 
-    if (!window.stopAllVFX) window.stopAllVFX = [];
-    const cleanup = () => {
-        try{
-            document.removeEventListener('click', handler, true);
-            window.bladeActive = false;
-        }catch(e){}
-    };
-    window.stopAllVFX.push(cleanup);
-
-}, () => {
-    // Off function
-    if(window.stopAllVFX){
-        const fn = window.stopAllVFX.pop();
-        if(fn) try{ fn(); } catch(e){}
-    }
-    window.bladeActive = false;
+    if(!window.stopAllVFX) window.stopAllVFX=[];
+    window.stopAllVFX.push(() => document.removeEventListener('click', handler, true));
 });
-
 
     
     // 3D Page
