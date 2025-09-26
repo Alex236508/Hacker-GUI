@@ -394,7 +394,7 @@ if (vfxContainer) {
         const section = document.createElement('div');
         section.style.marginTop = '10px';
         section.style.padding = '8px';
-        section.style.background = '#000000';
+        section.style.background = '#001f00';
         section.style.borderRadius = '10px';
         section.style.color = '#00ff00';
         section.innerHTML = `<b>Font Size</b><br>`;
@@ -1032,7 +1032,7 @@ addBtn(vfx, 'Stop All', () => {
         const section = document.createElement('div');
         section.style.marginTop = '10px';
         section.style.padding = '8px';
-        section.style.background = '#000000';
+        section.style.background = '#001f00';
         section.style.borderRadius = '10px';
         section.style.color = '#00ff00';
         section.innerHTML = `<b>Text Color</b><br>`;
