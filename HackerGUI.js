@@ -83,14 +83,6 @@
   vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Page Effects</b></div>';
   document.body.appendChild(vfx);
 
-    // -------------------- VFX Buttons --------------------
-     function addBtn(container,name,on,off){
-  const b=document.createElement('button');
-  b.innerText=name;
-  b.style.cssText='width:100%;margin:2px 0;background:#182b18;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
-  b.onclick=on;
-  container.appendChild(b);
-  }
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
     const lock = document.createElement('div');
@@ -208,7 +200,7 @@ if (vfxContainer) {
     function addBtn(container, name, on, off) {
         const b = document.createElement('button');
         b.innerText = name;
-        b.style.cssText = 'width:100%;margin:2px 0;background:#182b18;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+        b.style.cssText = 'width:100%;margin:2px 0;background:#122b12;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
         b.onclick = on;
         container.appendChild(b);
         if(off) activeUtilities[name] = { on, off };
@@ -402,7 +394,7 @@ if (vfxContainer) {
         const section = document.createElement('div');
         section.style.marginTop = '10px';
         section.style.padding = '8px';
-        section.style.background = '#252525';
+        section.style.background = '#000000';
         section.style.borderRadius = '10px';
         section.style.color = '#00ff00';
         section.innerHTML = `<b>Font Size</b><br>`;
@@ -419,8 +411,15 @@ if (vfxContainer) {
         util.appendChild(section);
     })();
 
-        // -------------------- VFX BUTTONS --------------------
-
+        
+// -------------------- VFX Buttons --------------------
+     function addBtn(container,name,on,off){
+  const b=document.createElement('button');
+  b.innerText=name;
+  b.style.cssText='width:100%;margin:2px 0;background:#122b12;color:#00ff00;border:none;padding:5px;border-radius:5px;cursor:pointer;font-family:Consolas,monospace;';
+  b.onclick=on;
+  container.appendChild(b);
+  }
     // ---------- Corrupted Virus ----------
 addBtn(vfx, "Corrupted Virus", () => {
     if (window.infectionActive) return;
@@ -557,7 +556,7 @@ addBtn(vfx, 'Red Virus Disintegrate', () => {
         const rect = el.getBoundingClientRect();
         if(rect.width===0 || rect.height===0) return;
 
-        const particleCount = 200; // can increase for more chaotic effect
+        const particleCount = 400; // can increase for more chaotic effect
         el.style.visibility = 'hidden'; // hide original element
 
         for(let i=0;i<particleCount;i++){
@@ -1033,7 +1032,7 @@ addBtn(vfx, 'Stop All', () => {
         const section = document.createElement('div');
         section.style.marginTop = '10px';
         section.style.padding = '8px';
-        section.style.background = '#252525';
+        section.style.background = '#000000';
         section.style.borderRadius = '10px';
         section.style.color = '#00ff00';
         section.innerHTML = `<b>Text Color</b><br>`;
