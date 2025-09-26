@@ -138,7 +138,6 @@ makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
     
 // ---------- Tab Title & Favicon Controls ----------
-// ---------- Tab Title & Favicon Controls ----------
 const vfxContainer = document.getElementById('vfxGUI');
 if (vfxContainer) {
     const controlsWrapper = document.createElement('div');
@@ -149,18 +148,6 @@ if (vfxContainer) {
         z-index:10000001;
     `;
 
-    // Helper: set favicon
-    function setFavicon(url) {
-        if (!url) return;
-        let link = document.querySelector("link[rel*='icon']");
-        if (!link) {
-            link = document.createElement('link');
-            link.rel = 'icon';
-            document.head.appendChild(link);
-        }
-        link.href = url;
-    }
-
     // Hidden file input for favicon
     const faviconInput = document.createElement('input');
     faviconInput.type = 'file';
@@ -170,13 +157,20 @@ if (vfxContainer) {
         const file = faviconInput.files[0];
         if (!file) return;
         const url = URL.createObjectURL(file);
-        setFavicon(url);
+
+        // Find or create favicon <link>
+        let link = document.querySelector("link[rel*='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+        }
+        link.href = url;
     });
 
     // Visible folder button
     const faviconBtn = document.createElement('button');
     faviconBtn.textContent = '📁'; // folder emoji
-    faviconBtn.title = 'Choose local image';
     faviconBtn.style.cssText = `
         font-size:16px; 
         padding:2px 5px; 
@@ -186,21 +180,6 @@ if (vfxContainer) {
         color:#0f0;
     `;
     faviconBtn.onclick = () => faviconInput.click();
-
-    // URL input for favicon
-    const urlInput = document.createElement('input');
-    urlInput.type = 'text';
-    urlInput.placeholder = 'Image URL';
-    urlInput.style.cssText = `
-        width:120px; font-size:11px; padding:2px;
-        background:black; color:#0f0; border:none; outline:none;
-    `;
-    urlInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && urlInput.value.trim()) {
-            setFavicon(urlInput.value.trim());
-            urlInput.value = '';
-        }
-    });
 
     // Tab title input
     const titleInput = document.createElement('input');
@@ -217,11 +196,9 @@ if (vfxContainer) {
     // Add everything
     controlsWrapper.appendChild(faviconBtn);
     controlsWrapper.appendChild(faviconInput);
-    controlsWrapper.appendChild(urlInput);
     controlsWrapper.appendChild(titleInput);
     vfxContainer.appendChild(controlsWrapper);
 }
-
 
     // ---------- UTILITIES BUTTONS ----------
 (function(){
@@ -567,6 +544,103 @@ addBtn(vfx, "Corrupted Virus", () => {
     };
 });
 
+    // ---------- Disintegrate Element ----------
+addBtn(vfx, 'Disintegrate Element', () => {
+    if (window.bladeActive) return;
+    window.bladeActive = true;
+
+    const immuneSelector = '#vfxGUI, #vfxGUI *, #utilitiesGUI, #utilitiesGUI *, #globalChatContainer, #globalChatContainer *';
+
+    const handler = function(ev) {
+        const target = ev.target;
+        if (!target || target.closest(immuneSelector)) return;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
+        const el = target;
+        const rect = el.getBoundingClientRect();
+        if(rect.width===0||rect.height===0) return;
+
+        // Hide original element's content
+        const originalContent = el.innerHTML;
+        el.style.position = 'relative';
+        el.style.color = 'transparent';
+        el.style.userSelect = 'none';
+        el.style.transition = 'opacity 2s ease';
+        el.style.opacity = '1';
+
+        const particles = [];
+
+        const text = originalContent.replace(/<[^>]+>/g, ''); // strip HTML tags
+        const count = Math.max(50, text.length*2);
+
+        for(let i=0;i<count;i++){
+            const p = document.createElement('div');
+            p.textContent = Math.random()<0.5?'0':'4';
+            p.style.position='absolute';
+            p.style.left = Math.random()*rect.width+'px';
+            p.style.top = Math.random()*rect.height+'px';
+            p.style.fontFamily='monospace';
+            const size = 8+Math.random()*16;
+            p.style.fontSize = size+'px';
+            p.style.fontWeight = '700';
+            p.style.color = `hsl(${Math.random()*360}, 90%, ${40+Math.random()*30}%)`;
+            p.style.pointerEvents='none';
+            p.style.textShadow = '0 0 6px rgba(0,0,0,0.6)';
+            el.appendChild(p);
+            particles.push(p);
+
+            const angle = (Math.random()*Math.PI)-Math.PI/2; // upward
+            const speed = 50 + Math.random()*150;
+            const vx = Math.cos(angle)*speed;
+            const vy = -(50 + Math.random()*150);
+            const rot = Math.random()*720-360;
+
+            const delay = Math.random()*200;
+            setTimeout(()=>{
+                p.style.transition = 'transform 2s ease-out, opacity 2s ease-out';
+                p.style.transform = `translate(${vx}px, ${vy}px) rotate(${rot}deg) scale(${0.5+Math.random()})`;
+                p.style.opacity='0';
+            }, delay);
+
+            setTimeout(()=>{ try{ p.remove(); } catch(e){} }, 2200 + delay);
+        }
+
+        // Fade element itself
+        setTimeout(()=>{
+            try { el.style.opacity='0'; } catch(e){}
+        }, 100);
+
+        // Restore after a delay if needed
+        setTimeout(()=>{
+            try{
+                el.style.opacity='1';
+                el.style.color='';
+            }catch(e){}
+        }, 2500);
+    };
+
+    document.addEventListener('click', handler, true);
+
+    if (!window.stopAllVFX) window.stopAllVFX = [];
+    const cleanup = () => {
+        try{
+            document.removeEventListener('click', handler, true);
+            window.bladeActive = false;
+        }catch(e){}
+    };
+    window.stopAllVFX.push(cleanup);
+
+}, () => {
+    // Off function
+    if(window.stopAllVFX){
+        const fn = window.stopAllVFX.pop();
+        if(fn) try{ fn(); } catch(e){}
+    }
+    window.bladeActive = false;
+});
+
+
+    
     // 3D Page
   addBtn(vfx,'3D Page',()=>{
   if(!window.triScript){
