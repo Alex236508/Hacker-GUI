@@ -546,6 +546,9 @@ addBtn(vfx, "Corrupted Virus", () => {
 });
 
      // ---------- Disintegrate Element ----------
+// Keep a reference to the handler so it can be removed properly
+let disintegrateHandler = null;
+
 addBtn(vfx, "Disintegrate Mode", () => {
   let active = vfx.dataset.disintegrateActive === "true";
 
@@ -556,9 +559,8 @@ addBtn(vfx, "Disintegrate Mode", () => {
     const width = rect.width;
     const height = rect.height;
 
-    // Fade out original element slowly
-    el.style.transition = "opacity 2s ease-out";
-    el.style.opacity = "0";
+    // Remove element instantly (no fade)
+    el.remove();
 
     // Character pool
     const chars = "1234567890abcdefghijklmnopqrstuvwxyz";
@@ -588,29 +590,25 @@ addBtn(vfx, "Disintegrate Mode", () => {
         particle.style.opacity = "0";
       });
 
-      // Remove after 3s
+      // Remove particle after 3s
       setTimeout(() => particle.remove(), 3000);
     }
-
-    // Finally remove the element itself
-    setTimeout(() => {
-      el.remove();
-    }, 2000);
-  }
-
-  function disintegrateHandler(e) {
-    if (e.target.closest("#vfxGUI")) return; // protect GUI
-    e.preventDefault();
-    e.stopPropagation();
-    disintegrateElement(e.target);
   }
 
   // Toggle mode
   if (active) {
     document.removeEventListener("click", disintegrateHandler, true);
+    disintegrateHandler = null;
     vfx.dataset.disintegrateActive = "false";
     alert("Disintegration mode deactivated.");
   } else {
+    disintegrateHandler = function (e) {
+      if (e.target.closest("#vfxGUI")) return; // protect GUI
+      e.preventDefault();
+      e.stopPropagation();
+      disintegrateElement(e.target);
+    };
+
     document.addEventListener("click", disintegrateHandler, true);
     vfx.dataset.disintegrateActive = "true";
     alert("Disintegration mode activated. Click any element to delete it.");
