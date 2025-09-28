@@ -547,7 +547,7 @@ addBtn(vfx, "Corrupted Virus", () => {
 
      // ---------- Disintegrate Element ----------
 addBtn(vfx, "Disintegrate Mode", () => {
-  let active = false;
+  let active = vfx.dataset.disintegrateActive === "true";
 
   function disintegrateElement(el) {
     if (!el) return;
@@ -556,63 +556,63 @@ addBtn(vfx, "Disintegrate Mode", () => {
     const width = rect.width;
     const height = rect.height;
 
-    // Fade out original element
-    el.style.transition = "opacity 1s ease-out";
+    // Fade out original element slowly
+    el.style.transition = "opacity 2s ease-out";
     el.style.opacity = "0";
 
     // Character pool
     const chars = "1234567890abcdefghijklmnopqrstuvwxyz";
 
     // Create particles
-    const numParticles = Math.floor(width * height / 200);
+    const numParticles = Math.floor(width * height / 150);
     for (let i = 0; i < numParticles; i++) {
       const particle = document.createElement("div");
       particle.textContent = chars[Math.floor(Math.random() * chars.length)];
       particle.style.position = "fixed";
       particle.style.left = rect.left + Math.random() * width + "px";
       particle.style.top = rect.top + Math.random() * height + "px";
-      particle.style.fontSize = "10px";
+      particle.style.fontSize = "12px";
       particle.style.fontFamily = "monospace";
-      particle.style.color = "limegreen";
+      particle.style.color = "red"; // 🔴 red particles
       particle.style.pointerEvents = "none";
       particle.style.opacity = "1";
-      particle.style.transition = "transform 2s ease-out, opacity 2s ease-out";
+      particle.style.transition = "transform 3s ease-out, opacity 3s ease-out";
       document.body.appendChild(particle);
 
       // Float upward
-      const xMove = (Math.random() - 0.5) * 100;
-      const yMove = -100 - Math.random() * 200;
+      const xMove = (Math.random() - 0.5) * 120;
+      const yMove = -150 - Math.random() * 250;
 
       requestAnimationFrame(() => {
         particle.style.transform = `translate(${xMove}px, ${yMove}px) rotate(${Math.random() * 360}deg)`;
         particle.style.opacity = "0";
       });
 
-      setTimeout(() => particle.remove(), 2000);
+      // Remove after 3s
+      setTimeout(() => particle.remove(), 3000);
     }
 
-    // Finally remove the element
+    // Finally remove the element itself
     setTimeout(() => {
       el.remove();
-    }, 1000);
+    }, 2000);
   }
 
-  // If already active, turn off
+  function disintegrateHandler(e) {
+    if (e.target.closest("#vfxGUI")) return; // protect GUI
+    e.preventDefault();
+    e.stopPropagation();
+    disintegrateElement(e.target);
+  }
+
+  // Toggle mode
   if (active) {
     document.removeEventListener("click", disintegrateHandler, true);
-    active = false;
+    vfx.dataset.disintegrateActive = "false";
     alert("Disintegration mode deactivated.");
   } else {
-    // Handler to apply effect
-    function disintegrateHandler(e) {
-      if (e.target.closest("#vfxGUI")) return; // protect GUI
-      e.preventDefault();
-      e.stopPropagation();
-      disintegrateElement(e.target);
-    }
-
     document.addEventListener("click", disintegrateHandler, true);
-    active = true;
+    vfx.dataset.disintegrateActive = "true";
     alert("Disintegration mode activated. Click any element to delete it.");
   }
 });
