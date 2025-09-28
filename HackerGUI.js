@@ -546,7 +546,9 @@ addBtn(vfx, "Corrupted Virus", () => {
 });
 
      // ---------- Disintegrate Element ----------
-addBtn(vfx, "Disintegrate Element", () => {
+addBtn(vfx, "Disintegrate Mode", () => {
+  let active = false;
+
   function disintegrateElement(el) {
     if (!el) return;
 
@@ -554,7 +556,7 @@ addBtn(vfx, "Disintegrate Element", () => {
     const width = rect.width;
     const height = rect.height;
 
-    // Fade out
+    // Fade out original element
     el.style.transition = "opacity 1s ease-out";
     el.style.opacity = "0";
 
@@ -569,7 +571,7 @@ addBtn(vfx, "Disintegrate Element", () => {
       particle.style.position = "fixed";
       particle.style.left = rect.left + Math.random() * width + "px";
       particle.style.top = rect.top + Math.random() * height + "px";
-      particle.style.fontSize = "10px"; // smaller text
+      particle.style.fontSize = "10px";
       particle.style.fontFamily = "monospace";
       particle.style.color = "limegreen";
       particle.style.pointerEvents = "none";
@@ -577,7 +579,7 @@ addBtn(vfx, "Disintegrate Element", () => {
       particle.style.transition = "transform 2s ease-out, opacity 2s ease-out";
       document.body.appendChild(particle);
 
-      // Float upward randomly
+      // Float upward
       const xMove = (Math.random() - 0.5) * 100;
       const yMove = -100 - Math.random() * 200;
 
@@ -589,18 +591,32 @@ addBtn(vfx, "Disintegrate Element", () => {
       setTimeout(() => particle.remove(), 2000);
     }
 
-    // Remove original element
+    // Finally remove the element
     setTimeout(() => {
       el.remove();
     }, 1000);
   }
 
-  // Enable disintegration on click
-  document.addEventListener("click", e => {
-    if (e.target.closest(".no-disintegrate")) return; 
-    disintegrateElement(e.target);
-  }, { once: true });
+  // If already active, turn off
+  if (active) {
+    document.removeEventListener("click", disintegrateHandler, true);
+    active = false;
+    alert("Disintegration mode deactivated.");
+  } else {
+    // Handler to apply effect
+    function disintegrateHandler(e) {
+      if (e.target.closest("#vfxGUI")) return; // protect GUI
+      e.preventDefault();
+      e.stopPropagation();
+      disintegrateElement(e.target);
+    }
+
+    document.addEventListener("click", disintegrateHandler, true);
+    active = true;
+    alert("Disintegration mode activated. Click any element to delete it.");
+  }
 });
+
     
     // 3D Page
   addBtn(vfx,'3D Page',()=>{
