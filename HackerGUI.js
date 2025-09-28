@@ -559,11 +559,11 @@ addBtn(vfx, 'Disintegrate Element', () => {
         if(rect.width===0 || rect.height===0) return;
 
         const particleCount = 500;
-        el.style.visibility = 'hidden'; // hide original element
+        el.style.visibility = 'hidden';
 
         for(let i=0;i<particleCount;i++){
             const p = document.createElement('div');
-            p.textContent = Math.random() < 0.5 ? '0' : '4';
+            p.textContent = Math.random() < 0.5 ? '0' : '1' : '2' : '3' : '4' : '5' : '6' : '7' : '8' : '9' : 'a' : 'b' : 'c' : 'd' : 'e' : 'f' : 'g' : 'h' : 'i' : 'j' : 'k' : 'l' : 'm' : 'n' : 'o' : 'p' : 'q' : 'r' : 's' : 't' : 'u' : 'v' : 'w' : 'x' : 'y' : 'z';
             p.style.position = 'fixed';
             p.style.left = rect.left + Math.random()*rect.width + 'px';
             p.style.top = rect.top + Math.random()*rect.height + 'px';
@@ -577,7 +577,7 @@ addBtn(vfx, 'Disintegrate Element', () => {
             const angle = Math.random()*2*Math.PI;
             const speed = 100 + Math.random()*200;
             const vx = Math.cos(angle)*speed;
-            const vy = Math.sin(angle)*speed - 100; // slight upward bias
+            const vy = Math.sin(angle)*speed - 150;
             const rot = Math.random()*720-360;
 
             setTimeout(()=>{
