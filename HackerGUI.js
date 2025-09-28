@@ -546,7 +546,6 @@ addBtn(vfx, "Corrupted Virus", () => {
 });
 
      // ---------- Disintegrate Element ----------
-// Keep a reference to the handler so it can be removed properly
 let disintegrateHandler = null;
 
 addBtn(vfx, "Disintegrate Mode", () => {
@@ -571,11 +570,12 @@ addBtn(vfx, "Disintegrate Mode", () => {
       const particle = document.createElement("div");
       particle.textContent = chars[Math.floor(Math.random() * chars.length)];
       particle.style.position = "fixed";
+      particle.style.zIndex = "999999"; 
       particle.style.left = rect.left + Math.random() * width + "px";
       particle.style.top = rect.top + Math.random() * height + "px";
       particle.style.fontSize = "12px";
       particle.style.fontFamily = "monospace";
-      particle.style.color = "red"; // 🔴 red particles
+      particle.style.color = "red"; 
       particle.style.pointerEvents = "none";
       particle.style.opacity = "1";
       particle.style.transition = "transform 3s ease-out, opacity 3s ease-out";
