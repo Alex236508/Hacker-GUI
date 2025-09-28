@@ -589,7 +589,6 @@ addBtn(vfx, 'Disintegrate Element', () => {
             }, Math.random()*200);
 
             setTimeout(()=>{ try{ p.remove(); } catch(e){} }, 2200);
-        }
 
         setTimeout(()=>{ el.remove(); }, 2200);
     };
