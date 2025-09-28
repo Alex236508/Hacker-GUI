@@ -1,3 +1,4 @@
+//javascript:(async function(){try{let url='https://raw.githubusercontent.com/Alex236508/Hacker-GUI/main/HackerGUI.js';const u=prompt('Enter raw file URL to hash (leave blank to use default):',url);if(u)url=u;const res=await fetch(url,{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status+' when fetching '+url);const buf=await res.arrayBuffer();const digest=await crypto.subtle.digest('SHA-256',buf);const hex=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');try{await navigator.clipboard.writeText(hex);alert('SHA-256 copied to clipboard:\\n'+hex);}catch(e){prompt('SHA-256 hex (copy manually):',hex);} }catch(e){alert('Error computing SHA-256: '+e);console.error(e);} })();
 (function(){
   if(window.hackerLoaded) return;
   window.hackerLoaded = true;
