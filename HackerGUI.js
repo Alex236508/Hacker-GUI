@@ -546,58 +546,61 @@ addBtn(vfx, "Corrupted Virus", () => {
 });
 
      // ---------- Disintegrate Element ----------
-addBtn(vfx, 'Disintegrate Element', () => {
-    const immuneSelector = '#vfxGUI, #vfxGUI *, #utilitiesGUI, #utilitiesGUI *, #globalChatContainer, #globalChatContainer *';
+addBtn(vfx, "Disintegrate Element", () => {
+  function disintegrateElement(el) {
+    if (!el) return;
 
-    const handler = (ev) => {
-        const target = ev.target;
-        if (!target || target.closest(immuneSelector)) return;
-        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+    const rect = el.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
 
-        const el = target;
-        const rect = el.getBoundingClientRect();
-        if(rect.width===0 || rect.height===0) return;
+    // Fade out
+    el.style.transition = "opacity 1s ease-out";
+    el.style.opacity = "0";
 
-        const particleCount = 500;
-        el.style.visibility = 'hidden';
+    // Character pool
+    const chars = "1234567890abcdefghijklmnopqrstuvwxyz";
 
-        for(let i=0;i<particleCount;i++){
-            const p = document.createElement('div');
-            p.textContent = Math.random() < 0.5 ? '0' : '4';
-            p.style.position = 'fixed';
-            p.style.left = rect.left + Math.random()*rect.width + 'px';
-            p.style.top = rect.top + Math.random()*rect.height + 'px';
-            p.style.fontSize = (8 + Math.random()*16) + 'px';
-            p.style.fontWeight = 'bold';
-            p.style.color = `rgba(255,0,0,${0.6 + Math.random()*0.4})`;
-            p.style.pointerEvents = 'none';
-            p.style.transform = `rotate(${Math.random()*360}deg)`;
-            document.body.appendChild(p);
+    // Create particles
+    const numParticles = Math.floor(width * height / 200);
+    for (let i = 0; i < numParticles; i++) {
+      const particle = document.createElement("div");
+      particle.textContent = chars[Math.floor(Math.random() * chars.length)];
+      particle.style.position = "fixed";
+      particle.style.left = rect.left + Math.random() * width + "px";
+      particle.style.top = rect.top + Math.random() * height + "px";
+      particle.style.fontSize = "10px"; // smaller text
+      particle.style.fontFamily = "monospace";
+      particle.style.color = "limegreen";
+      particle.style.pointerEvents = "none";
+      particle.style.opacity = "1";
+      particle.style.transition = "transform 2s ease-out, opacity 2s ease-out";
+      document.body.appendChild(particle);
 
-            const angle = Math.random()*2*Math.PI;
-            const speed = 100 + Math.random()*200;
-            const vx = Math.cos(angle)*speed;
-            const vy = Math.sin(angle)*speed - 150;
-            const rot = Math.random()*720-360;
+      // Float upward randomly
+      const xMove = (Math.random() - 0.5) * 100;
+      const yMove = -100 - Math.random() * 200;
 
-            setTimeout(()=>{
-                p.style.transition = 'transform 2s ease-out, opacity 2s ease-out';
-                p.style.transform = `translate(${vx}px, ${vy}px) rotate(${rot}deg) scale(${0.5+Math.random()})`;
-                p.style.opacity = '0';
-            }, Math.random()*200);
+      requestAnimationFrame(() => {
+        particle.style.transform = `translate(${xMove}px, ${yMove}px) rotate(${Math.random() * 360}deg)`;
+        particle.style.opacity = "0";
+      });
 
-            setTimeout(()=>{ try{ p.remove(); } catch(e){} }, 2200);
-        }
+      setTimeout(() => particle.remove(), 2000);
+    }
 
-        setTimeout(()=>{ el.remove(); }, 2200);
-    };
+    // Remove original element
+    setTimeout(() => {
+      el.remove();
+    }, 1000);
+  }
 
-    document.addEventListener('click', handler, true);
-
-    if(!window.stopAllVFX) window.stopAllVFX=[];
-    window.stopAllVFX.push(() => document.removeEventListener('click', handler, true));
+  // Enable disintegration on click
+  document.addEventListener("click", e => {
+    if (e.target.closest(".no-disintegrate")) return; 
+    disintegrateElement(e.target);
+  }, { once: true });
 });
-
     
     // 3D Page
   addBtn(vfx,'3D Page',()=>{
