@@ -562,17 +562,19 @@ addBtn(vfx, 'Disintegrate Element', () => {
         el.style.visibility = 'hidden';
 
         for(let i=0;i<particleCount;i++){
-            const p = document.createElement('div');
-            p.textContent = Math.random() < 0.5 ? '0' : '1' : '2' : '3' : '4' : '5' : '6' : '7' : '8' : '9' : 'a' : 'b' : 'c' : 'd' : 'e' : 'f' : 'g' : 'h' : 'i' : 'j' : 'k' : 'l' : 'm' : 'n' : 'o' : 'p' : 'q' : 'r' : 's' : 't' : 'u' : 'v' : 'w' : 'x' : 'y' : 'z';
-            p.style.position = 'fixed';
-            p.style.left = rect.left + Math.random()*rect.width + 'px';
-            p.style.top = rect.top + Math.random()*rect.height + 'px';
-            p.style.fontSize = (8 + Math.random()*16) + 'px';
-            p.style.fontWeight = 'bold';
-            p.style.color = `rgba(255,0,0,${0.6 + Math.random()*0.4})`;
-            p.style.pointerEvents = 'none';
-            p.style.transform = `rotate(${Math.random()*360}deg)`;
-            document.body.appendChild(p);
+    const p = document.createElement('div');
+    const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+    p.textContent = chars[Math.floor(Math.random() * chars.length)];
+    p.style.position = 'fixed';
+    p.style.left = rect.left + Math.random() * rect.width + 'px';
+    p.style.top = rect.top + Math.random() * rect.height + 'px';
+    p.style.fontSize = (8 + Math.random() * 16) + 'px';
+    p.style.fontWeight = 'bold';
+    p.style.color = `rgba(255,0,0,${0.6 + Math.random() * 0.4})`;
+    p.style.pointerEvents = 'none';
+    p.style.transform = `rotate(${Math.random() * 360}deg)`;
+    document.body.appendChild(p);
+}
 
             const angle = Math.random()*2*Math.PI;
             const speed = 100 + Math.random()*200;
