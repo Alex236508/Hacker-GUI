@@ -1,7 +1,60 @@
 (function(){
   if(window.hackerLoaded) return;
   window.hackerLoaded = true;
+  
+// ---------- BOOTUP ----------
+  let overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00ff00;font-family:Consolas,monospace;pointer-events:none;';
+  let canvas = document.createElement('canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
+  overlay.appendChild(canvas);
+  let msg = document.createElement('div');
+  msg.innerText = '[ BOOTING SYSTEM... ]';
+  msg.style.cssText = 'font-size:20px;margin-bottom:10px;z-index:1000001;text-shadow:0 0 5px #00ff00;';
+  overlay.appendChild(msg);
+  let loading = document.createElement('div');
+  loading.style.cssText = 'font-size:24px;font-weight:bold;z-index:1000001;text-shadow:0 0 10px #00ff00;';
+  loading.innerText = 'Loading 0%';
+  overlay.appendChild(loading);
+  document.body.appendChild(overlay);
 
+  // Matrix rain for bootup
+  let ctx = canvas.getContext('2d');
+  let chars = '1010';
+  let cols = Math.floor(canvas.width/10);
+  let drops = [];
+  for(let i=0;i<cols;i++) drops[i] = Math.floor(Math.random()*canvas.height);
+  let rain = setInterval(()=>{
+    ctx.fillStyle='rgba(0,0,0,0.05)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#0F0';
+    ctx.font='10px monospace';
+    for(let i=0;i<cols;i++){
+      ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);
+      if(drops[i]*10>canvas.height && Math.random()>0.975) drops[i]=0;
+      drops[i]++;
+    }
+  },33);
+
+  // Loading counter
+  let progress = 0;
+  let int = setInterval(()=>{
+    progress++;
+    loading.innerText = 'Loading '+progress+'%';
+    if(progress>=100){
+      clearInterval(int);
+      setTimeout(()=>{
+        loading.innerText='Welcome Hacker';
+        setTimeout(()=>{
+          clearInterval(rain);
+          overlay.remove();
+          spawnGUIs();
+        },2000);
+      },500);
+    }
+  },40);
   
 
   function spawnGUIs() {
