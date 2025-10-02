@@ -971,9 +971,16 @@ addBtn(vfx, 'Stop All', () => {
     window.bubbleActive = false;
 
     // ------------------ Stop Matrix Rain ------------------
-    if(window.matrixInt){ clearInterval(window.matrixInt); window.matrixInt=null; }
-    if(window.matrixCanvas && !isImmune(window.matrixCanvas)){ window.matrixCanvas.remove(); window.matrixCanvas=null; }
-    window.matrixActive=false;
+if (window.matrixInt) {
+    clearInterval(window.matrixInt);
+    window.matrixInt = null;
+}
+if (window.matrixCanvas) {
+    window.matrixCanvas.remove();
+    window.matrixCanvas = null;
+}
+window.matrixActive = false;
+
 
     // ------------------ Stop Smooth Disco ------------------
     if(window.discoSmoothInt){ clearInterval(window.discoSmoothInt); window.discoSmoothInt=null; }
