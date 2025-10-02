@@ -1002,13 +1002,31 @@ if (window.matrixCanvas) {
 window.matrixActive = false;
 
 
-    // ------------------ Stop Smooth Disco ------------------
-    if(window.discoSmoothInt){ clearInterval(window.discoSmoothInt); window.discoSmoothInt=null; }
-    window.discoSmoothActive=false;
+   // ------------------ Stop Glitch ------------------
+if(window.glitchInt){ 
+    clearInterval(window.glitchInt); 
+    window.glitchInt = null; 
+}
+window.glitchActive = false;
 
-    // ------------------ Stop Glitch ------------------
-    if(window.glitchInt){ clearInterval(window.glitchInt); window.glitchInt=null; }
-    window.glitchActive=false;
+document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)')
+.forEach(e=>{
+    e.style.backgroundColor = '';
+});
+
+// ------------------ Stop Smooth Disco ------------------
+if(window.discoSmoothInt){ 
+    clearInterval(window.discoSmoothInt); 
+    window.discoSmoothInt = null; 
+}
+window.discoSmoothActive = false;
+
+document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)')
+.forEach(e=>{
+    e.style.transition = '';
+    e.style.backgroundColor = '';
+});
+
 
     // ------------------ Stop Full Chaos ------------------
     if(window.fullChaosLoop1){ clearInterval(window.fullChaosLoop1); window.fullChaosLoop1=null; }
