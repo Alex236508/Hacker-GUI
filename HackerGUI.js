@@ -617,16 +617,22 @@ addBtn(vfx, "Disintegrate Mode", () => {
 
     
     // 3D Page
-  addBtn(vfx,'3D Page',()=>{
-  if(!window.triScript){
+addBtn(vfx,'3D Page',()=>{
     let s=document.createElement('script');
-    s.src='https://rawgit.com/Krazete/bookmarklets/master/tri.js';
+    s.src='https://rawgit.com/Krazete/bookmarklets/master/tri.js?cacheBust=' + Date.now();
     document.body.appendChild(s);
-    window.triScript=s;
-  }
+    window.triScript = s;
 },()=>{
-  if(window.triScript){window.triScript.remove();window.triScript=null;}
+    if(window.triScript){
+        window.triScript.remove();
+        window.triScript = null;
+    }
+    // reset transforms to normal
+    document.body.style.transform = '';
+    document.body.style.perspective = '';
 });
+
+    
 // Explode Page
 addBtn(vfx,'Explode Page',()=>{
   if(window.explodeActive) return;
@@ -958,7 +964,6 @@ addBtn(vfx,'Block link',()=>{
     // ---------- Stop All VFX ----------
 addBtn(vfx, 'Stop All', () => {
 
-    // ------------------ Call all VFX cleanup functions ------------------
     if (window.stopAllVFX) {
         window.stopAllVFX.forEach(fn => { 
             try { fn(); } catch(e) {} 
@@ -998,8 +1003,12 @@ window.matrixActive = false;
     window.fullChaosActive=false;
 
     // ------------------ Stop Page Spin ------------------
-    if(window.pageSpinStyle && !isImmune(window.pageSpinStyle)){ window.pageSpinStyle.remove(); window.pageSpinStyle=null; }
-    window.pageSpinActive=false;
+if (window.pageSpinStyle) {
+    window.pageSpinStyle.remove();
+    window.pageSpinStyle = null;
+}
+window.pageSpinActive = false;
+
 
     // ------------------ Stop Text Corruption ------------------
     if(window._textCorruptCleanup) window._textCorruptCleanup();
