@@ -1,2 +1,2 @@
-# Hacker-GUI
-This is a (almost) fully functional "Hacker" GUI with buttons to manipulate any page at a click of a button. Has funny effect like page spin, disco mode or useful utilitties like a calculator. 
+# THIS IS NOT A MALICIOUS SCRIPT
+this is a bookmarklet that loads a gui with buttons on them, they are mostly just DOM manipulation and other effects like that.
