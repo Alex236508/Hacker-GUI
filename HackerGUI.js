@@ -548,7 +548,7 @@ addBtn(vfx, "Corrupted Virus", () => {
      // ---------- Disintegrate Element ----------
 let disintegrateHandler = null;
 
-addBtn(vfx, "Disintegrate Mode", () => {
+addBtn(vfx, "Disintegrate Element", () => {
   let active = vfx.dataset.disintegrateActive === "true";
 
   function disintegrateElement(el) {
@@ -562,7 +562,7 @@ addBtn(vfx, "Disintegrate Mode", () => {
     el.remove();
 
     // Character pool
-    const chars = "1234567890abcdefghijklmnopqrstuvwxyz";
+    const chars = "123456789010abcdefghijklmnopqrstuvwxyz";
 
     // Create particles
     const numParticles = Math.floor(width * height / 150);
@@ -615,6 +615,112 @@ addBtn(vfx, "Disintegrate Mode", () => {
   }
 });
 
+    // Invert Media
+addBtn(vfx, 'Invert Media', () => {
+    if (window.invertimgActive) return;
+    window.invertimgActive = true;
+    window.invertimgStyle = document.createElement("style");
+    window.invertimgStyle.textContent = "img,video,embed,object{filter:invert(100%) !important;}";
+    document.body.appendChild(window.invertimgStyle);
+}, () => {
+    if (window.invertimgStyle) window.invertimgStyle.remove();
+    window.invertimgStyle = null;
+    window.invertimgActive = false;
+});
+
+
+// Censor Media
+addBtn(vfx, 'Censor Media', () => {
+    if (window.censorActive) return;
+    window.censorActive = true;
+
+    // Add the style for censor effect
+    window.censorStyle = document.createElement("style");
+    window.censorStyle.textContent = `
+        .censor { opacity: 1 !important; image-rendering: pixelated !important; }
+        .censor + img, .censor + video { visibility: hidden !important; }
+        .censor-parent:hover .censor { display: none !important; }
+        .censor-parent:hover .censor + img, 
+        .censor-parent:hover .censor + video { visibility: visible !important; }
+    `;
+    document.body.appendChild(window.censorStyle);
+
+    window.sensed = [];
+    window.censors = [];
+    let quality = 1.5;
+
+    function onScreen(r) {
+        return r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
+    }
+
+    function copyStyle(donor, recipient, sizeOnly) {
+        var donorStyle = getComputedStyle(donor);
+        var keys = Object.keys(donorStyle);
+        if (sizeOnly) keys = ["width", "height"];
+        for (var key of keys) recipient.style[key] = donorStyle[key];
+    }
+
+    function updateCensor(e, canvas) {
+        var rect = e.getBoundingClientRect();
+        if (onScreen(rect)) {
+            var equalizer = Math.log2(Math.max(rect.width * rect.height, 2));
+            canvas.width = rect.width * quality / equalizer;
+            canvas.height = rect.height * quality / equalizer;
+            if (window.af % 120 == 0) copyStyle(e, canvas, true);
+            var context = canvas.getContext("2d");
+            context.drawImage(e, 0, 0, canvas.width, canvas.height);
+            e.parentElement.classList.add("censor-parent");
+        }
+    }
+
+    function createCensor(e) {
+        var rect = e.getBoundingClientRect();
+        if (onScreen(rect)) {
+            var canvas = document.createElement("canvas");
+            canvas.className = "censor";
+            var equalizer = Math.log2(Math.max(rect.width * rect.height, 2));
+            canvas.width = rect.width * quality / equalizer;
+            canvas.height = rect.height * quality / equalizer;
+            copyStyle(e, canvas);
+            var context = canvas.getContext("2d");
+            context.drawImage(e, 0, 0, canvas.width, canvas.height);
+            e.parentElement.insertBefore(canvas, e);
+            e.parentElement.classList.add("censor-parent");
+            return canvas;
+        }
+    }
+
+    function sense() {
+        var es = document.querySelectorAll("img,video");
+        for (var e of es) {
+            var i = window.sensed.indexOf(e);
+            if (i >= 0) {
+                if (e.tagName == "VIDEO" && !e.paused) updateCensor(e, window.censors[i]);
+            } else {
+                if (e.tagName == "VIDEO" || e.complete) {
+                    var c = createCensor(e);
+                    if (c) {
+                        window.censors.push(c);
+                        window.sensed.push(e);
+                    }
+                }
+            }
+        }
+        window.af = requestAnimationFrame(sense);
+    }
+
+    sense();
+}, () => {
+    // Deactivate and cleanup
+    if (window.af) cancelAnimationFrame(window.af);
+    if (window.censorStyle) window.censorStyle.remove();
+    if (window.censors) for (var c of window.censors) c.remove();
+    if (window.sensed) for (var e of window.sensed) e.parentElement.classList.remove("censor-parent");
+    window.censors = [];
+    window.sensed = [];
+    window.censorActive = false;
+});
+    
     
     // 3D Page
 addBtn(vfx,'3D Page',()=>{
@@ -985,7 +1091,20 @@ addBtn(vfx, 'Stop All', () => {
         });
         window.stopAllVFX = [];
     }
+// ------------------ Stop Invert Media ------------------
+if (window.invertimgStyle) { window.invertimgStyle.remove(); window.invertimgStyle = null; }
+window.invertimgActive = false;
 
+// ------------------ Stop Censor Media ------------------
+if (window.af) cancelAnimationFrame(window.af);
+if (window.censorStyle) window.censorStyle.remove();
+if (window.censors) for (var c of window.censors) c.remove();
+if (window.sensed) for (var e of window.sensed) e.parentElement.classList.remove("censor-parent");
+window.censors = [];
+window.sensed = [];
+window.censorActive = false;
+
+  
     // ------------------ Stop Bubble Text ------------------
     if (window._bubbleCleanup) window._bubbleCleanup();
     window.bubbleActive = false;
