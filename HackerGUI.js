@@ -615,26 +615,39 @@ addBtn(vfx, "Disintegrate Element", () => {
   }
 });
 
-    // Invert Media
+    // Invert Media (Toggle)
 addBtn(vfx, 'Invert Media', () => {
-    if (window.invertimgActive) return;
+    if (window.invertimgActive) {
+        // --- Deactivate ---
+        if (window.invertimgStyle) window.invertimgStyle.remove();
+        window.invertimgStyle = null;
+        window.invertimgActive = false;
+        return;
+    }
+    // --- Activate ---
     window.invertimgActive = true;
     window.invertimgStyle = document.createElement("style");
     window.invertimgStyle.textContent = "img,video,embed,object{filter:invert(100%) !important;}";
     document.body.appendChild(window.invertimgStyle);
-}, () => {
-    if (window.invertimgStyle) window.invertimgStyle.remove();
-    window.invertimgStyle = null;
-    window.invertimgActive = false;
 });
 
 
-// Censor Media
+// Censor Media (Toggle)
 addBtn(vfx, 'Censor Media', () => {
-    if (window.censorActive) return;
-    window.censorActive = true;
+    if (window.censorActive) {
+        // --- Deactivate ---
+        if (window.af) cancelAnimationFrame(window.af);
+        if (window.censorStyle) window.censorStyle.remove();
+        if (window.censors) for (var c of window.censors) c.remove();
+        if (window.sensed) for (var e of window.sensed) e.parentElement.classList.remove("censor-parent");
+        window.censors = [];
+        window.sensed = [];
+        window.censorActive = false;
+        return;
+    }
 
-    // Add the style for censor effect
+    // --- Activate ---
+    window.censorActive = true;
     window.censorStyle = document.createElement("style");
     window.censorStyle.textContent = `
         .censor { opacity: 1 !important; image-rendering: pixelated !important; }
@@ -710,15 +723,6 @@ addBtn(vfx, 'Censor Media', () => {
     }
 
     sense();
-}, () => {
-    // Deactivate and cleanup
-    if (window.af) cancelAnimationFrame(window.af);
-    if (window.censorStyle) window.censorStyle.remove();
-    if (window.censors) for (var c of window.censors) c.remove();
-    if (window.sensed) for (var e of window.sensed) e.parentElement.classList.remove("censor-parent");
-    window.censors = [];
-    window.sensed = [];
-    window.censorActive = false;
 });
     
     
