@@ -59,30 +59,40 @@
 
   function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
-    const util = document.createElement('div');
-  util.id = 'utilitiesGUI';
-  util.style.cssText = `
-    position:fixed;top:50px;left:50px;width:280px;
-    background:#000000;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
-    user-select:none;cursor:move;
-  `;
-  util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
-  document.body.appendChild(util);
-   
-    // -------------------- VFX GUI --------------------
-    const vfx = document.createElement('div');
-  vfx.id = 'vfxGUI';
-  vfx.style.cssText = `
-    position:fixed;top:50px;right:50px;width:320px;
-    background:#000000;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
-    user-select:none;cursor:move;
-  `;
-  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Page Effects</b></div>';
-  document.body.appendChild(vfx);
+const util = document.createElement('div');
+util.id = 'utilitiesGUI';
+util.style.cssText = `
+  position:fixed;top:50px;left:50px;width:280px;
+  background:#000000;color:#00ff00;font-family:Consolas,monospace;
+  padding:10px;border:2px solid #00ff00;border-radius:8px;
+  box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
+  user-select:none;cursor:move;
+`;
+util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+document.body.appendChild(util);
+
+// -------------------- VFX GUI --------------------
+const vfx = document.createElement('div');
+vfx.id = 'vfxGUI';
+vfx.style.cssText = `
+  position:fixed;top:50px;right:50px;width:320px;
+  background:#000000;color:#00ff00;font-family:Consolas,monospace;
+  padding:10px;border:2px solid #00ff00;border-radius:8px;
+  box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
+  user-select:none;cursor:move;
+
+  
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:6px;
+  align-items:center;
+  justify-items:center;
+  max-height:80vh;
+  overflow-y:auto;
+`;
+
+vfx.innerHTML = '<div style="grid-column: span 2; text-align:center; margin-bottom:8px;"><b>Page Effects</b></div>';
+document.body.appendChild(vfx);
 
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
