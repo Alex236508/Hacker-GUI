@@ -151,23 +151,6 @@ function addBtn(container, name, onStart, onStop) {
   };
   container.appendChild(btn);
 }
-
-// -------------------- Example Button Setup --------------------
-const vfxContainer = document.getElementById('vfxButtons');
-const utilContainer = document.getElementById('utilButtons');
-
-// Example Page Effects
-addBtn(vfxContainer, 'Disorient', () => alert('Disorient ON'), () => alert('Disorient OFF'));
-addBtn(vfxContainer, 'Matrix Rain', () => alert('Matrix Rain ON'), () => alert('Matrix Rain OFF'));
-addBtn(vfxContainer, '3D Page', () => alert('3D Page ON'), () => alert('3D Page OFF'));
-addBtn(vfxContainer, 'Glitch', () => alert('Glitch ON'), () => alert('Glitch OFF'));
-
-// Example Utilities
-addBtn(utilContainer, 'Rename Tab', () => alert('Rename Tab'), null);
-addBtn(utilContainer, 'Upload Image', () => alert('Upload Image'), null);
-addBtn(utilContainer, 'Stop All', () => alert('Stop All Effects'), null);
-addBtn(utilContainer, 'Settings', () => alert('Settings Opened'), null);
-
     
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
