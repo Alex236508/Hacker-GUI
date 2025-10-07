@@ -290,8 +290,8 @@ if (vfxContainer) {
 });
 
 
-    // Page Dark Theme
-    addBtn(util,'Page Dark Theme',()=>{
+    // Invert Page
+  addBtn(util,'Invert Page',()=>{
         document.body.style.filter = 'invert(1)';
     },()=>{
         document.body.style.filter = '';
