@@ -858,7 +858,7 @@ addBtn(vfx, 'Disorient Page', () => {
       const style = window.getComputedStyle(el);
       const current = style.transform || '';
       window.originalTransforms.push({ el, transform: current });
-      const deg = (Math.floor(Math.random() * 3) - 45);
+      const deg = (Math.floor(Math.random() * 5) - 45);
       prefixes.forEach(prefix => {
         el.style[prefix + 'transform'] = `${current} rotate(${deg}deg)`;
       });
