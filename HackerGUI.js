@@ -335,7 +335,7 @@ if (vfxContainer) {
     });
 
     // IP Finder
-    addBtn(util,'IP Finder',()=>{
+    addBtn(util,'IP Scanner',()=>{
         let ip = prompt("Enter IP:");
         if(ip){
             ['https://talosintelligence.com/reputation_center/lookup?search=',
