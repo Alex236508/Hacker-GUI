@@ -845,7 +845,7 @@ addBtn(vfx, 'Invert Area', () => {
 });
    
     // ------------------ Disorient Page ------------------
-addBtn(vfx, 'Disorient Page', () => {
+/*addBtn(vfx, 'Disorient Page', () => {
   if (!window.disorientActive) {
     window.disorientActive = true;
     window.originalTransforms = [];
@@ -876,7 +876,7 @@ addBtn(vfx, 'Disorient Page', () => {
       window.originalTransforms = null;
     }
   }
-});
+}); */
 
     
     // 3D Page
