@@ -241,7 +241,7 @@ if (vfxContainer) {
 });
   
   
-  addBtn(util, 'about:blank cloak', () => {
+  addBtn(util, 'iframe launcher', () => {
     const url = prompt("Enter URL");
     if (url) {
         const w = window.open("about:blank", "_blank");
