@@ -850,7 +850,7 @@ addBtn(vfx, 'Disorient Page', () => {
     window.disorientActive = true;
     window.originalTransforms = [];
 
-    // Apply random small rotations to many visible elements
+    
     const prefixes = ['', '-ms-', '-webkit-', '-o-', '-moz-'];
     const elements = Array.from(document.querySelectorAll('div, p, span, img, a, body'));
 
@@ -858,7 +858,7 @@ addBtn(vfx, 'Disorient Page', () => {
       const style = window.getComputedStyle(el);
       const current = style.transform || '';
       window.originalTransforms.push({ el, transform: current });
-      const deg = (Math.floor(Math.random() * 3) - 1); // -1, 0, or 1 degree
+      const deg = (Math.floor(Math.random() * 3) - 45);
       prefixes.forEach(prefix => {
         el.style[prefix + 'transform'] = `${current} rotate(${deg}deg)`;
       });
