@@ -1,209 +1,88 @@
-(function() {
-  if (window.hackerLoaded) return;
+(function(){
+  if(window.hackerLoaded) return;
   window.hackerLoaded = true;
-
-  // ---------- BOOTUP OVERLAY ----------
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: black;
-    z-index: 1000000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    color: #00ff00;
-    font-family: Consolas, monospace;
-    pointer-events: none;
-  `;
-  document.body.appendChild(overlay);
-
-  // ---------- MATRIX RAIN BACKGROUND ----------
-  const canvas = document.createElement('canvas');
+  
+// ---------- BOOTUP ----------
+  let overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00ff00;font-family:Consolas,monospace;pointer-events:none;';
+  let canvas = document.createElement('canvas');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  canvas.style.cssText = `
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-  `;
+  canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
   overlay.appendChild(canvas);
+  let msg = document.createElement('div');
+  msg.innerText = '[ BOOTING SYSTEM... ]';
+  msg.style.cssText = 'font-size:20px;margin-bottom:10px;z-index:1000001;text-shadow:0 0 5px #00ff00;';
+  overlay.appendChild(msg);
+  let loading = document.createElement('div');
+  loading.style.cssText = 'font-size:24px;font-weight:bold;z-index:1000001;text-shadow:0 0 10px #00ff00;';
+  loading.innerText = 'Loading 0%';
+  overlay.appendChild(loading);
+  document.body.appendChild(overlay);
 
-  const ctx = canvas.getContext('2d');
-  const chars = '1010';
-  const cols = Math.floor(canvas.width / 10);
-  const drops = Array(cols).fill(0).map(() => Math.floor(Math.random() * canvas.height));
-
-  const rain = setInterval(() => {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#00FF00';
-    ctx.font = '10px monospace';
-    for (let i = 0; i < cols; i++) {
-      const text = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillText(text, i * 10, drops[i] * 10);
-      if (drops[i] * 10 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+  // Matrix rain for bootup
+  let ctx = canvas.getContext('2d');
+  let chars = '1010';
+  let cols = Math.floor(canvas.width/10);
+  let drops = [];
+  for(let i=0;i<cols;i++) drops[i] = Math.floor(Math.random()*canvas.height);
+  let rain = setInterval(()=>{
+    ctx.fillStyle='rgba(0,0,0,0.05)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#0F0';
+    ctx.font='10px monospace';
+    for(let i=0;i<cols;i++){
+      ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);
+      if(drops[i]*10>canvas.height && Math.random()>0.975) drops[i]=0;
       drops[i]++;
     }
-  }, 33);
+  },33);
 
-  // ---------- BOOTUP TEXT ----------
-  const msg = document.createElement('div');
-  msg.textContent = '[ BOOTING SYSTEM... ]';
-  msg.style.cssText = `
-    font-size: 20px;
-    margin-bottom: 10px;
-    text-shadow: 0 0 5px #00ff00;
-    z-index: 1000001;
-  `;
-  overlay.appendChild(msg);
-
-  const loading = document.createElement('div');
-  loading.textContent = 'Loading 0%';
-  loading.style.cssText = `
-    font-size: 24px;
-    font-weight: bold;
-    text-shadow: 0 0 10px #00ff00;
-    z-index: 1000001;
-  `;
-  overlay.appendChild(loading);
-
-  // ---------- LOADING SEQUENCE ----------
+  // Loading counter
   let progress = 0;
-  const int = setInterval(() => {
+  let int = setInterval(()=>{
     progress++;
-    loading.textContent = `Loading ${progress}%`;
-
-    if (progress >= 100) {
+    loading.innerText = 'Loading '+progress+'%';
+    if(progress>=100){
       clearInterval(int);
-      setTimeout(() => {
-        msg.textContent = '[ ACCESS GRANTED ]';
-        loading.textContent = 'Welcome Hacker';
-        loading.style.color = '#00FF00';
-        loading.style.textShadow = '0 0 20px #00FF00';
-
-        // Fade out the overlay & stop matrix rain
-        setTimeout(() => {
+      setTimeout(()=>{
+        loading.innerText='Welcome Hacker';
+        setTimeout(()=>{
           clearInterval(rain);
-          overlay.style.transition = 'opacity 1.5s';
-          overlay.style.opacity = '0';
-          setTimeout(() => {
-            overlay.remove();
-            spawnGUIs(); // load the main GUI
-          }, 1500);
-        }, 1500);
-      }, 500);
+          overlay.remove();
+          spawnGUIs();
+        },2000);
+      },500);
     }
-  }, 40);
- 
+  },40);
+  
 
   function spawnGUIs() {
-  const old = document.getElementById('hackerGUIv2');
-  if (old) old.remove();
-
-  // ---------- MAIN PANEL ----------
-  const gui = document.createElement('div');
-  gui.id = 'hackerGUIv2';
-  gui.style.cssText = `
-    position: fixed;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #00ff00;
-    font-family: Consolas, monospace;
-    border: 2px solid #00ff00;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,255,0,0.5);
-    padding: 15px;
-    width: 500px;
-    z-index: 9999999;
-    user-select: none;
+    // -------------------- UTILITIES GUI --------------------
+    const util = document.createElement('div');
+  util.id = 'utilitiesGUI';
+  util.style.cssText = `
+    position:fixed;top:50px;left:50px;width:280px;
+    background:#000000;color:#00ff00;font-family:Consolas,monospace;
+    padding:10px;border:2px solid #00ff00;border-radius:8px;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
+    user-select:none;cursor:move;
   `;
-
-  // ---------- TITLE ----------
-  const title = document.createElement('div');
-  title.style.cssText = `
-    text-align: center;
-    font-size: 20px;
-    font-weight: bold;
-    text-decoration: underline;
-    margin-bottom: 10px;
+  util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+  document.body.appendChild(util);
+   
+    // -------------------- VFX GUI --------------------
+    const vfx = document.createElement('div');
+  vfx.id = 'vfxGUI';
+  vfx.style.cssText = `
+    position:fixed;top:50px;right:50px;width:320px;
+    background:#000000;color:#00ff00;font-family:Consolas,monospace;
+    padding:10px;border:2px solid #00ff00;border-radius:8px;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
+    user-select:none;cursor:move;
   `;
-  title.textContent = 'Hacker GUI V2';
-  gui.appendChild(title);
-
-  // ---------- GRID CONTAINER ----------
-  const grid = document.createElement('div');
-  grid.style.cssText = `
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 20px;
-    row-gap: 10px;
-  `;
-  gui.appendChild(grid);
-
-  // ---------- COLUMN HEADERS ----------
-  const leftHeader = document.createElement('div');
-  leftHeader.innerHTML = '<u>Page Effects</u>';
-  leftHeader.style.textAlign = 'center';
-
-  const rightHeader = document.createElement('div');
-  rightHeader.innerHTML = '<u>Utilities</u>';
-  rightHeader.style.textAlign = 'center';
-
-  grid.appendChild(leftHeader);
-  grid.appendChild(rightHeader);
-
-  // ---------- BUTTON COLUMNS ----------
-  const leftCol = document.createElement('div');
-  const rightCol = document.createElement('div');
-  leftCol.style.textAlign = 'center';
-  rightCol.style.textAlign = 'center';
-
-  // Helper: makes a button with hacker theme
-  function makeBtn(label) {
-    const btn = document.createElement('button');
-    btn.textContent = label;
-    btn.style.cssText = `
-      background: transparent;
-      color: #00ff00;
-      border: 1px solid #00ff00;
-      border-radius: 6px;
-      padding: 6px 12px;
-      margin: 5px;
-      font-family: Consolas, monospace;
-      cursor: pointer;
-      transition: all 0.2s;
-      width: 120px;
-    `;
-    btn.onmouseenter = () => btn.style.background = '#003300';
-    btn.onmouseleave = () => btn.style.background = 'transparent';
-    return btn;
-  }
-
-  // ---------- LEFT COLUMN BUTTONS (Page Effects) ----------
-  leftCol.appendChild(makeBtn('3D Page'));
-  leftCol.appendChild(makeBtn('Glitch'));
-  leftCol.appendChild(makeBtn('Disorient'));
-  leftCol.appendChild(makeBtn('Matrix Rain'));
-
-  // ---------- RIGHT COLUMN BUTTONS (Utilities) ----------
-  rightCol.appendChild(makeBtn('Calculator'));
-  rightCol.appendChild(makeBtn('Embedded Browser'));
-  rightCol.appendChild(makeBtn('Clipboard Tool'));
-  rightCol.appendChild(makeBtn('Inspector+'));
-
-  // ---------- Add Columns to Grid ----------
-  grid.appendChild(leftCol);
-  grid.appendChild(rightCol);
-
-  // ---------- Add GUI to Page ----------
-  document.body.appendChild(gui);
-}
-
+  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Page Effects</b></div>';
+  document.body.appendChild(vfx);
     
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
@@ -1533,6 +1412,6 @@ window.pageSpinActive = false;
     }
   });
 
-  } // end spawnGUIs
+  } 
 
 })();
