@@ -144,10 +144,16 @@
   }
 
   // ---------- LEFT COLUMN BUTTONS (Page Effects) ----------
-  
+  leftCol.appendChild(makeBtn('3D Page'));
+  leftCol.appendChild(makeBtn('Glitch'));
+  leftCol.appendChild(makeBtn('Disorient'));
+  leftCol.appendChild(makeBtn('Matrix Rain'));
 
   // ---------- RIGHT COLUMN BUTTONS (Utilities) ----------
-  
+  rightCol.appendChild(makeBtn('Calculator'));
+  rightCol.appendChild(makeBtn('Embedded Browser'));
+  rightCol.appendChild(makeBtn('Clipboard Tool'));
+  rightCol.appendChild(makeBtn('Inspector+'));
 
   // ---------- Add Columns to Grid ----------
   grid.appendChild(leftCol);
