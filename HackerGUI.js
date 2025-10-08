@@ -58,31 +58,105 @@
   
 
   function spawnGUIs() {
-    // -------------------- UTILITIES GUI --------------------
-    const util = document.createElement('div');
-  util.id = 'utilitiesGUI';
-  util.style.cssText = `
-    position:fixed;top:50px;left:50px;width:280px;
-    background:#000000;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
-    user-select:none;cursor:move;
+  // Remove any existing GUI to prevent duplicates
+  const old = document.getElementById('hackerGUIv2');
+  if (old) old.remove();
+
+  // ---------- MAIN PANEL ----------
+  const gui = document.createElement('div');
+  gui.id = 'hackerGUIv2';
+  gui.style.cssText = `
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #00ff00;
+    font-family: Consolas, monospace;
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,255,0,0.5);
+    padding: 15px;
+    width: 500px;
+    z-index: 9999999;
+    user-select: none;
   `;
-  util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
-  document.body.appendChild(util);
-   
-    // -------------------- VFX GUI --------------------
-    const vfx = document.createElement('div');
-  vfx.id = 'vfxGUI';
-  vfx.style.cssText = `
-    position:fixed;top:50px;right:50px;width:320px;
-    background:#000000;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
-    user-select:none;cursor:move;
+
+  // ---------- TITLE ----------
+  const title = document.createElement('div');
+  title.style.cssText = `
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    text-decoration: underline;
+    margin-bottom: 10px;
   `;
-  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Page Effects</b></div>';
-  document.body.appendChild(vfx);
+  title.textContent = 'Hacker GUI V2';
+  gui.appendChild(title);
+
+  // ---------- GRID CONTAINER ----------
+  const grid = document.createElement('div');
+  grid.style.cssText = `
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 20px;
+    row-gap: 10px;
+  `;
+  gui.appendChild(grid);
+
+  // ---------- COLUMN HEADERS ----------
+  const leftHeader = document.createElement('div');
+  leftHeader.innerHTML = '<u>Page Effects</u>';
+  leftHeader.style.textAlign = 'center';
+
+  const rightHeader = document.createElement('div');
+  rightHeader.innerHTML = '<u>Utilities</u>';
+  rightHeader.style.textAlign = 'center';
+
+  grid.appendChild(leftHeader);
+  grid.appendChild(rightHeader);
+
+  // ---------- BUTTON COLUMNS ----------
+  const leftCol = document.createElement('div');
+  const rightCol = document.createElement('div');
+  leftCol.style.textAlign = 'center';
+  rightCol.style.textAlign = 'center';
+
+  // Helper: makes a button with hacker theme
+  function makeBtn(label) {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.style.cssText = `
+      background: transparent;
+      color: #00ff00;
+      border: 1px solid #00ff00;
+      border-radius: 6px;
+      padding: 6px 12px;
+      margin: 5px;
+      font-family: Consolas, monospace;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 120px;
+    `;
+    btn.onmouseenter = () => btn.style.background = '#003300';
+    btn.onmouseleave = () => btn.style.background = 'transparent';
+    return btn;
+  }
+
+  // ---------- LEFT COLUMN BUTTONS (Page Effects) ----------
+  
+
+  // ---------- RIGHT COLUMN BUTTONS (Utilities) ----------
+  
+
+  // ---------- Add Columns to Grid ----------
+  grid.appendChild(leftCol);
+  grid.appendChild(rightCol);
+
+  // ---------- Add GUI to Page ----------
+  document.body.appendChild(gui);
+}
+
     
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
