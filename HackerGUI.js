@@ -1,64 +1,105 @@
-(function(){
-  if(window.hackerLoaded) return;
+(function() {
+  if (window.hackerLoaded) return;
   window.hackerLoaded = true;
-  
-// ---------- BOOTUP ----------
-  let overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00ff00;font-family:Consolas,monospace;pointer-events:none;';
-  let canvas = document.createElement('canvas');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
-  overlay.appendChild(canvas);
-  let msg = document.createElement('div');
-  msg.innerText = '[ BOOTING SYSTEM... ]';
-  msg.style.cssText = 'font-size:20px;margin-bottom:10px;z-index:1000001;text-shadow:0 0 5px #00ff00;';
-  overlay.appendChild(msg);
-  let loading = document.createElement('div');
-  loading.style.cssText = 'font-size:24px;font-weight:bold;z-index:1000001;text-shadow:0 0 10px #00ff00;';
-  loading.innerText = 'Loading 0%';
-  overlay.appendChild(loading);
+
+  // ---------- BOOTUP OVERLAY ----------
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: black;
+    z-index: 1000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: #00ff00;
+    font-family: Consolas, monospace;
+    pointer-events: none;
+  `;
   document.body.appendChild(overlay);
 
-  // Matrix rain for bootup
-  let ctx = canvas.getContext('2d');
-  let chars = '1010';
-  let cols = Math.floor(canvas.width/10);
-  let drops = [];
-  for(let i=0;i<cols;i++) drops[i] = Math.floor(Math.random()*canvas.height);
-  let rain = setInterval(()=>{
-    ctx.fillStyle='rgba(0,0,0,0.05)';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#0F0';
-    ctx.font='10px monospace';
-    for(let i=0;i<cols;i++){
-      ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);
-      if(drops[i]*10>canvas.height && Math.random()>0.975) drops[i]=0;
+  // ---------- MATRIX RAIN BACKGROUND ----------
+  const canvas = document.createElement('canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.cssText = `
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  `;
+  overlay.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  const chars = '1010';
+  const cols = Math.floor(canvas.width / 10);
+  const drops = Array(cols).fill(0).map(() => Math.floor(Math.random() * canvas.height));
+
+  const rain = setInterval(() => {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00FF00';
+    ctx.font = '10px monospace';
+    for (let i = 0; i < cols; i++) {
+      const text = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(text, i * 10, drops[i] * 10);
+      if (drops[i] * 10 > canvas.height && Math.random() > 0.975) drops[i] = 0;
       drops[i]++;
     }
-  },33);
+  }, 33);
 
-  // Loading counter
+  // ---------- BOOTUP TEXT ----------
+  const msg = document.createElement('div');
+  msg.textContent = '[ BOOTING SYSTEM... ]';
+  msg.style.cssText = `
+    font-size: 20px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 5px #00ff00;
+    z-index: 1000001;
+  `;
+  overlay.appendChild(msg);
+
+  const loading = document.createElement('div');
+  loading.textContent = 'Loading 0%';
+  loading.style.cssText = `
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 10px #00ff00;
+    z-index: 1000001;
+  `;
+  overlay.appendChild(loading);
+
+  // ---------- LOADING SEQUENCE ----------
   let progress = 0;
-  let int = setInterval(()=>{
+  const int = setInterval(() => {
     progress++;
-    loading.innerText = 'Loading '+progress+'%';
-    if(progress>=100){
+    loading.textContent = `Loading ${progress}%`;
+
+    if (progress >= 100) {
       clearInterval(int);
-      setTimeout(()=>{
-        loading.innerText='Welcome Hacker';
-        setTimeout(()=>{
+      setTimeout(() => {
+        msg.textContent = '[ ACCESS GRANTED ]';
+        loading.textContent = 'Welcome Hacker';
+        loading.style.color = '#00FF00';
+        loading.style.textShadow = '0 0 20px #00FF00';
+
+        // Fade out the overlay & stop matrix rain
+        setTimeout(() => {
           clearInterval(rain);
-          overlay.remove();
-          spawnGUIs();
-        },2000);
-      },500);
+          overlay.style.transition = 'opacity 1.5s';
+          overlay.style.opacity = '0';
+          setTimeout(() => {
+            overlay.remove();
+            spawnGUIs(); // load the main GUI
+          }, 1500);
+        }, 1500);
+      }, 500);
     }
-  },40);
-  
+  }, 40);
+ 
 
   function spawnGUIs() {
-  // Remove any existing GUI to prevent duplicates
   const old = document.getElementById('hackerGUIv2');
   if (old) old.remove();
 
