@@ -58,16 +58,16 @@
   
 
   function spawnGUIs() {
-    // -------------------- CLEAN TWO-PAGE AUTO-RESIZING GUI --------------------
+    // -------------------- CLEAN TWO-PAGE GUI (NEON BORDER BUTTONS) --------------------
 (function() {
-  // Main container for both pages
+  // Main container
   const gui = document.createElement('div');
   gui.id = 'mainGUI';
   gui.style.cssText = `
     position: fixed;
     top: 50px; left: 50px;
     width: 340px;
-    background: #000000;
+    background: #000;
     border: 2px solid #00ff00;
     border-radius: 12px;
     color: #00ff00;
@@ -81,7 +81,7 @@
   `;
   document.body.appendChild(gui);
 
-  // Inner wrapper that slides horizontally between pages
+  // Inner slider to hold both pages
   const slider = document.createElement('div');
   slider.style.cssText = `
     display: flex;
@@ -90,7 +90,34 @@
   `;
   gui.appendChild(slider);
 
-  // Utility Page
+  // Button style (injected once globally)
+  const btnStyle = document.createElement('style');
+  btnStyle.textContent = `
+    .guiBtn {
+      background: transparent;
+      border: 2px solid #00ff00;
+      color: #00ff00;
+      font-family: Consolas, monospace;
+      font-size: 13px;
+      padding: 6px;
+      border-radius: 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .guiBtn:hover {
+      background: rgba(0,255,0,0.1);
+      box-shadow: 0 0 10px #00ff00;
+      transform: scale(1.05);
+    }
+    .guiBtn:active {
+      background: rgba(0,255,0,0.25);
+      transform: scale(0.98);
+    }
+  `;
+  document.head.appendChild(btnStyle);
+
+  // Utilities Page
   const util = document.createElement('div');
   util.id = 'utilitiesGUI';
   util.style.cssText = `
@@ -142,15 +169,15 @@
     text-align: center;
   `;
   nav.innerHTML = `
-    <button id="prevPage" style="background:none;border:none;color:#00ff00;font-size:20px;cursor:pointer;">◀</button>
-    <button id="nextPage" style="background:none;border:none;color:#00ff00;font-size:20px;cursor:pointer;">▶</button>
+    <button id="prevPage" style="background:none;border:none;color:#00ff00;font-size:22px;cursor:pointer;">◀</button>
+    <button id="nextPage" style="background:none;border:none;color:#00ff00;font-size:22px;cursor:pointer;">▶</button>
   `;
   gui.appendChild(nav);
 
-  // Dragging behavior
+  // Drag behavior
   let offsetX, offsetY, dragging = false;
   gui.addEventListener('mousedown', e => {
-    if (e.target.tagName === 'BUTTON') return; // ignore button clicks
+    if (e.target.tagName === 'BUTTON') return;
     dragging = true;
     offsetX = e.clientX - gui.offsetLeft;
     offsetY = e.clientY - gui.offsetTop;
@@ -163,11 +190,11 @@
   });
   document.addEventListener('mouseup', () => dragging = false);
 
-  // Page switching logic
+  // Page switching
   let page = 0;
   const resizeToContent = () => {
     const activePage = page === 0 ? util : vfx;
-    const contentHeight = activePage.scrollHeight + 40; // extra padding for arrows
+    const contentHeight = activePage.scrollHeight + 45;
     gui.style.height = `${contentHeight}px`;
   };
 
@@ -182,11 +209,10 @@
     resizeToContent();
   };
 
-  // Expose button grids
+  // Make the button areas accessible globally for addBtn()
   window.util = util.querySelector('.btnGrid');
   window.vfx = vfx.querySelector('.btnGrid');
 
-  // Set default height based on VFX (so everything fits from start)
   resizeToContent();
 })();
 
@@ -199,7 +225,7 @@
     lock.locked = false;
     lock.onclick = () => {
       lock.locked = !lock.locked;
-      lock.innerText = lock.locked ? '🔒' : '🔓';
+      lock.innerText = lock.locked ? '🔒';
     };
     gui.appendChild(lock);
     return lock;
