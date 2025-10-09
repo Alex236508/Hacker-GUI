@@ -216,6 +216,17 @@
   resizeToContent();
 })();
 
+    // -------------------- IMMUNITY HELPER --------------------
+window.isImmune = function(el) {
+  if (!el) return false;
+  const util = document.getElementById('utilitiesGUI');
+  const vfx = document.getElementById('vfxGUI');
+
+  return (
+    (util && (el === util || util.contains(el))) ||
+    (vfx && (el === vfx || vfx.contains(el)))
+  );
+};
     
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
@@ -225,7 +236,7 @@
     lock.locked = false;
     lock.onclick = () => {
       lock.locked = !lock.locked;
-      lock.innerText = lock.locked ? '🔒';
+      lock.innerText = lock.locked ? '🔒' : '🔓';
     };
     gui.appendChild(lock);
     return lock;
