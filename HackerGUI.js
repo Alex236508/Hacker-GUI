@@ -147,7 +147,7 @@ nav.appendChild(rightArrow);
 gui.appendChild(nav);
 document.body.appendChild(gui);
 
-// -------------------- PAGE SWITCH LOGIC --------------------
+// -------------------- PAGE SWITCH --------------------
 let currentPage = 'util';
 function showPage(target) {
   if (target === currentPage) return;
