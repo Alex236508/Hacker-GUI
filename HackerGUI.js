@@ -49,12 +49,12 @@
         loading.innerText='Welcome Hacker';
         setTimeout(()=>{
           clearInterval(rain);
-          overlay.remove();
+          overlay.remove(); */
           spawnGUIs();
         },2000);
       },500);
     }
-  },40); */
+  },40);
   
 
   function spawnGUIs() {
