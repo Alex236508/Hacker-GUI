@@ -58,42 +58,138 @@
 
 
   function spawnGUIs() {
-    // -------------------- UTILITIES GUI --------------------
+    // -------------------- MASTER GUI --------------------
+const gui = document.createElement('div');
+gui.id = 'masterGUI';
+gui.style.cssText = `
+  position:fixed;top:50px;right:50px;width:340px;
+  background:#000000;color:#00ff00;font-family:Consolas,monospace;
+  padding:10px;border:2px solid #00ff00;border-radius:8px;
+  box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
+  user-select:none;cursor:move;overflow:hidden;
+`;
+
+const pagesContainer = document.createElement('div');
+pagesContainer.style.cssText = `
+  position:relative;
+  width:100%;
+  height:auto;
+  min-height:250px;
+`;
+
+// --- UTILITIES PAGE ---
 const util = document.createElement('div');
-util.id = 'utilitiesGUI';
+util.id = 'util';
 util.style.cssText = `
-  position:fixed;top:50px;left:50px;width:280px;
-  background:#000000;color:#00ff00;font-family:Consolas,monospace;
-  padding:10px;border:2px solid #00ff00;border-radius:8px;
-  box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
-  user-select:none;cursor:move;
-`;
-util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
-document.body.appendChild(util);
-
-// -------------------- VFX GUI -------------------- 
-const vfx = document.createElement('div');
-vfx.id = 'vfxGUI';
-vfx.style.cssText = `
-  position:fixed;top:50px;right:50px;width:320px;
-  background:#000000;color:#00ff00;font-family:Consolas,monospace;
-  padding:10px;border:2px solid #00ff00;border-radius:8px;
-  box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
-  user-select:none;cursor:move;
-
-  
   display:grid;
-  grid-template-columns: 1fr 1fr;  
-  gap:6px;                          
-    align-items:center;
+  grid-template-columns: 1fr 1fr;
+  gap:6px;
+  align-items:center;
   justify-items:center;
-  max-height:80vh;                 
-  overflow-y:auto;                 
+  opacity:1;
+  transform:translateX(0%);
+  transition:opacity 0.4s, transform 0.4s;
+`;
+util.innerHTML = `
+  <div style="grid-column: span 2; text-align:center; margin-bottom:8px;">
+    <b>Utilities</b>
+  </div>
 `;
 
-vfx.innerHTML = '<div style="grid-column: span 2; text-align:center; margin-bottom:8px;"><b>Page Effects</b></div>';
-document.body.appendChild(vfx);
+// --- VFX PAGE ---
+const vfx = document.createElement('div');
+vfx.id = 'vfx';
+vfx.style.cssText = `
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:6px;
+  align-items:center;
+  justify-items:center;
+  opacity:0;
+  transform:translateX(100%);
+  transition:opacity 0.4s, transform 0.4s;
+`;
+vfx.innerHTML = `
+  <div style="grid-column: span 2; text-align:center; margin-bottom:8px;">
+    <b>Page Effects</b>
+  </div>
+`;
 
+pagesContainer.appendChild(util);
+pagesContainer.appendChild(vfx);
+gui.appendChild(pagesContainer);
+
+// --- NAVIGATION ARROWS ---
+const nav = document.createElement('div');
+nav.style.cssText = `
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+  font-weight:bold;
+  font-size:18px;
+`;
+
+const leftArrow = document.createElement('span');
+leftArrow.textContent = '<';
+leftArrow.style.cssText = 'cursor:pointer;color:#00ff00;transition:0.2s;';
+leftArrow.onmouseenter = () => (leftArrow.style.textShadow = '0 0 8px #00ff00');
+leftArrow.onmouseleave = () => (leftArrow.style.textShadow = '');
+
+const rightArrow = document.createElement('span');
+rightArrow.textContent = '>';
+rightArrow.style.cssText = 'cursor:pointer;color:#00ff00;transition:0.2s;';
+rightArrow.onmouseenter = () => (rightArrow.style.textShadow = '0 0 8px #00ff00');
+rightArrow.onmouseleave = () => (rightArrow.style.textShadow = '');
+
+nav.appendChild(leftArrow);
+nav.appendChild(rightArrow);
+gui.appendChild(nav);
+document.body.appendChild(gui);
+
+// -------------------- PAGE SWITCH LOGIC --------------------
+let currentPage = 'util';
+function showPage(target) {
+  if (target === currentPage) return;
+
+  const from = currentPage === 'util' ? util : vfx;
+  const to = target === 'util' ? util : vfx;
+
+  // Animate out
+  from.style.opacity = 0;
+  from.style.transform = target === 'util' ? 'translateX(100%)' : 'translateX(-100%)';
+
+  // Animate in
+  to.style.opacity = 1;
+  to.style.transform = 'translateX(0%)';
+
+  currentPage = target;
+}
+
+// Attach click events
+leftArrow.onclick = () => showPage('util');
+rightArrow.onclick = () => showPage('vfx');
+
+// -------------------- ADD BUTTON FUNCTION --------------------
+function addBtn(container, label, onStart, onStop) {
+  const btn = document.createElement('button');
+  btn.textContent = label;
+  btn.style.cssText = `
+    width:140px;padding:6px;margin:2px;
+    background:black;color:#00ff00;
+    border:1px solid #00ff00;border-radius:6px;
+    cursor:pointer;transition:all 0.2s;
+  `;
+  let active = false;
+  btn.onclick = () => {
+    active = !active;
+    btn.style.background = active ? '#00ff00' : 'black';
+    btn.style.color = active ? 'black' : '#00ff00';
+    if (active && onStart) onStart();
+    if (!active && onStop) onStop();
+  };
+  container.appendChild(btn);
+}
 
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
