@@ -858,7 +858,7 @@ addBtn(vfx, 'Flip', () => {
       const style = window.getComputedStyle(el);
       const current = style.transform || '';
       window.originalTransforms.push({ el, transform: current });
-      const deg = (Math.floor(Math.random() * 3) - 18);
+      const deg = (Math.floor(Math.random() * 3) - 180);
       prefixes.forEach(prefix => {
         el.style[prefix + 'transform'] = `${current} rotate(${deg}deg)`;
       });
