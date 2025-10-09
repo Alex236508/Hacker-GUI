@@ -58,9 +58,9 @@
   
 
   function spawnGUIs() {
-    // -------------------- CLEAN TWO-PAGE GUI (NEON BORDER BUTTONS) --------------------
+    // -------------------- CLEAN TWO-PAGE GUI --------------------
 (function() {
-  // Main container
+  
   const gui = document.createElement('div');
   gui.id = 'mainGUI';
   gui.style.cssText = `
@@ -81,7 +81,7 @@
   `;
   document.body.appendChild(gui);
 
-  // Inner slider to hold both pages
+  
   const slider = document.createElement('div');
   slider.style.cssText = `
     display: flex;
@@ -90,7 +90,7 @@
   `;
   gui.appendChild(slider);
 
-  // Button style (injected once globally)
+  
   const btnStyle = document.createElement('style');
   btnStyle.textContent = `
     .guiBtn {
@@ -159,7 +159,7 @@
   `;
   slider.appendChild(vfx);
 
-  // Navigation arrows
+  
   const nav = document.createElement('div');
   nav.style.cssText = `
     position: absolute;
@@ -174,7 +174,7 @@
   `;
   gui.appendChild(nav);
 
-  // Drag behavior
+  // Dragging
   let offsetX, offsetY, dragging = false;
   gui.addEventListener('mousedown', e => {
     if (e.target.tagName === 'BUTTON') return;
@@ -277,7 +277,7 @@ if (vfxContainer) {
 
     // Visible folder button
     const faviconBtn = document.createElement('button');
-    faviconBtn.textContent = '📁'; // folder emoji
+    faviconBtn.textContent = '📁'; 
     faviconBtn.style.cssText = `
         font-size:16px; 
         padding:2px 5px; 
