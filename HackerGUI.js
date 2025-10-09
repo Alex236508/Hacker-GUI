@@ -1,7 +1,7 @@
 (function(){
   if(window.hackerLoaded) return;
   window.hackerLoaded = true;
-  
+
 // ---------- BOOTUP ----------
   let overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00ff00;font-family:Consolas,monospace;pointer-events:none;';
@@ -55,7 +55,7 @@
       },500);
     }
   },40);
-  
+
 
   function spawnGUIs() {
     // -------------------- UTILITIES GUI --------------------
@@ -83,7 +83,7 @@
   `;
   vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Page Effects</b></div>';
   document.body.appendChild(vfx);
-    
+
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
     const lock = document.createElement('div');
@@ -129,7 +129,7 @@ function makeDraggable(g, lock){
 
 makeDraggable(util, utilLock);
 makeDraggable(vfx, vfxLock);
-    
+
 // ---------- Tab Title & Favicon Controls ----------
 const vfxContainer = document.getElementById('vfxGUI');
 if (vfxContainer) {
@@ -239,8 +239,8 @@ if (vfxContainer) {
             console.error('Failed to load Embedded Browser:', err);
         });
 });
-  
-  
+
+
   addBtn(util, 'iframe launcher', () => {
     const url = prompt("Enter URL");
     if (url) {
@@ -413,7 +413,7 @@ if (vfxContainer) {
         util.appendChild(section);
     })();
 
-        
+
 // -------------------- VFX Buttons --------------------
      function addBtn(container,name,on,off){
   const b=document.createElement('button');
@@ -724,7 +724,7 @@ addBtn(vfx, 'Censor Media', () => {
 
     sense();
 });
-    
+
     // Invert Area
 addBtn(vfx, 'Invert Area', () => {
     // If active, turn off
@@ -843,7 +843,7 @@ addBtn(vfx, 'Invert Area', () => {
 
     startInvertArea();
 });
-   
+
     // ------------------ Disorient Page ------------------
 /*addBtn(vfx, 'Disorient Page', () => {
   if (!window.disorientActive) {
@@ -878,7 +878,7 @@ addBtn(vfx, 'Invert Area', () => {
   }
 }); */
 
-    
+
     // 3D Page
 addBtn(vfx,'3D Page',()=>{
     let s=document.createElement('script');
@@ -895,7 +895,7 @@ addBtn(vfx,'3D Page',()=>{
     document.body.style.perspective = '';
 });
 
-    
+
 // Explode Page
 addBtn(vfx,'Explode Page',()=>{
   if(window.explodeActive) return;
@@ -1019,7 +1019,7 @@ addBtn(vfx,'Glitch',()=>{
     }
     window.glitchActive = false;
 
-    
+
     document.querySelectorAll('*:not(#vfxGUI):not(#vfxGUI *):not(#utilitiesGUI):not(#utilitiesGUI *)')
     .forEach(e=>{
         e.style.backgroundColor = '';
@@ -1279,7 +1279,7 @@ if (window.disorientActive) {
     window.originalTransforms = null;
   }
 }
-  
+
     // ------------------ Stop Bubble Text ------------------
     if (window._bubbleCleanup) window._bubbleCleanup();
     window.bubbleActive = false;
@@ -1412,6 +1412,6 @@ window.pageSpinActive = false;
     }
   });
 
-  } 
+  } // end spawnGUIs
 
 })();
