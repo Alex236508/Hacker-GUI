@@ -3,7 +3,7 @@
   window.hackerLoaded = true;
   
 // ---------- BOOTUP ----------
-  /*let overlay = document.createElement('div');
+  let overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00ff00;font-family:Consolas,monospace;pointer-events:none;';
   let canvas = document.createElement('canvas');
   canvas.width = window.innerWidth;
@@ -49,7 +49,7 @@
         loading.innerText='Welcome Hacker';
         setTimeout(()=>{
           clearInterval(rain);
-          overlay.remove(); */
+          overlay.remove(); 
           spawnGUIs();
         },2000);
       },500);
