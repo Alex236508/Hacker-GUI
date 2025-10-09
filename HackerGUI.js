@@ -58,31 +58,108 @@
   
 
   function spawnGUIs() {
-    // -------------------- UTILITIES GUI --------------------
-    const util = document.createElement('div');
+    // -------------------- CLEAN TWO-PAGE GUI --------------------
+(function() {
+  // Main container for both pages
+  const gui = document.createElement('div');
+  gui.id = 'mainGUI';
+  gui.style.cssText = `
+    position: fixed;
+    top: 50px; left: 50px;
+    width: 340px; height: 420px;
+    background: #000000;
+    border: 2px solid #00ff00;
+    border-radius: 12px;
+    color: #00ff00;
+    font-family: Consolas, monospace;
+    box-shadow: 0 0 20px rgba(0,255,0,0.5);
+    overflow: hidden;
+    z-index: 9999999;
+    cursor: move;
+    user-select: none;
+  `;
+  document.body.appendChild(gui);
+
+  // Inner wrapper that slides horizontally
+  const slider = document.createElement('div');
+  slider.style.cssText = `
+    display: flex;
+    width: 200%;
+    height: 100%;
+    transition: transform 0.5s ease;
+  `;
+  gui.appendChild(slider);
+
+  // Utility Page
+  const util = document.createElement('div');
   util.id = 'utilitiesGUI';
   util.style.cssText = `
-    position:fixed;top:50px;left:50px;width:280px;
-    background:#000000;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
-    user-select:none;cursor:move;
+    width: 50%;
+    padding: 10px;
+    box-sizing: border-box;
   `;
-  util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
-  document.body.appendChild(util);
-   
-    // -------------------- VFX GUI --------------------
-    const vfx = document.createElement('div');
+  util.innerHTML = `<div style="text-align:center;font-weight:bold;margin-bottom:10px;">Utilities</div>
+  <div class="btnGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>`;
+  slider.appendChild(util);
+
+  // VFX Page
+  const vfx = document.createElement('div');
   vfx.id = 'vfxGUI';
   vfx.style.cssText = `
-    position:fixed;top:50px;right:50px;width:320px;
-    background:#000000;color:#00ff00;font-family:Consolas,monospace;
-    padding:10px;border:2px solid #00ff00;border-radius:8px;
-    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
-    user-select:none;cursor:move;
+    width: 50%;
+    padding: 10px;
+    box-sizing: border-box;
   `;
-  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Page Effects</b></div>';
-  document.body.appendChild(vfx);
+  vfx.innerHTML = `<div style="text-align:center;font-weight:bold;margin-bottom:10px;">Page Effects</div>
+  <div class="btnGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>`;
+  slider.appendChild(vfx);
+
+  // Navigation arrows
+  const nav = document.createElement('div');
+  nav.style.cssText = `
+    position: absolute;
+    bottom: 8px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+  `;
+  nav.innerHTML = `
+    <button id="prevPage" style="background:none;border:none;color:#00ff00;font-size:20px;cursor:pointer;">◀</button>
+    <button id="nextPage" style="background:none;border:none;color:#00ff00;font-size:20px;cursor:pointer;">▶</button>
+  `;
+  gui.appendChild(nav);
+
+  // Dragging behavior
+  let offsetX, offsetY, dragging = false;
+  gui.addEventListener('mousedown', e => {
+    if (e.target.tagName === 'BUTTON') return; // Ignore button drags
+    dragging = true;
+    offsetX = e.clientX - gui.offsetLeft;
+    offsetY = e.clientY - gui.offsetTop;
+  });
+  document.addEventListener('mousemove', e => {
+    if (dragging) {
+      gui.style.left = `${e.clientX - offsetX}px`;
+      gui.style.top = `${e.clientY - offsetY}px`;
+    }
+  });
+  document.addEventListener('mouseup', () => dragging = false);
+
+  // Page switching logic
+  let page = 0;
+  document.getElementById('prevPage').onclick = () => {
+    page = Math.max(0, page - 1);
+    slider.style.transform = `translateX(-${page * 50}%)`;
+  };
+  document.getElementById('nextPage').onclick = () => {
+    page = Math.min(1, page + 1);
+    slider.style.transform = `translateX(-${page * 50}%)`;
+  };
+
+  // Expose for button placement
+  window.util = util.querySelector('.btnGrid');
+  window.vfx = vfx.querySelector('.btnGrid');
+})();
     
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
@@ -99,36 +176,6 @@
   }
   let utilLock = addLockIcon(util);
   let vfxLock = addLockIcon(vfx);
-
-     // -------------------- DRAGGING --------------------
-function makeDraggable(g, lock){
-  g.style.position = 'fixed'; 
-  g.onmousedown = function(e){
-    if(lock.locked) return; 
-    let ox = e.clientX - g.getBoundingClientRect().left,
-        oy = e.clientY - g.getBoundingClientRect().top;
-    function move(e){
-      let x = e.clientX - ox;
-      let y = e.clientY - oy;
-      x = Math.max(0, Math.min(window.innerWidth - g.offsetWidth, x));
-      y = Math.max(0, Math.min(window.innerHeight - g.offsetHeight, y));
-      g.style.left = x + 'px';
-      g.style.top = y + 'px';
-      g.style.right = 'auto';
-      g.style.bottom = 'auto';
-    }
-    function up(){
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseup', up);
-    }
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
-  };
-}
-
-
-makeDraggable(util, utilLock);
-makeDraggable(vfx, vfxLock);
     
 // ---------- Tab Title & Favicon Controls ----------
 const vfxContainer = document.getElementById('vfxGUI');
