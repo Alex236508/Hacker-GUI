@@ -99,110 +99,88 @@
   }, 40);
  
 
-  function spawnGUIs() {
-  const old = document.getElementById('hackerGUIv2');
-  if (old) old.remove();
+function spawnGUIs() {
+  
+  document.getElementById('utilitiesGUI')?.remove();
+  document.getElementById('vfxGUI')?.remove();
 
-  // ---------- MAIN PANEL ----------
-  const gui = document.createElement('div');
-  gui.id = 'hackerGUIv2';
-  gui.style.cssText = `
-    position: fixed;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #00ff00;
-    font-family: Consolas, monospace;
-    border: 2px solid #00ff00;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,255,0,0.5);
-    padding: 15px;
-    width: 500px;
-    z-index: 9999999;
-    user-select: none;
+  // ---------- CREATE MAIN WRAPPER ----------
+  const guiWrapper = document.createElement('div');
+  guiWrapper.id = 'hackerGUI';
+  guiWrapper.style.cssText = `
+    position:fixed;
+    top:50px;left:50%;transform:translateX(-50%);
+    background:black;color:#00ff00;
+    font-family:Consolas,monospace;
+    border:2px solid #00ff00;
+    border-radius:10px;
+    box-shadow:0 0 20px rgba(0,255,0,0.5);
+    padding:10px;
+    z-index:999999;
+    width:600px;
+    user-select:none;
   `;
 
-  // ---------- TITLE ----------
+  // ---------- HEADER ----------
   const title = document.createElement('div');
-  title.style.cssText = `
-    text-align: center;
-    font-size: 20px;
-    font-weight: bold;
-    text-decoration: underline;
-    margin-bottom: 10px;
+  title.innerHTML = `<div style="font-size:18px;text-align:center;text-decoration:underline;">Hacker GUI V2</div>`;
+  guiWrapper.appendChild(title);
+
+  // ---------- COLUMNS CONTAINER ----------
+  const cols = document.createElement('div');
+  cols.style.cssText = `
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:10px;
   `;
-  title.textContent = 'Hacker GUI V2';
-  gui.appendChild(title);
+  guiWrapper.appendChild(cols);
 
-  // ---------- GRID CONTAINER ----------
-  const grid = document.createElement('div');
-  grid.style.cssText = `
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 20px;
-    row-gap: 10px;
+  // ---------- LEFT COLUMN (Page Effects) ----------
+  const left = document.createElement('div');
+  left.innerHTML = `
+    <div style="text-decoration:underline;text-align:center;margin-bottom:5px;">Page Effects</div>
+    <button class="hackBtn">3D Page</button>
+    <button class="hackBtn">Glitch</button>
+    <button class="hackBtn">Matrix Rain</button>
   `;
-  gui.appendChild(grid);
+  cols.appendChild(left);
 
-  // ---------- COLUMN HEADERS ----------
-  const leftHeader = document.createElement('div');
-  leftHeader.innerHTML = '<u>Page Effects</u>';
-  leftHeader.style.textAlign = 'center';
+  // ---------- RIGHT COLUMN (Utilities) ----------
+  const right = document.createElement('div');
+  right.innerHTML = `
+    <div style="text-decoration:underline;text-align:center;margin-bottom:5px;">Utilities</div>
+    <button class="hackBtn">Calculator</button>
+    <button class="hackBtn">Embedded Browser</button>
+  `;
+  cols.appendChild(right);
 
-  const rightHeader = document.createElement('div');
-  rightHeader.innerHTML = '<u>Utilities</u>';
-  rightHeader.style.textAlign = 'center';
+  // ---------- BUTTON STYLES ----------
+  const style = document.createElement('style');
+  style.textContent = `
+    .hackBtn {
+      width:100%;
+      background:black;
+      color:#00ff00;
+      border:1px solid #00ff00;
+      border-radius:5px;
+      padding:5px;
+      font-family:Consolas,monospace;
+      margin-bottom:4px;
+      cursor:pointer;
+      transition:0.2s;
+    }
+    .hackBtn:hover {
+      background:#00ff00;
+      color:black;
+      box-shadow:0 0 10px #00ff00;
+    }
+  `;
+  document.head.appendChild(style);
 
-  grid.appendChild(leftHeader);
-  grid.appendChild(rightHeader);
-
-  // ---------- BUTTON COLUMNS ----------
-  const leftCol = document.createElement('div');
-  const rightCol = document.createElement('div');
-  leftCol.style.textAlign = 'center';
-  rightCol.style.textAlign = 'center';
-
-  // Helper: makes a button with hacker theme
-  function makeBtn(label) {
-    const btn = document.createElement('button');
-    btn.textContent = label;
-    btn.style.cssText = `
-      background: transparent;
-      color: #00ff00;
-      border: 1px solid #00ff00;
-      border-radius: 6px;
-      padding: 6px 12px;
-      margin: 5px;
-      font-family: Consolas, monospace;
-      cursor: pointer;
-      transition: all 0.2s;
-      width: 120px;
-    `;
-    btn.onmouseenter = () => btn.style.background = '#003300';
-    btn.onmouseleave = () => btn.style.background = 'transparent';
-    return btn;
-  }
-
-  // ---------- LEFT COLUMN BUTTONS (Page Effects) ----------
-  leftCol.appendChild(makeBtn('3D Page'));
-  leftCol.appendChild(makeBtn('Glitch'));
-  leftCol.appendChild(makeBtn('Disorient'));
-  leftCol.appendChild(makeBtn('Matrix Rain'));
-
-  // ---------- RIGHT COLUMN BUTTONS (Utilities) ----------
-  rightCol.appendChild(makeBtn('Calculator'));
-  rightCol.appendChild(makeBtn('Embedded Browser'));
-  rightCol.appendChild(makeBtn('Clipboard Tool'));
-  rightCol.appendChild(makeBtn('Inspector+'));
-
-  // ---------- Add Columns to Grid ----------
-  grid.appendChild(leftCol);
-  grid.appendChild(rightCol);
-
-  // ---------- Add GUI to Page ----------
-  document.body.appendChild(gui);
+  document.body.appendChild(guiWrapper);
 }
+
 
     
     // -------------------- ADD LOCK ICON --------------------
