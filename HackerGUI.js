@@ -1,168 +1,88 @@
 (function(){
   if(window.hackerLoaded) return;
   window.hackerLoaded = true;
-
-  // ---------- BOOTUP ----------
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `
-    position:fixed;top:0;left:0;width:100%;height:100%;
-    background:black;z-index:1000000;
-    display:flex;align-items:center;justify-content:center;
-    flex-direction:column;color:#00ff00;
-    font-family:Consolas,monospace;pointer-events:none;
-  `;
-
-  const canvas = document.createElement('canvas');
+  
+// ---------- BOOTUP ----------
+  let overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00ff00;font-family:Consolas,monospace;pointer-events:none;';
+  let canvas = document.createElement('canvas');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  canvas.style.cssText = `
-    position:absolute;top:0;left:0;width:100%;height:100%;
-  `;
+  canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
   overlay.appendChild(canvas);
-
-  const msg = document.createElement('div');
+  let msg = document.createElement('div');
   msg.innerText = '[ BOOTING SYSTEM... ]';
-  msg.style.cssText = `
-    font-size:20px;margin-bottom:10px;z-index:1000001;
-    text-shadow:0 0 5px #00ff00;
-  `;
+  msg.style.cssText = 'font-size:20px;margin-bottom:10px;z-index:1000001;text-shadow:0 0 5px #00ff00;';
   overlay.appendChild(msg);
-
-  const loading = document.createElement('div');
-  loading.style.cssText = `
-    font-size:24px;font-weight:bold;z-index:1000001;
-    text-shadow:0 0 10px #00ff00;
-  `;
+  let loading = document.createElement('div');
+  loading.style.cssText = 'font-size:24px;font-weight:bold;z-index:1000001;text-shadow:0 0 10px #00ff00;';
   loading.innerText = 'Loading 0%';
   overlay.appendChild(loading);
-
   document.body.appendChild(overlay);
 
-  // ---------- MATRIX RAIN ----------
-  const ctx = canvas.getContext('2d');
-  const chars = '1010';
-  const cols = Math.floor(canvas.width / 10);
-  const drops = Array(cols).fill(0).map(() => Math.floor(Math.random() * canvas.height));
-
-  const rain = setInterval(() => {
-    ctx.fillStyle = 'rgba(0,0,0,0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#0F0';
-    ctx.font = '10px monospace';
-
-    for (let i = 0; i < cols; i++) {
-      const text = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillText(text, i * 10, drops[i] * 10);
-      if (drops[i] * 10 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+  // Matrix rain for bootup
+  let ctx = canvas.getContext('2d');
+  let chars = '1010';
+  let cols = Math.floor(canvas.width/10);
+  let drops = [];
+  for(let i=0;i<cols;i++) drops[i] = Math.floor(Math.random()*canvas.height);
+  let rain = setInterval(()=>{
+    ctx.fillStyle='rgba(0,0,0,0.05)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#0F0';
+    ctx.font='10px monospace';
+    for(let i=0;i<cols;i++){
+      ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*10,drops[i]*10);
+      if(drops[i]*10>canvas.height && Math.random()>0.975) drops[i]=0;
       drops[i]++;
     }
-  }, 33);
+  },33);
 
-  // ---------- LOADING COUNTER ----------
+  // Loading counter
   let progress = 0;
-  const int = setInterval(() => {
+  let int = setInterval(()=>{
     progress++;
-    loading.innerText = `Loading ${progress}%`;
-
-    if (progress >= 100) {
+    loading.innerText = 'Loading '+progress+'%';
+    if(progress>=100){
       clearInterval(int);
-      setTimeout(() => {
-        loading.innerText = 'Welcome Hacker';
-        setTimeout(() => {
+      setTimeout(()=>{
+        loading.innerText='Welcome Hacker';
+        setTimeout(()=>{
           clearInterval(rain);
           overlay.remove();
-          if (typeof spawnGUIs === 'function') spawnGUIs();
-        }, 2000);
-      }, 500);
+          spawnGUIs();
+        },2000);
+      },500);
     }
-  }, 40);
-
-})();
- 
-
-function spawnGUIs() {
+  },40);
   
-  document.getElementById('utilitiesGUI')?.remove();
-  document.getElementById('vfxGUI')?.remove();
 
-  // ---------- CREATE MAIN WRAPPER ----------
-  const guiWrapper = document.createElement('div');
-  guiWrapper.id = 'hackerGUI';
-  guiWrapper.style.cssText = `
-    position:fixed;
-    top:50px;left:50%;transform:translateX(-50%);
-    background:black;color:#00ff00;
-    font-family:Consolas,monospace;
-    border:2px solid #00ff00;
-    border-radius:10px;
-    box-shadow:0 0 20px rgba(0,255,0,0.5);
-    padding:10px;
-    z-index:999999;
-    width:600px;
-    user-select:none;
+  function spawnGUIs() {
+    // -------------------- UTILITIES GUI --------------------
+    const util = document.createElement('div');
+  util.id = 'utilitiesGUI';
+  util.style.cssText = `
+    position:fixed;top:50px;left:50px;width:280px;
+    background:#000000;color:#00ff00;font-family:Consolas,monospace;
+    padding:10px;border:2px solid #00ff00;border-radius:8px;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
+    user-select:none;cursor:move;
   `;
-
-  // ---------- HEADER ----------
-  const title = document.createElement('div');
-  title.innerHTML = `<div style="font-size:18px;text-align:center;text-decoration:underline;">Hacker GUI V2</div>`;
-  guiWrapper.appendChild(title);
-
-  // ---------- COLUMNS CONTAINER ----------
-  const cols = document.createElement('div');
-  cols.style.cssText = `
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-top:10px;
+  util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+  document.body.appendChild(util);
+   
+    // -------------------- VFX GUI --------------------
+    const vfx = document.createElement('div');
+  vfx.id = 'vfxGUI';
+  vfx.style.cssText = `
+    position:fixed;top:50px;right:50px;width:320px;
+    background:#000000;color:#00ff00;font-family:Consolas,monospace;
+    padding:10px;border:2px solid #00ff00;border-radius:8px;
+    box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
+    user-select:none;cursor:move;
   `;
-  guiWrapper.appendChild(cols);
-
-  // ---------- LEFT COLUMN (Page Effects) ----------
-  const left = document.createElement('div');
-  left.innerHTML = `
-    <div style="text-decoration:underline;text-align:center;margin-bottom:5px;">Page Effects</div>
-    <button class="hackBtn">3D Page</button>
-    <button class="hackBtn">Glitch</button>
-    <button class="hackBtn">Matrix Rain</button>
-  `;
-  cols.appendChild(left);
-
-  // ---------- RIGHT COLUMN (Utilities) ----------
-  const right = document.createElement('div');
-  right.innerHTML = `
-    <div style="text-decoration:underline;text-align:center;margin-bottom:5px;">Utilities</div>
-    <button class="hackBtn">Calculator</button>
-    <button class="hackBtn">Embedded Browser</button>
-  `;
-  cols.appendChild(right);
-
-  // ---------- BUTTON STYLES ----------
-  const style = document.createElement('style');
-  style.textContent = `
-    .hackBtn {
-      width:100%;
-      background:black;
-      color:#00ff00;
-      border:1px solid #00ff00;
-      border-radius:5px;
-      padding:5px;
-      font-family:Consolas,monospace;
-      margin-bottom:4px;
-      cursor:pointer;
-      transition:0.2s;
-    }
-    .hackBtn:hover {
-      background:#00ff00;
-      color:black;
-      box-shadow:0 0 10px #00ff00;
-    }
-  `;
-  document.head.appendChild(style);
-
-  document.body.appendChild(guiWrapper);
-}
-
-
+  vfx.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Page Effects</b></div>';
+  document.body.appendChild(vfx);
     
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
@@ -1492,6 +1412,6 @@ window.pageSpinActive = false;
     }
   });
 
-  }
+  } 
 
 })();
