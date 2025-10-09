@@ -58,115 +58,41 @@
 
 
   function spawnGUIs() {
-    // -------------------- COMBINED GUI --------------------
-const gui = document.createElement('div');
-gui.id = 'masterGUI';
-gui.style.cssText = `
-  position:fixed; top:50px; left:50%; transform:translateX(-50%);
-  width:520px;
-  background:#000; color:#00ff00; font-family:Consolas,monospace;
-  border:3px solid #00ff00; border-radius:4px;
-  box-shadow:0 0 20px rgba(0,255,0,0.6);
-  z-index:9999999; user-select:none; cursor:move;
-  display:flex; flex-direction:column; align-items:center;
+    // -------------------- UTILITIES GUI --------------------
+const util = document.createElement('div');
+util.id = 'utilitiesGUI';
+util.style.cssText = `
+  position:fixed;top:50px;left:50px;width:280px;
+  background:#000000;color:#00ff00;font-family:Consolas,monospace;
+  padding:10px;border:2px solid #00ff00;border-radius:8px;
+  box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
+  user-select:none;cursor:move;
+`;
+util.innerHTML = '<div style="text-align:center;margin-bottom:8px;"><b>Utilities</b></div>';
+document.body.appendChild(util);
+
+// -------------------- VFX GUI -------------------- 
+const vfx = document.createElement('div');
+vfx.id = 'vfxGUI';
+vfx.style.cssText = `
+  position:fixed;top:50px;right:50px;width:320px;
+  background:#000000;color:#00ff00;font-family:Consolas,monospace;
+  padding:10px;border:2px solid #00ff00;border-radius:8px;
+  box-shadow:0 0 15px rgba(0,255,0,0.5);z-index:9999999;
+  user-select:none;cursor:move;
+
+  
+  display:grid;
+  grid-template-columns: 1fr 1fr;  
+  gap:6px;                          
+    align-items:center;
+  justify-items:center;
+  max-height:80vh;                 
+  overflow-y:auto;                 
 `;
 
-gui.innerHTML = `
-  <div style="width:100%; text-align:center; padding:6px; border-bottom:2px solid #00ff00;">
-    <b>c00lgui Reborn - Page Control Panel</b>
-  </div>
-
-  <!-- Two-column section -->
-  <div style="display:grid; grid-template-columns: 1fr 1fr; width:100%;">
-
-    <!-- Left: Page Effects -->
-    <div style="border-right:2px solid #00ff00; padding:6px;">
-      <div style="text-align:center; border-bottom:1px solid #00ff00; margin-bottom:6px;"><b>Page Effects</b></div>
-      <div id="vfxButtons" style="display:grid; grid-template-columns:1fr 1fr; gap:6px;"></div>
-    </div>
-
-    <!-- Right: Utilities -->
-    <div style="padding:6px;">
-      <div style="text-align:center; border-bottom:1px solid #00ff00; margin-bottom:6px;"><b>Utilities</b></div>
-      <div id="utilButtons" style="display:grid; grid-template-columns:1fr 1fr; gap:6px;"></div>
-    </div>
-
-  </div>
-
-  <!-- Close Button -->
-  <div style="width:100%; text-align:center; border-top:2px solid #00ff00; margin-top:6px; padding:4px;">
-    <button id="closeGUI" style="
-      background:none; border:2px solid #00ff00; color:#00ff00;
-      width:90px; padding:4px; cursor:pointer; border-radius:4px;
-      font-family:Consolas,monospace;
-    ">Close</button>
-  </div>
-`;
-
-document.body.appendChild(gui);
-
-// -------------------- Drag Function --------------------
-let isDragging = false, offsetX = 0, offsetY = 0;
-gui.addEventListener('mousedown', e => {
-  if (e.target.id === 'closeGUI') return;
-  isDragging = true;
-  offsetX = e.clientX - gui.offsetLeft;
-  offsetY = e.clientY - gui.offsetTop;
-});
-document.addEventListener('mousemove', e => {
-  if (isDragging) {
-    gui.style.left = (e.clientX - offsetX) + 'px';
-    gui.style.top = (e.clientY - offsetY) + 'px';
-    gui.style.transform = 'none';
-  }
-});
-document.addEventListener('mouseup', () => isDragging = false);
-
-// -------------------- Close Button --------------------
-document.getElementById('closeGUI').onclick = () => gui.remove();
-
-// -------------------- Helper to Add Buttons --------------------
-function addBtn(container, name, onStart, onStop) {
-  const btn = document.createElement('button');
-  btn.textContent = name;
-  btn.style.cssText = `
-    background:none; color:#00ff00;
-    border:2px solid #00ff00; border-radius:4px;
-    font-family:Consolas,monospace;
-    cursor:pointer; padding:6px; text-align:center;
-    transition:background-color 0.2s, color 0.2s;
-  `;
-  btn.onmouseenter = () => btn.style.backgroundColor = '#003300';
-  btn.onmouseleave = () => btn.style.backgroundColor = 'transparent';
-  btn.onclick = () => {
-    if (btn.dataset.active === 'true') {
-      btn.dataset.active = 'false';
-      btn.style.color = '#00ff00';
-      if (onStop) onStop();
-    } else {
-      btn.dataset.active = 'true';
-      btn.style.color = '#ff0000';
-      if (onStart) onStart();
-    }
-  };
-  container.appendChild(btn);
-}
-
-// -------------------- Example Button Setup --------------------
-const vfxContainer = document.getElementById('vfxButtons');
-const utilContainer = document.getElementById('utilButtons');
-
-// Example Page Effects
-addBtn(vfxContainer, 'Disorient', () => alert('Disorient ON'), () => alert('Disorient OFF'));
-addBtn(vfxContainer, 'Matrix Rain', () => alert('Matrix Rain ON'), () => alert('Matrix Rain OFF'));
-addBtn(vfxContainer, '3D Page', () => alert('3D Page ON'), () => alert('3D Page OFF'));
-addBtn(vfxContainer, 'Glitch', () => alert('Glitch ON'), () => alert('Glitch OFF'));
-
-// Example Utilities
-addBtn(utilContainer, 'Rename Tab', () => alert('Rename Tab'), null);
-addBtn(utilContainer, 'Upload Image', () => alert('Upload Image'), null);
-addBtn(utilContainer, 'Stop All', () => alert('Stop All Effects'), null);
-addBtn(utilContainer, 'Settings', () => alert('Settings Opened'), null);
+vfx.innerHTML = '<div style="grid-column: span 2; text-align:center; margin-bottom:8px;"><b>Page Effects</b></div>';
+document.body.appendChild(vfx);
 
 
     // -------------------- ADD LOCK ICON --------------------
