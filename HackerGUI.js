@@ -58,7 +58,7 @@
   
 
   function spawnGUIs() {
-    // -------------------- CLEAN TWO-PAGE GUI --------------------
+    // -------------------- CLEAN TWO-PAGE AUTO-RESIZING GUI --------------------
 (function() {
   // Main container for both pages
   const gui = document.createElement('div');
@@ -66,7 +66,7 @@
   gui.style.cssText = `
     position: fixed;
     top: 50px; left: 50px;
-    width: 340px; height: 420px;
+    width: 340px;
     background: #000000;
     border: 2px solid #00ff00;
     border-radius: 12px;
@@ -77,15 +77,15 @@
     z-index: 9999999;
     cursor: move;
     user-select: none;
+    transition: height 0.4s ease;
   `;
   document.body.appendChild(gui);
 
-  // Inner wrapper that slides horizontally
+  // Inner wrapper that slides horizontally between pages
   const slider = document.createElement('div');
   slider.style.cssText = `
     display: flex;
     width: 200%;
-    height: 100%;
     transition: transform 0.5s ease;
   `;
   gui.appendChild(slider);
@@ -98,8 +98,17 @@
     padding: 10px;
     box-sizing: border-box;
   `;
-  util.innerHTML = `<div style="text-align:center;font-weight:bold;margin-bottom:10px;">Utilities</div>
-  <div class="btnGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>`;
+  util.innerHTML = `
+    <div style="text-align:center;font-weight:bold;margin-bottom:10px;">Utilities</div>
+    <div class="btnGrid" style="
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      justify-items: stretch;
+      align-items: stretch;
+      min-height: 300px;
+    "></div>
+  `;
   slider.appendChild(util);
 
   // VFX Page
@@ -110,8 +119,17 @@
     padding: 10px;
     box-sizing: border-box;
   `;
-  vfx.innerHTML = `<div style="text-align:center;font-weight:bold;margin-bottom:10px;">Page Effects</div>
-  <div class="btnGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>`;
+  vfx.innerHTML = `
+    <div style="text-align:center;font-weight:bold;margin-bottom:10px;">Page Effects</div>
+    <div class="btnGrid" style="
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      justify-items: stretch;
+      align-items: stretch;
+      min-height: 380px;
+    "></div>
+  `;
   slider.appendChild(vfx);
 
   // Navigation arrows
@@ -132,7 +150,7 @@
   // Dragging behavior
   let offsetX, offsetY, dragging = false;
   gui.addEventListener('mousedown', e => {
-    if (e.target.tagName === 'BUTTON') return; // Ignore button drags
+    if (e.target.tagName === 'BUTTON') return; // ignore button clicks
     dragging = true;
     offsetX = e.clientX - gui.offsetLeft;
     offsetY = e.clientY - gui.offsetTop;
@@ -147,19 +165,31 @@
 
   // Page switching logic
   let page = 0;
+  const resizeToContent = () => {
+    const activePage = page === 0 ? util : vfx;
+    const contentHeight = activePage.scrollHeight + 40; // extra padding for arrows
+    gui.style.height = `${contentHeight}px`;
+  };
+
   document.getElementById('prevPage').onclick = () => {
     page = Math.max(0, page - 1);
     slider.style.transform = `translateX(-${page * 50}%)`;
+    resizeToContent();
   };
   document.getElementById('nextPage').onclick = () => {
     page = Math.min(1, page + 1);
     slider.style.transform = `translateX(-${page * 50}%)`;
+    resizeToContent();
   };
 
-  // Expose for button placement
+  // Expose button grids
   window.util = util.querySelector('.btnGrid');
   window.vfx = vfx.querySelector('.btnGrid');
+
+  // Set default height based on VFX (so everything fits from start)
+  resizeToContent();
 })();
+
     
     // -------------------- ADD LOCK ICON --------------------
      function addLockIcon(gui){
